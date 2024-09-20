@@ -1,5 +1,7 @@
 # Intelligent Course Platform: Reborn
 
+This is a course proect.
+
 ## Frontend
 
 - Vue + JS(npm) + ElementUI + Quill/Milkdown
