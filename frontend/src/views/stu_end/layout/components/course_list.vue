@@ -6,8 +6,8 @@
           <el-icon><Notebook /></el-icon>
           <div class="course-name">{{ course.name }}</div>
         </div>
-        <div class="course-info">课程号: {{ course.courseId }}</div>
-        <div class="course-info">班级号: {{ course.classId }}</div>
+        <div class="course-info">课程号: {{ course.courseNumber }}</div>
+        <div class="course-info">班级号: {{ course.classNumber }}</div>
       </el-card>
     </el-col>
   </el-row>

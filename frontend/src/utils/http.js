@@ -25,6 +25,7 @@ import router from '@/router'
 
 // const baseURL = 'http://big-event-vue-api-t.itheima.net'
 const baseURL = 'http://localhost:8080/'
+// const baseURL = 'http://127.0.0.1:4523/m1/5175681-4840771-default/'
 
 const instance = axios.create({
   // TODO 1. 基础地址，超时时间

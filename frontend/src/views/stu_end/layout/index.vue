@@ -3,9 +3,9 @@
     <el-container>
       <!-- Header 占满整个页面宽度 -->
       <el-header>
-        <icpr_header />
+        <icpr_header/>
       </el-header>
-      
+
       <!-- Main 布局 -->
       <el-main>
         <!-- 使用 el-row 布局 search_bar, course_list 和 reminder_card -->
@@ -14,15 +14,15 @@
           <el-col :span="18">
             <div class="container">
               <div class="search-bar-wrapper">
-                <search_bar @search="handleSearch" />
+                <search_bar @search="handleSearch"/>
               </div>
-              <course_list :courses="filteredCourses" />
+              <course_list :courses="filteredCourses"/>
             </div>
           </el-col>
-          
+
           <!-- 右侧 reminder_card，占 6/24 -->
           <el-col :span="6">
-            <reminder_card :reminders="reminders" @remove="removeReminder" />
+            <reminder_card :reminders="reminders" @remove="removeReminder"/>
           </el-col>
         </el-row>
       </el-main>
@@ -35,6 +35,12 @@ import icpr_header from '@/components/icpr_header.vue';
 import search_bar from './components/search_bar.vue';
 import course_list from './components/course_list.vue';
 import reminder_card from './components/reminder_card.vue'
+import {userCourses} from "@/api/course.js";
+import {useUserStore} from "@/stores/user.js";
+
+const user = useUserStore();
+const courses = (await userCourses(user.id, user.token)).courses;
+console.log(courses);
 
 export default {
   components: {
@@ -45,24 +51,11 @@ export default {
   },
   data() {
     return {
-      courses: [
-        { name: '课程1', courseId: '001', classId: 'A01' },
-        { name: '课程2', courseId: '002', classId: 'A02' },
-        { name: '课程3', courseId: '003', classId: 'A03' },
-        { name: '课程4', courseId: '004', classId: 'A03' },
-        { name: '课程5', courseId: '005', classId: 'A03' },
-        { name: '课程6', courseId: '006', classId: 'A03' },
-        { name: '课程7', courseId: '007', classId: 'A03' },
-        { name: '课程8', courseId: '008', classId: 'A03' },
-        { name: '课程9', courseId: '009', classId: 'A03' },
-        { name: '课程10', courseId: '010', classId: 'A03' },
-        { name: '课程11', courseId: '011', classId: 'A03' },
-        { name: '课程12', courseId: '012', classId: 'A03' },
-      ],
+      courses: courses,
       searchQuery: '',
       reminders: [
-        { type: '作业', title: '作业标题', deadline: '2024-09-15' },
-        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        {type: '作业', title: '作业标题', deadline: '2024-09-15'},
+        {type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容'},
         // 更多提醒...
       ],
     };
@@ -71,7 +64,7 @@ export default {
     filteredCourses() {
       if (this.searchQuery) {
         return this.courses.filter(course =>
-          course.name.includes(this.searchQuery)
+            course.name.includes(this.searchQuery)
         );
       }
       return this.courses;
@@ -120,7 +113,7 @@ export default {
 }
 
 .narrow-component {
-  width: 300px; 
+  width: 300px;
 }
 
 
@@ -136,6 +129,6 @@ export default {
 .el-col {
   background-color: #fff; /* 设置背景色 */
   padding: 20px;
-  
+
 }
 </style>

@@ -58,8 +58,8 @@ const login = async () => {
   // 执行登录逻辑
   await form.value.validate()
   const res = await userLoginService(formModel.value)
-  console.log(res)
   userStore.setToken(res)
+  userStore.setId(formModel.value.username)
   await router.push('/stu-end')
 }
 

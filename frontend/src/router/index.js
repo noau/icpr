@@ -214,7 +214,6 @@ const router = createRouter({
               component: () => import('@/views/tea_end/course/examine/homework_statistics.vue'),
               meta: { breadcrumbName: '成绩统计' }
             },
-            
           ]
         },
         {
