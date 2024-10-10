@@ -1,0 +1,1 @@
+import{_ as o}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{c,o as e}from"./index-DnoIQOtX.js";const r={};function t(n,s){return e(),c("div",null,"课程介绍")}const f=o(r,[["render",t]]);export{f as default};
