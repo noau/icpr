@@ -63,4 +63,13 @@ public interface UserMapper {
     })
     @Update("update user set name = #{name}, class = #{userClass}, academy = #{academy}, gender = #{gender} where id = #{id}")
     void changeInfo(Integer id, String name, String userClass, String academy, String gender);
+
+    @Results({
+            @Result(property = "userClass", column = "class"),
+            @Result(property = "defaultFolderId", column = "default_folder_id"),
+            @Result(property = "subscriptionsNumber", column = "subscriptions_number"),
+            @Result(property = "fansNumber", column = "fans_number")
+    })
+    @Insert("insert into user values (#{id}, #{name}, #{password}, #{userClass}, #{academy}, \"NA\", #{gender}, #{defaultFolderId})")
+    void addUser(Integer id, String name, String password, String userClass, String academy, String avatar);
 }
