@@ -6,8 +6,6 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.cms.backend.pojo.Course;
 import com.cms.backend.pojo.DTO.StudentCourseSelectionDTO;
 import com.cms.backend.pojo.DTO.UserDTO;
-import com.cms.backend.pojo.StudentCourseSelection;
-import com.cms.backend.pojo.StudentCourseSelectionKey;
 import com.cms.backend.service.CourseService;
 import com.cms.backend.service.UserService;
 import lombok.Getter;
@@ -100,10 +98,6 @@ final class UserUploadListener implements ReadListener<UserDTO> {
 
     }
 
-    public UserService userService() {
-        return userService;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
@@ -155,10 +149,6 @@ final class CourseUploadListener implements ReadListener<Course> {
 
     }
 
-    public CourseService courseService() {
-        return courseService;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
@@ -201,10 +191,6 @@ final class CourseSelectionUploadListener implements ReadListener<StudentCourseS
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
 
-    }
-
-    public CourseService courseService() {
-        return courseService;
     }
 
     @Override
