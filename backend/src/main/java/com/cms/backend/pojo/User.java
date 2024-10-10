@@ -7,8 +7,8 @@ import lombok.Setter;
 /**
  * User 实体类，表示用户的数据模型
  */
-@Setter
 @Getter
+@Setter
 @Entity
 @Table(name = "user", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
 public class User {
@@ -25,22 +25,53 @@ public class User {
      */
     @Column(name = "name", nullable = false, length = 255)
     private String name;
+
     /**
      * 用户密码
      */
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
+    /**
+     * 用户班级
+     */
     @Column(name = "class", nullable = false, length = 255)
     private String userClass;
 
+    /**
+     * 学院
+     */
+    @Column(name = "academy", nullable = false, length = 255)
+    private String academy;
+
+    /**
+     * 用户性别
+     */
     @Column(name = "gender", nullable = false, length = 255)
     private String gender;
 
+    /**
+     * 用户头像
+     */
     @Column(name = "avatar", nullable = false, length = 255)
     private String avatar;
 
+    /**
+     * 用户默认文件夹
+     */
     @Column(name = "default_folder_id", nullable = false, length = 255)
-    private String defaultFolderID;
+    private String defaultFolderId;
+
+    /**
+     * 关注数
+     */
+    @Column(name = "subscriptions_number", nullable = false, length = 255)
+    private Integer subscriptionsNumber;
+
+    /**
+     * 粉丝数
+     */
+    @Column(name = "fans_number", nullable = false, length = 255)
+    private Integer fansNumber;
 
 }
