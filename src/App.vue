@@ -1,13 +1,15 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <el-button type="primary">Primary</el-button>
+  <!-- 一级路由出口组件 -->
+   <div>
+    <router-view></router-view>
+   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 header {
   line-height: 1.5;
   max-height: 100vh;

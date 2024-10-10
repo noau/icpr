@@ -1,0 +1,221 @@
+<template>
+  <div class="course-header">
+    <div class="course-name">教学大纲</div>
+    <div class="actions-section" style="margin-bottom: 8px; margin-left: 1px;">
+      <div class="template-download-section" style="margin-right: 20px;">
+        <el-button round @click="downloadTemplate" type="text">下载模板</el-button>
+      </div>
+      <div class="download-section">
+        <el-button round @click="downloadFile" type="text">下载教学大纲</el-button>
+      </div>
+    </div>
+  </div>
+
+  <el-card class="course-card">
+    <div class="course-info">
+      <p>教学大纲的详细内容</p>
+    </div>
+  </el-card>
+
+  <div class="upload-section-bottom">
+    <el-button round type="primary" @click="dialogVisible = true" style="padding: 8px">上传</el-button>
+  </div>
+
+  <el-dialog
+    title="上传教学大纲"
+    v-model="dialogVisible"
+    width="40%"
+    @close="handleClose"
+  >
+    <div class="upload-permission-section">
+      <div class="dialog-permission-section">
+        <div>权限设置：</div>
+        <el-select v-model="selectedPermission" placeholder="选择权限" style="width: 150px;">
+          <el-option label="本课程师生" value="course"></el-option>
+          <el-option label="全校师生" value="school"></el-option>
+          <el-option label="私有" value="private"></el-option>
+        </el-select>
+      </div>
+
+      <div class="dialog-upload-section">
+        <Upload
+          ref="uploadRef"
+          accept="image/*,application/pdf"
+          :max-count="3"
+          :before-upload="onBeforeUpload"
+          v-model:fileList="imageList"
+          @change="onChange"
+          @remove="onRemove"
+        >
+          <el-button type="text" style="margin-right: 30px">点击选择文件</el-button>
+        </Upload>
+      </div>
+
+      <!-- 提示信息 -->
+      <div class="file-type-warning">
+        允许上传的文件类型：doc、pdf、ppt、xls、docx、pptx、xlsx、mp4、
+mp3、avi、wmv、3gp、mov、rmvb、flv、f4v、rm、asf、
+asx、jpg、gif、jpeg、png、bmp，文件不能超过2G
+      </div>
+    </div>
+
+    <br>
+    
+    <template v-slot:footer>
+      <span class="dialog-footer">
+        <el-button round type="primary" @click="submitUpload" style="padding: 10px">确认</el-button>
+        <el-button round @click="dialogVisible = false" style="padding: 10px">取消</el-button>
+      </span>
+    </template>
+  </el-dialog>
+</template>
+
+<script setup>
+import { ref, watchEffect } from 'vue'
+const uploadRef = ref()
+const files = ref([])
+const fileList = ref([
+  {
+    name: '1.jpg',
+    url: 'https://cdn.jsdelivr.net/gh/themusecatcher/resources@0.0.5/1.jpg'
+  },
+  {
+    name: 'Markdown.pdf',
+    url: 'https://cdn.jsdelivr.net/gh/themusecatcher/resources@0.0.5/Markdown.pdf'
+  }
+])
+const imageList = ref([
+  {
+    name: '1.jpg',
+    url: 'https://cdn.jsdelivr.net/gh/themusecatcher/resources@0.0.5/1.jpg'
+  }
+])
+watchEffect(() => {
+  console.log('files:', files.value)
+})
+watchEffect(() => {
+  console.log('fileList:', fileList.value)
+})
+watchEffect(() => {
+  console.log('imageList:', imageList.value)
+})
+function onBeforeUpload(file) {
+  const acceptTypes = ['image/jpg', 'image/jpeg', 'image/png', 'application/pdf']
+  if (file.size > 500 * 1024) {
+    // 文件大于 500KB 时取消上传
+    uploadRef.value.warning('文件必须小于500KB')
+    return false // 停止上传
+  }
+  if (!acceptTypes.includes(file.type)) {
+    // 继续上传
+    uploadRef.value.error('只能上传jpg、jpeg、png、pdf格式的文件')
+    return false // 停止上传
+  }
+  return true // 继续上传
+}
+function onCustomRequest(file) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      // 模拟接口调用返回name和url
+      let res
+      if (file.type === 'application/pdf') {
+        res = {
+          name: 'Markdown.pdf',
+          url: 'https://cdn.jsdelivr.net/gh/themusecatcher/resources@0.0.5/Markdown.pdf'
+        }
+      } else {
+        res = {
+          name: '1.jpg',
+          url: 'https://cdn.jsdelivr.net/gh/themusecatcher/resources@0.0.5/1.jpg'
+        }
+      }
+      if (res) {
+        resolve(res)
+      } else {
+        reject('upload request fail ...')
+      }
+    }, 1000)
+  })
+}
+function onChange(files) {
+  console.log('change:', files)
+}
+function onRemove(file) {
+  console.log('remove:', file)
+}
+
+const dialogVisible = ref(false)
+const selectedPermission = ref('course')
+
+const downloadFile = () => {
+  window.location.href = '/path-to-your-syllabus-file'  // 更新下载链接
+}
+
+const downloadTemplate = () => {
+  window.location.href = '/path-to-your-template-file'
+}
+
+const handleClose = () => {
+  dialogVisible.value = false
+}
+</script>
+
+<style scoped>
+.actions-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.course-card {
+  width: 100%;
+  padding: 10px;
+}
+
+.course-info {
+  font-size: 14px;
+  color: gray;
+}
+
+.course-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  margin-bottom: 10px;
+}
+
+.course-name {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.upload-section-bottom {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.dialog-permission-section {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-permission-section {
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+  align-items: flex-start; /* 左对齐 */
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.file-type-warning {
+  margin-top: -25px;
+  font-size: 12px;
+  color: gray;
+}
+
+.dialog-footer {
+  text-align: right;
+}
+</style>

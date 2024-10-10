@@ -20,14 +20,31 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'quill': 'quill/dist/quill.js',  // 添加 quill 别名，确保正确引入
+      'quill-css': 'quill/dist/quill.snow.css' // 新增 CSS 别名
+    }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
     }
   },
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@use "@/styles/element/index.scss" as *;`
+        additionalData: `
+        @use "@/styles/element/index.scss" as *;
+        @use "@/styles/var.scss" as *;
+        `
       }
     }
+  },
+  optimizeDeps: {
+    include: ['quill']  // 确保 quill 被优化依赖处理
   }
 })
