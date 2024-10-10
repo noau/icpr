@@ -17,7 +17,7 @@ import java.util.Map;
 public class JWTUtils {
 
     // 定义用于签名的密钥
-    private static final String KEY = "nav";
+    private static final String KEY = "icpr";
 
     /**
      * 生成 JWT 令牌
