@@ -26,4 +26,10 @@ public class CourseServiceImpl implements CourseService {
     public List<User> getAllStudents(String id) {
         return courseMapper.getAllStudents(id);
     }
+
+    @Override
+    public void addCourse(String id, String courseNumber, String name, String semesterYear, Integer classNumber, String start, String end, String academy, String teacher) {
+        courseMapper.addCourse(id, courseNumber, name, semesterYear, classNumber, start, end, academy,teacher);
+    }
+
 }

@@ -55,4 +55,10 @@ public class UserServiceImpl implements UserService {
         userMapper.changeInfo(id, name, userClass, academy, gender);
     }
 
+    @Override
+    public void addUser(Integer id, String name, String password, String userClass, String academy, String gender) {
+        userMapper.addUser(id, name, password, userClass, academy, gender);
+    }
+
+
 }

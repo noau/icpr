@@ -22,4 +22,6 @@ public interface UserService {
     List<Favorites> getUserFavorites(Integer id);
 
     void changeInfo(Integer id, String name, String userClass, String academy, String gender);
+
+    void addUser(Integer id, String name, String password, String userClass, String academy, String gender);
 }

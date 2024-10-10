@@ -60,7 +60,7 @@ public class User {
      * 用户默认文件夹
      */
     @Column(name = "default_folder_id", nullable = false, length = 255)
-    private String defaultFolderId;
+    private Integer defaultFolderId;
 
     /**
      * 关注数
