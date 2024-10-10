@@ -9,6 +9,8 @@ import com.cms.backend.service.CourseService;
 import com.cms.backend.service.UserService;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 @RestController
 public class FileUploadController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileUploadController.class);
 
     private final UserService userService;
     private final CourseService courseService;
@@ -34,8 +38,8 @@ public class FileUploadController {
             EasyExcel.read(file.getInputStream(), UserDTO.class, new UserUploadListener(userService)).sheet().doRead();
             return ResponseEntity.ok("用户文件上传并处理成功");
         } catch (Exception e) {
-
-            return ResponseEntity.status(500).body("用户文件处理失败：" + e.getMessage());
+            logger.error(e.getMessage());
+            return ResponseEntity.status(500).body("用户信息导入失败!");
         }
     }
 
@@ -46,7 +50,8 @@ public class FileUploadController {
             EasyExcel.read(file.getInputStream(), Course.class, new CourseUploadListener(courseService)).sheet().doRead();
             return ResponseEntity.ok("课程文件上传并处理成功");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("课程文件处理失败：" + e.getMessage());
+            logger.error(e.getMessage());
+            return ResponseEntity.status(500).body("课程信息导入失败！");
         }
     }
 }
