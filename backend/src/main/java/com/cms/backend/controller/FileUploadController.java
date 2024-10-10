@@ -4,7 +4,10 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.cms.backend.pojo.Course;
+import com.cms.backend.pojo.DTO.StudentCourseSelectionDTO;
 import com.cms.backend.pojo.DTO.UserDTO;
+import com.cms.backend.pojo.StudentCourseSelection;
+import com.cms.backend.pojo.StudentCourseSelectionKey;
 import com.cms.backend.service.CourseService;
 import com.cms.backend.service.UserService;
 import lombok.Getter;
@@ -15,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -54,11 +59,29 @@ public class FileUploadController {
             return ResponseEntity.status(500).body("课程信息导入失败！");
         }
     }
+
+    // 上传选课文件
+    @PostMapping("/uploading/course_selection")
+    public ResponseEntity<String> uploadCourseSelectionFile(MultipartFile file) {
+        try {
+            EasyExcel.read(file.getInputStream(), StudentCourseSelectionDTO.class, new CourseSelectionUploadListener(courseService)).sheet().doRead();
+            return ResponseEntity.ok("选课文件上传并处理成功");
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.status(500).body("课程信息导入失败！");
+        }
+    }
+
 }
 
 
 @Getter
-record UserUploadListener(UserService userService) implements ReadListener<UserDTO> {
+final class UserUploadListener implements ReadListener<UserDTO> {
+    private final UserService userService;
+
+    UserUploadListener(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public void invoke(UserDTO user, AnalysisContext analysisContext) {
@@ -77,10 +100,39 @@ record UserUploadListener(UserService userService) implements ReadListener<UserD
 
     }
 
+    public UserService userService() {
+        return userService;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (UserUploadListener) obj;
+        return Objects.equals(this.userService, that.userService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userService);
+    }
+
+    @Override
+    public String toString() {
+        return "UserUploadListener[" +
+                "userService=" + userService + ']';
+    }
+
+
 }
 
 @Getter
-record CourseUploadListener(CourseService courseService) implements ReadListener<Course> {
+final class CourseUploadListener implements ReadListener<Course> {
+    private final CourseService courseService;
+
+    CourseUploadListener(CourseService courseService) {
+        this.courseService = courseService;
+    }
 
     @Override
     public void invoke(Course course, AnalysisContext analysisContext) {
@@ -102,5 +154,77 @@ record CourseUploadListener(CourseService courseService) implements ReadListener
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
 
     }
+
+    public CourseService courseService() {
+        return courseService;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (CourseUploadListener) obj;
+        return Objects.equals(this.courseService, that.courseService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseService);
+    }
+
+    @Override
+    public String toString() {
+        return "CourseUploadListener[" +
+                "courseService=" + courseService + ']';
+    }
+
+
+}
+
+@Getter
+final class CourseSelectionUploadListener implements ReadListener<StudentCourseSelectionDTO> {
+    private final CourseService courseService;
+
+    CourseSelectionUploadListener(CourseService courseService) {
+        this.courseService = courseService;
+    }
+
+    @Override
+    public void invoke(StudentCourseSelectionDTO studentCourseSelectionDTO, AnalysisContext analysisContext) {
+        System.out.println(studentCourseSelectionDTO.getStudentId());
+        courseService.addStudentCourseSelection(
+                studentCourseSelectionDTO.getStudentId(),
+                studentCourseSelectionDTO.getCourseId()
+        );
+    }
+
+    @Override
+    public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+
+    }
+
+    public CourseService courseService() {
+        return courseService;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (CourseSelectionUploadListener) obj;
+        return Objects.equals(this.courseService, that.courseService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseService);
+    }
+
+    @Override
+    public String toString() {
+        return "CourseSelectionUploadListener[" +
+                "courseService=" + courseService + ']';
+    }
+
 
 }
