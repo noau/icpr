@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @RestController
@@ -58,7 +60,12 @@ public class FileUploadController {
 
 
 @Getter
-record UserUploadListener(UserService userService) implements ReadListener<UserDTO> {
+final class UserUploadListener implements ReadListener<UserDTO> {
+    private final UserService userService;
+
+    UserUploadListener(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public void invoke(UserDTO user, AnalysisContext analysisContext) {
@@ -77,10 +84,39 @@ record UserUploadListener(UserService userService) implements ReadListener<UserD
 
     }
 
+    public UserService userService() {
+        return userService;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (UserUploadListener) obj;
+        return Objects.equals(this.userService, that.userService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userService);
+    }
+
+    @Override
+    public String toString() {
+        return "UserUploadListener[" +
+                "userService=" + userService + ']';
+    }
+
+
 }
 
 @Getter
-record CourseUploadListener(CourseService courseService) implements ReadListener<Course> {
+final class CourseUploadListener implements ReadListener<Course> {
+    private final CourseService courseService;
+
+    CourseUploadListener(CourseService courseService) {
+        this.courseService = courseService;
+    }
 
     @Override
     public void invoke(Course course, AnalysisContext analysisContext) {
@@ -102,5 +138,29 @@ record CourseUploadListener(CourseService courseService) implements ReadListener
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
 
     }
+
+    public CourseService courseService() {
+        return courseService;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (CourseUploadListener) obj;
+        return Objects.equals(this.courseService, that.courseService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseService);
+    }
+
+    @Override
+    public String toString() {
+        return "CourseUploadListener[" +
+                "courseService=" + courseService + ']';
+    }
+
 
 }

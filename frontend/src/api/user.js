@@ -15,7 +15,7 @@ import httpInstance from "@/utils/http.js"
   
  //   登录接口
  export const userLoginService = ({ username, password }) =>
-    httpInstance.post('/api/login', { username, password })
+    httpInstance.post('/user/login', { "id": username, password })
   
   // 基本信息
   export const userGetInfoService = () => httpInstance.get('/my/userinfo')

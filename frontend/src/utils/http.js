@@ -23,7 +23,8 @@ import { useUserStore } from '@/stores/user.js'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
-const baseURL = 'http://big-event-vue-api-t.itheima.net'
+// const baseURL = 'http://big-event-vue-api-t.itheima.net'
+const baseURL = 'http://localhost:8080/'
 
 const instance = axios.create({
   // TODO 1. 基础地址，超时时间
@@ -47,8 +48,8 @@ instance.interceptors.response.use(
   (res) => {
     // TODO 3. 处理业务失败
     // TODO 4. 摘取核心响应数据
-    if (res.data.code === 0) {
-      return res
+    if (res.data.code === 0 || res.status === 200) {
+      return res.data
     }
     // 处理业务失败，给错误提示，抛出错误
     ElMessage.error(res.data.message || '服务异常')

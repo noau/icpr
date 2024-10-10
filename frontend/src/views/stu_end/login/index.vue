@@ -58,8 +58,9 @@ const login = async () => {
   // 执行登录逻辑
   await form.value.validate()
   const res = await userLoginService(formModel.value)
-  userStore.setToken(res.data.token)
-  router.push('/stu-end')
+  console.log(res)
+  userStore.setToken(res)
+  await router.push('/stu-end')
 }
 
 // 找回密码功能
