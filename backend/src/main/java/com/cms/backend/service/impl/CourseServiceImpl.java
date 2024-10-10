@@ -32,4 +32,9 @@ public class CourseServiceImpl implements CourseService {
         courseMapper.addCourse(id, courseNumber, name, semesterYear, classNumber, start, end, academy,teacher);
     }
 
+    @Override
+    public void addStudentCourseSelection(Integer studentId, String courseId) {
+        courseMapper.addStudentCourseSelection(studentId, courseId);
+    }
+
 }

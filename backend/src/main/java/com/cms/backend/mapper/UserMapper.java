@@ -14,7 +14,6 @@ public interface UserMapper {
 
     @Results({
             @Result(property = "userClass", column = "class"),
-            @Result(property = "defaultFolderId", column = "default_folder_id"),
             @Result(property = "subscriptionsNumber", column = "subscriptions_number"),
             @Result(property = "fansNumber", column = "fans_number")
     })
@@ -66,10 +65,9 @@ public interface UserMapper {
 
     @Results({
             @Result(property = "userClass", column = "class"),
-            @Result(property = "defaultFolderId", column = "default_folder_id"),
             @Result(property = "subscriptionsNumber", column = "subscriptions_number"),
             @Result(property = "fansNumber", column = "fans_number")
     })
-    @Insert("insert into user values (#{id}, #{name}, #{password}, #{userClass}, #{academy}, \"NA\", #{gender}, #{defaultFolderId})")
-    void addUser(Integer id, String name, String password, String userClass, String academy, String avatar);
+    @Insert("insert into user (id, name, password, class, academy, gender, avatar) values (#{id}, #{name}, #{password}, #{userClass}, #{academy}, #{gender}, 'default_avatar.png')")
+    void addUser(Integer id, String name, String password, String userClass, String academy, String gender);
 }
