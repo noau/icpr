@@ -3,7 +3,6 @@ package com.cms.backend.controller;
 import com.cms.backend.pojo.DTO.*;
 import com.cms.backend.pojo.Favorites;
 import com.cms.backend.pojo.Folders;
-import com.cms.backend.pojo.Follow;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.UserService;
 import com.cms.backend.utils.JWTUtils;

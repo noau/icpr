@@ -4,7 +4,6 @@ import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
 import com.cms.backend.pojo.Favorites;
 import com.cms.backend.pojo.Folders;
-import com.cms.backend.pojo.Follow;
 import com.cms.backend.pojo.User;
 import org.apache.ibatis.annotations.*;
 
