@@ -76,6 +76,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { getassignmentsTeacher } from '@/api/assignments.js'   
 
 const router = useRouter();
 
@@ -88,7 +89,12 @@ const homeworkList = ref([
   { id: 2, title: '班级作业2', startTime: '2023-10-05', endTime: '2023-10-15', submitted: 5 },
   { id: 3, title: '班级作业3', startTime: '2023-10-07', endTime: '2023-10-17', submitted: 10 },
 ]);
-
+// 列表请求 
+const init = async()=>{
+  const res = await getassignmentsTeacher({id:localStorage.getItem('userId')}) 
+  homeworkList.value =  res?.userAssignmentList;
+}
+init();
 const pageSize = ref(8);
 const currentPage = ref(1);
 const searchQuery = ref('');
