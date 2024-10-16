@@ -75,6 +75,7 @@ import VMdEditor from '@kangc/v-md-editor';
 import '@kangc/v-md-editor/lib/style/base-editor.css';
 import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
 import '@kangc/v-md-editor/lib/theme/style/github.css';
+import { getIssue,getChange } from '@/api/assignments.js'   
 
 // 使用 github 主题
 VMdEditor.use(githubTheme);
@@ -105,6 +106,11 @@ const homeworkList = ref([
   { id: 2, title: '作业2', requirements: '要求2', fullScore: 100, lateFullScore: 90, allowResubmission: false, publishGrades: false, startTime: '2023-10-05 10:00', regularDeadline: '2023-10-15 23:59', lateDeadline: '2023-10-20 23:59', peerReviewEnabled: false, peerReviewStart: '', peerReviewEnd: '', minReviews: 1 }
 ]);
 
+//布置作业
+
+// 
+
+
 const handlePreview = (file) => {
   console.log('预览文件:', file);
 };
@@ -113,8 +119,11 @@ const handleRemove = (file, fileList) => {
   console.log('移除文件:', file, fileList);
 };
 
-const submitHomework = () => {
+const submitHomework = async() => {
   console.log('发布作业:', homeworkForm.value);
+  const res = await getIssue({id:localStorage.getItem('userId')}) 
+  // 修改
+  // const res = await getChange({id:localStorage.getItem('userId')})  
   // Implement submission logic here
 };
 
