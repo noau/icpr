@@ -2,11 +2,11 @@ package com.cms.backend.pojo.Assignments;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@Table(name = "assignment", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
+@AllArgsConstructor
 public class Assignment {
     @TableId(type = IdType.AUTO)
     private Integer id;

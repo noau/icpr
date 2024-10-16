@@ -1,26 +1,20 @@
 package com.cms.backend.pojo;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
 
-@Setter
-@Getter
-@Entity
-@Table(name = "follow", uniqueConstraints = {@UniqueConstraint(columnNames = "subscription_id")})
+@Data
 public class Follow {
 
-    @Id
-    @Column(name = "subscription_id", nullable = false, unique = true, length = 255)
+    @TableId
     private Integer subscriptionId;
 
-    @Column(name = "following_id", nullable = false, unique = true, length = 255)
     private Integer followingId;
 
-    @Column(name = "following_name", nullable = false, unique = true, length = 255)
+
     private String followingName;
 
-    @Column(name = "subscription_name", nullable = false, unique = true, length = 255)
+
     private String subscriptionName;
 
 }
