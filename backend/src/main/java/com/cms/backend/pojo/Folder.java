@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "folders", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
-public class Folders {
+@Table(name = "folder", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
+public class Folder {
 
     @Id
     @Column(name = "id", nullable = false, unique = true, length = 255)
@@ -23,10 +23,10 @@ public class Folders {
     @Column(name = "created_at", nullable = false, length = 255)
     private String createdAt;
 
-    @Column(name = "updated_at", nullable = false, length = 255)
-    private String updatedAt;
-
     @Column(name = "is_default", nullable = false, length = 255)
-    private Boolean isDefault;
+    private Integer isDefault;
+
+    @Column(name = "is_private", nullable = false, length = 255)
+    private Integer isPrivate;
 
 }

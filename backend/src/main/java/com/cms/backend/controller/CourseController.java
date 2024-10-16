@@ -36,7 +36,7 @@ public class CourseController {
         return ResponseEntity.ok(courseDTO);
     }
 
-    @GetMapping(value = "/all_students")
+    @GetMapping(value = "/all-students")
     public ResponseEntity<AllStudentsDTO> getAllStudents(@RequestParam String id) {
         System.out.println(id);
         List<User> users = courseService.getAllStudents(id);

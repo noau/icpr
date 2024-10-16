@@ -1,6 +1,6 @@
 package com.cms.backend.pojo.DTO;
 
-import com.cms.backend.pojo.Favorites;
+import com.cms.backend.pojo.Favorite;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,11 +8,11 @@ import java.util.List;
 
 @Getter
 @Setter
-public class FavoritesDTO {
+public class FavoriteDTO {
 
-    private List<Favorites> favorites;
+    private List<Favorite> favorites;
 
-    public FavoritesDTO(List<Favorites> favorites) {
+    public FavoriteDTO(List<Favorite> favorites) {
         this.favorites = favorites;
     }
 

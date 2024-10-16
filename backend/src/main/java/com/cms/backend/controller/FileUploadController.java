@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Objects;
 
 @Getter
@@ -91,6 +93,14 @@ final class UserUploadListener implements ReadListener<UserDTO> {
                 user.getAcademy(),
                 user.getGender()
         );
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        Date date = new Date();
+
+        String time = sdf.format(date);
+
+        userService.addFolder(user.getId(), "默认收藏夹", time, 1);
     }
 
     @Override

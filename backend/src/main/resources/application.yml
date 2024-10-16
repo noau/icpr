@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/icpr
     username: root
-    password: ""
+    password:
   jpa:
     hibernate:
       ddl-auto: none
@@ -14,3 +14,21 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         boot:
           allow_jdbc_metadata_access: false
+  mail:
+    host: smtp.qq.com
+    port: 587
+    protocol: smtp
+    default-encoding: UTF-8
+    username: 947211502@qq.com
+    password: qmnpbxtgluocbchf
+
+    nickname: 智慧课程平台
+
+    test-connection: true
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
