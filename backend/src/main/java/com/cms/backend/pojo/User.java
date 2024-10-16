@@ -68,4 +68,19 @@ public class User {
     @Column(name = "fans_number", nullable = false, length = 255)
     private Integer fansNumber;
 
+    /**
+     * 帖子数
+     */
+    @Column(name = "thread_number", nullable = false, length = 255)
+    private Integer threadNumber;
+
+    @Column(name = "email", nullable = false, length = 255)
+    private String email;
+
+    @Column(name = "phone_number", nullable = false, length = 255)
+    private String phoneNumber;
+
+    @Column(name = "id_card_number", nullable = false, length = 255)
+    private String idCardNumber;
+
 }

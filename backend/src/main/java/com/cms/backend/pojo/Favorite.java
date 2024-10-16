@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "favorites", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
-public class Favorites {
+@Table(name = "favorite", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
+public class Favorite {
 
     @Id
     @Column(name = "id", nullable = false, unique = true, length = 255)
