@@ -98,7 +98,8 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router'; // Import Vue Router
-
+import { getAssignmentsUser } from '@/api/assignments.js'   
+import { useUserStore } from '@/stores/user.js'
 const router = useRouter(); // Use the router instance
 
 const tableData = ref([
@@ -106,6 +107,13 @@ const tableData = ref([
   { id: '2', title: '00', start: '2024-01-03', end: '2024-02-23', submitted: '0/27', submitTime: '未提交', score: '未公布成绩', reviewStatus: '未批改' },
   // More data...
 ]);
+
+// 列表请求 
+const init = async()=>{
+  const res = await getAssignmentsUser({id:localStorage.getItem('userId')}) 
+  tableData.value =  res?.userAssignmentList;
+}
+init();
 
 const dialogVisible = ref(false);
 const formData = ref({
