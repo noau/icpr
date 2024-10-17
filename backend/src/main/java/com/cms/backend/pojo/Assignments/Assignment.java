@@ -42,4 +42,5 @@ public class Assignment {
 
     private Integer minPeerReview;
 
+    private String answer;
 }

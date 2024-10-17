@@ -4,8 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 @Data
-public class AssignmentsPeerReview {
-
+public class AssignmentPeerReview {
     @TableId
     private Integer submissionId;
 
@@ -16,5 +15,4 @@ public class AssignmentsPeerReview {
     private String feedback;
 
     private String reviewedAt;
-
 }
