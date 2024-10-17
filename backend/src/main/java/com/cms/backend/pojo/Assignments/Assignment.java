@@ -40,4 +40,6 @@ public class Assignment {
     private String peerReviewEnd;
 
     private Integer minPeerReview;
+
+    private String answer;
 }
