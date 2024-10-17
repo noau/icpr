@@ -45,6 +45,14 @@ public interface CourseMapper extends BaseMapper<Course> {
     void addStudentCourseSelection(Integer studentId, String courseId);
 
     @Results({
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "teacherId", column = "teacher_id"),
+            @Result(property = "teacherAddress", column = "address")
+    })
+    @Insert("insert into teaching(course_id,teacher_id) values (#{courseId}, #{teacherId})")
+    void addTeaching(Integer teacherId, String courseId);
+
+    @Results({
             @Result(property = "id", column = "exam_id"),
             @Result(property = "attachmentId", column = "id")
     })

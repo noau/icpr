@@ -16,6 +16,8 @@ public interface CourseService extends IService<Course> {
 
     void addStudentCourseSelection(Integer studentId, String courseId);
 
+    void addTeaching(Integer teacherId, String courseId);
+
     void uploadResourceExam(String courseId, Integer attachmentId);
 
     void uploadResourcePpt(String courseId, Integer attachmentId);
@@ -33,3 +35,4 @@ public interface CourseService extends IService<Course> {
     void uploadResourceCalendar(String courseId, Integer attachmentId);
 
 }
+

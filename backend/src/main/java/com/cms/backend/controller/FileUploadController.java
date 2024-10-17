@@ -5,6 +5,7 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.cms.backend.pojo.Course;
 import com.cms.backend.pojo.DTO.StudentCourseSelectionDTO;
+import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.pojo.DTO.UserDTO;
 import com.cms.backend.service.CourseService;
 import com.cms.backend.service.UserService;
@@ -61,7 +62,7 @@ public class FileUploadController {
     }
 
     // 上传选课文件
-    @PostMapping("/uploading/course_selection")
+    @PostMapping("/uploading/course-selection")
     public ResponseEntity<String> uploadCourseSelectionFile(MultipartFile file) {
         try {
             EasyExcel.read(file.getInputStream(), StudentCourseSelectionDTO.class, new CourseSelectionUploadListener(courseService)).sheet().doRead();
@@ -69,6 +70,16 @@ public class FileUploadController {
         } catch (Exception e) {
             logger.error(e.getMessage());
             return ResponseEntity.status(500).body("课程信息导入失败！");
+        }
+    }
+    @PostMapping("/uploading/teach")
+    public ResponseEntity<String> uploadTeachingFile(MultipartFile file) {
+        try {
+            EasyExcel.read(file.getInputStream(), TeachingDTO.class, new TeachingUploadListener(courseService)).sheet().doRead();
+            return ResponseEntity.ok("授课文件上传并处理成功");
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.status(500).body("授课信息导入失败!");
         }
     }
 
@@ -221,6 +232,42 @@ final class CourseSelectionUploadListener implements ReadListener<StudentCourseS
         return "CourseSelectionUploadListener[" +
                 "courseService=" + courseService + ']';
     }
+}
+@Getter
+final class TeachingUploadListener implements ReadListener<TeachingDTO> {
+    private final CourseService courseService;
 
+    TeachingUploadListener(CourseService courseService) {
+        this.courseService = courseService;
+    }
 
+    @Override
+    public void invoke(TeachingDTO teachingDTO, AnalysisContext analysisContext) {
+        Integer teacherId = teachingDTO.getTeacherId();
+        String courseId = teachingDTO.getCourseId();
+        courseService.addTeaching(teacherId, courseId);
+    }
+
+    @Override
+    public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (TeachingUploadListener) obj;
+        return Objects.equals(this.courseService, that.courseService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(courseService);
+    }
+
+    @Override
+    public String toString() {
+        return "TeachingUploadListener[" +
+                "courseService=" + courseService + ']';
+    }
 }

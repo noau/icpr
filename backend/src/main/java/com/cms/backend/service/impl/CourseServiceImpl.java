@@ -40,6 +40,10 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     }
 
     @Override
+    public void addTeaching(Integer teacherId, String courseId) {
+        courseMapper.addTeaching(teacherId,courseId);
+    }
+
     public void uploadResourceExam(String courseId, Integer attachmentId) {
         courseMapper.uploadResourceExam(courseId, attachmentId);
     }
