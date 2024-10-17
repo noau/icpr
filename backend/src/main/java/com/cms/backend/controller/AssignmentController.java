@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Validated
 @RestController
@@ -193,8 +194,14 @@ public class AssignmentController {
      * @return 获得作业提交列表
      */
     @GetMapping("/review-list")
-    public ResponseEntity<List<AssignmentSubmission>> getAssignmentsSubmissions(@RequestParam Integer id) {
-        return ResponseEntity.ok(assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id)));
+    public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsSubmissions(@RequestParam Integer id) {
+        var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
+        var details = submissions.stream().map(submission -> {
+           var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
+                   .stream().map(Attachment::getId).toList();
+           return new AssignmentSubmissionDetail(submission, attachments);
+        });
+        return ResponseEntity.ok(details.collect(Collectors.toList()));
     }
 
     @Data
@@ -235,4 +242,27 @@ public class AssignmentController {
         private String answer;
     }
 
+    @Data
+    public static class AssignmentSubmissionDetail {
+        public AssignmentSubmissionDetail(AssignmentSubmission submission, List<Integer> attachments) {
+            this.id = submission.getId();
+            this.assignmentId = submission.getAssignmentId();
+            this.studentId = submission.getStudentId();
+            this.submittedAt = submission.getSubmittedAt();
+            this.content = submission.getContent();
+            this.attachments = attachments;
+        }
+
+        private Integer id;
+
+        private Integer assignmentId;
+
+        private Integer studentId;
+
+        private String submittedAt;
+
+        private String content;
+
+        private List<Integer> attachments;
+    }
 }
