@@ -14,4 +14,7 @@ public interface CourseService {
 
     void addStudentCourseSelection(Integer studentId, String courseId);
 
+
+    void addTeaching(Integer teacherId, String courseId);
 }
+

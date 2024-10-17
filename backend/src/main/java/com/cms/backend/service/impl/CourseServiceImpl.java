@@ -37,4 +37,10 @@ public class CourseServiceImpl implements CourseService {
         courseMapper.addStudentCourseSelection(studentId, courseId);
     }
 
+    @Override
+    public void addTeaching(Integer teacherId, String courseId) {
+        courseMapper.addTeaching(teacherId,courseId);
+    }
+
+
 }

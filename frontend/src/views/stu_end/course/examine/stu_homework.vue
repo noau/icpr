@@ -193,8 +193,7 @@ searchResult.value = tableData.value;
 }
 
 .box-card {
-  margin: 20px;
-  margin-top: 10px;
+  margin: 10px 20px 20px;
 }
 
 .search-input {

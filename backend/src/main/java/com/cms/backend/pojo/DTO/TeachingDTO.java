@@ -5,11 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class StudentCourseSelectionDTO {
-
-    private Integer studentId;
-
+public class TeachingDTO {
+    private Integer teacherId;
     private String courseId;
 
-    public StudentCourseSelectionDTO() {}
+    public TeachingDTO() {}
 }

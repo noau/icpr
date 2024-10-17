@@ -42,4 +42,11 @@ public interface CourseMapper {
     @Insert("insert into student_course_selection (student_id, course_id) values (#{studentId}, #{courseId})")
     void addStudentCourseSelection(Integer studentId, String courseId);
 
+    @Results({
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "teacherId", column = "teacher_id"),
+            @Result(property = "teacherAddress", column = "address")
+    })
+    @Insert("insert into teaching(course_id,teacher_id) values (#{courseId}, #{teacherId})")
+    void addTeaching(Integer teacherId, String courseId);
 }
