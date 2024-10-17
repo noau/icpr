@@ -1,5 +1,10 @@
 package com.cms.backend.controller;
 
+import com.aliyun.auth.credentials.Credential;
+import com.aliyun.auth.credentials.provider.StaticCredentialProvider;
+import com.aliyun.sdk.service.dysmsapi20170525.AsyncClient;
+import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsRequest;
+import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsResponse;
 import com.cms.backend.pojo.DTO.*;
 import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
@@ -7,6 +12,8 @@ import com.cms.backend.pojo.Follow;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.UserService;
 import com.cms.backend.utils.JWTUtils;
+import com.google.gson.Gson;
+import darabonba.core.client.ClientOverrideConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Validated
 @RestController
@@ -248,6 +257,39 @@ public class UserController {
         }
     }
 
+    public void sendSms(String phoneNumber, String signName, String templateCode, String templateParam) throws ExecutionException, InterruptedException {
+        // 配置阿里云的认证信息
+        StaticCredentialProvider provider = StaticCredentialProvider.create(Credential.builder()
+                .accessKeyId("") // AccessKey ID // LTAI5tBij36YnfScXHsVPysr
+                .accessKeySecret("") // AccessKey Secret // VdoPLPj2ub35GhHwOnJ5FE91P1tVJ4
+                .build());
+
+        // 创建异步客户端
+        AsyncClient client = AsyncClient.builder()
+                .credentialsProvider(provider)
+                .overrideConfiguration(
+                        ClientOverrideConfiguration.create()
+                                .setEndpointOverride("") // dysmsapi.aliyuncs.com
+                )
+                .build();
+
+        // 设置短信请求参数
+        SendSmsRequest sendSmsRequest = SendSmsRequest.builder()
+                .phoneNumbers(phoneNumber) // 接收短信的手机号码
+                .signName(signName) // 短信签名
+                .templateCode(templateCode) // 短信模板代码
+                .templateParam(templateParam) // 模板参数
+                .build();
+
+        // 发送短信
+        CompletableFuture<SendSmsResponse> response = client.sendSms(sendSmsRequest);
+        SendSmsResponse resp = response.get();
+        System.out.println(new Gson().toJson(resp));
+
+        // 关闭客户端
+        client.close();
+    }
+
     @PostMapping(value = "/reset-pwd-phone")
     public ResponseEntity<String> resetPwdPhone(@RequestBody User user) {
         Integer id = user.getId();
@@ -263,9 +305,15 @@ public class UserController {
         } else if (!Objects.equals(checkUser.getPhoneNumber(), phoneNumber) && Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
             return ResponseEntity.status(422).body("手机号不匹配");
         } else {
+            try {
+                userService.changePassword(id, String.valueOf(id));
+                sendSms(phoneNumber, "智慧课程平台", "SMS_474545302", String.format("{\"password\":\"%d\"}", id));
 
-
-            return ResponseEntity.ok("");
+                return ResponseEntity.ok("");
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+                return ResponseEntity.status(500).body("短信发送失败!");
+            }
         }
     }
 
