@@ -12,6 +12,10 @@ const router = createRouter({
       path: '/forgot-password/phone',
       component: () => import('@/views/forgot_password/phone.vue')
     },
+    {
+      path: '/stu-end/notification',
+      component: () => import('@/views/stu_end/notification/index.vue')
+    },
     // 学生端路由
     {
       path: '/stu-end',
@@ -30,7 +34,10 @@ const router = createRouter({
       path: '/notification',
       component: () => import('@/views/stu_end/notification/index.vue')
     },
-
+    {
+      path: '/profile',
+      component: () => import('@/views/stu_end/profile/index.vue')
+    }, 
     {
       path: '/stu-end/course', // 课程主页面，默认展示课程介绍
       component: () => import('@/views/stu_end/course/index.vue'),

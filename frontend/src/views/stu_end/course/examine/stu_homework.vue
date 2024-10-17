@@ -98,7 +98,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router'; // Import Vue Router
-import { getAssignmentsUser } from '@/api/assignments.js'   
+import { getcourseAssignments } from '@/api/assignments.js'   
 import { useUserStore } from '@/stores/user.js'
 const router = useRouter(); // Use the router instance
 
@@ -110,7 +110,7 @@ const tableData = ref([
 
 // 列表请求 
 const init = async()=>{
-  const res = await getAssignmentsUser({id:localStorage.getItem('userId')}) 
+  const res = await getcourseAssignments({id:localStorage.getItem('userId')}) 
   tableData.value =  res?.userAssignmentList;
 }
 init();

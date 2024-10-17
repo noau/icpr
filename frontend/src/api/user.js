@@ -30,3 +30,72 @@ import httpInstance from "@/utils/http.js"
   export const userUpdatePassService = ({ old_pwd, new_pwd, re_pwd }) =>
     httpInstance.patch('/my/updatepwd', { old_pwd, new_pwd, re_pwd })
   
+  //修改用户信息
+  export const userChange_info = ({ old_pwd, new_pwd, re_pwd }) =>
+  httpInstance.post('/user/change_info', { old_pwd, new_pwd, re_pwd })
+
+
+  //获取用户信息
+  export const userUserInfo = ({ id }) =>
+  httpInstance.get('/user/info?id=' + id, { id })
+ 
+ 
+
+  //修改/找回密码
+  export const userchange_password = ({ id,password,newPassword }) =>
+  httpInstance.post('/user/change_password', { id,password,newPassword })  
+
+  //找回密码 邮箱 
+  export const resetPwdEmail = ({ id,email,idCardNumber  }) =>
+  httpInstance.post('/user/reset-pwd-email', { id,email,idCardNumber  }) 
+ 
+  //找回密码 手机号
+  export const getResetPwdphone = ({ id,phoneNumber,idCardNumber  }) =>
+  httpInstance.post('/user/reset-pwd-phone', { id,phoneNumber,idCardNumber })  
+  
+ //上传用户头像
+ export const setAvatar = ({  }) =>
+ httpInstance.post('/user/avatar', {   }) 
+
+  //获取所有粉丝
+  export const userFollowers = ({ id }) =>
+  httpInstance.get('/user/followers?id=' + id, { id }) 
+
+
+  //获取你所有的关注者
+  export const userSubscriptions = ({ id }) =>
+  httpInstance.get('/user/subscriptions?id=' + id, { id })
+
+  //获取所有收藏夹
+  export const userFolders = ({ id }) =>
+  httpInstance.get('/user/folders?id=' + id, { id })
+
+  //获取指定收藏夹内容
+  export const userFavorites = ({ id }) =>
+  httpInstance.get('/user/favorites?id=' + id, { id })
+  
+  //创建收藏夹
+  export const userCreate_folder = ({ userId,name,createdAt,isPrivate }) =>
+  httpInstance.post('/user/create_folder', { userId,name,createdAt,isPrivate }) 
+
+
+  //收藏帖子
+  export const userCreate_favorite = ({ userId,threadId,folderId,createdAt }) =>
+  httpInstance.post('/user/create_favorite', { userId,threadId,folderId,createdAt }) 
+
+
+  //点赞
+  export const discussionlike = ({ id }) =>
+  httpInstance.post('/user/discussion/like', { id })
+
+
+  //取消关注 
+  export const getDeleteSubscription = ({ id }) =>
+  httpInstance.post('/user/delete-subscription', { id })
+  //取消关注 
+  export const getdDiscussionlike = ({ id }) =>
+  httpInstance.post('/user/make-subscription', { id })
+
+
+ 
+ 

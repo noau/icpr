@@ -1,11 +1,12 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, onMounted } from 'vue'
-import { userLoginService } from '@/api/user.js'
+import { userLoginService,userUserInfo } from '@/api/user.js'
 import { useUserStore } from '@/stores/user.js'
 import { useRouter } from 'vue-router'
 import SIdentify from '@/components/Sidentify.vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus' 
+
 
 const form = ref()
 // 整个的用于提交的form数据对象
@@ -58,10 +59,17 @@ const login = async () => {
   // 执行登录逻辑
   await form.value.validate()
   const res = await userLoginService(formModel.value)
-  userStore.setToken(res)
-  userStore.setId(formModel.value.username)
+  userStore.setToken(res);
+  // 存储 Token
+  localStorage.setItem('token', res);  
+  userStore.setId(formModel.value.username);
+  localStorage.setItem('userId', formModel.value.username);  
+
   await router.push('/stu-end')
 }
+
+
+ 
 
 // 找回密码功能
 const forgotPassword = (method) => {
