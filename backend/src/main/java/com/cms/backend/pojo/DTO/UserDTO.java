@@ -6,11 +6,17 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserDTO {
+
     private Integer id;
+
     private String name;
+
     private String password;
+
     private String userClass;
+
     private String gender;
+
     private String academy;
 
     public UserDTO(Integer id, String name, String password, String userClass, String gender, String academy) {
@@ -21,4 +27,5 @@ public class UserDTO {
         this.gender = gender;
         this.academy = academy;
     }
+
 }

@@ -1,19 +1,17 @@
 package com.cms.backend.pojo;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import com.github.jeffreyning.mybatisplus.anno.MppMultiId;
+import lombok.Data;
 
-@Getter
-@Setter
-@Entity
-@Table(name = "student_course_selection")
+@Data
 public class StudentCourseSelection {
 
-    @EmbeddedId
-    private StudentCourseSelectionKey id;
+    @MppMultiId
+    private Integer studentId;
 
-    @Column(name = "grade", length = 255)
-    private String grade;
+    @MppMultiId
+    private String courseId;
+
+    private Float grade;
 
 }

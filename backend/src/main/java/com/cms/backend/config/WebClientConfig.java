@@ -28,4 +28,5 @@ public class WebClientConfig {
         logger.info("WebClient bean created successfully");
         return webClient;
     }
+
 }
