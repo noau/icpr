@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Assignment {
+
     @TableId(type = IdType.AUTO)
     private Integer id;
 

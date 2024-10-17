@@ -295,6 +295,7 @@ public class UserController {
         Integer id = user.getId();
         String phoneNumber = user.getPhoneNumber();
         String idCardNumber = user.getIdCardNumber();
+        String regionPhoneNumber = "+86" + phoneNumber;
         User checkUser = userService.findByUserName(id);
         if (checkUser == null) {
             return ResponseEntity.status(410).body("");
@@ -307,7 +308,7 @@ public class UserController {
         } else {
             try {
                 userService.changePassword(id, String.valueOf(id));
-                sendSms(phoneNumber, "智慧课程平台", "SMS_474545302", String.format("{\"password\":\"%d\"}", id));
+                sendSms(regionPhoneNumber, "智慧课程平台", "SMS_474545302", String.format("{\"password\":\"%d\"}", id));
 
                 return ResponseEntity.ok("");
             } catch (Exception e) {

@@ -1,13 +1,15 @@
 package com.cms.backend.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cms.backend.pojo.Course;
+import com.cms.backend.pojo.Teaching;
 import com.cms.backend.pojo.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
-public interface CourseMapper {
+public interface CourseMapper extends BaseMapper<Course> {
 
     @Results({
             @Result(property = "userClass", column = "class"),
@@ -49,4 +51,55 @@ public interface CourseMapper {
     })
     @Insert("insert into teaching(course_id,teacher_id) values (#{courseId}, #{teacherId})")
     void addTeaching(Integer teacherId, String courseId);
+
+    @Results({
+            @Result(property = "id", column = "exam_id"),
+            @Result(property = "attachmentId", column = "id")
+    })
+    @Update("update attachment set exam_id = #{courseId} where id = #{attachmentId}")
+    void uploadResourceExam(String courseId, Integer attachmentId);
+
+    @Results({
+            @Result(property = "id", column = "ppt_id"),
+            @Result(property = "attachmentId", column = "id")
+    })
+    @Update("update attachment set ppt_id = #{courseId} where id = #{attachmentId}")
+    void uploadResourcePpt(String courseId, Integer attachmentId);
+
+    @Results({
+            @Result(property = "id", column = "exercise_id"),
+            @Result(property = "attachmentId", column = "id")
+    })
+    @Update("update attachment set exercise_id = #{courseId} where id = #{attachmentId}")
+    void uploadResourceExercise(String courseId, Integer attachmentId);
+
+    @Results({
+            @Result(property = "id", column = "course_id"),
+            @Result(property = "userId", column = "teacher_id"),
+            @Result(property = "professionalTitle", column = "professional_title")
+    })
+    @Select("select teacher_id, address, professional_title, content from teaching where course_id = #{id}")
+    Teaching getTeacher(String id);
+
+
+    @Select("select id from assignment_submission where assignment_id = #{id}")
+    List<Integer> selectSubmission(Integer id);
+
+    @Select("select assignment_review.grade from assignment_review where submission_id = #{submissionId}")
+    Float selectGrade(Integer submissionId);
+
+    @Results({
+            @Result(property = "id", column = "syllabus_id"),
+            @Result(property = "attachmentId", column = "id")
+    })
+    @Update("update attachment set syllabus_id = #{courseId} where id = #{attachmentId}")
+    void uploadResourceSyllabus(String courseId, Integer attachmentId);
+
+    @Results({
+            @Result(property = "id", column = "calendar_id"),
+            @Result(property = "attachmentId", column = "id")
+    })
+    @Update("update attachment set calendar_id = #{courseId} where id = #{attachmentId}")
+    void uploadResourceCalendar(String courseId, Integer attachmentId);
+
 }

@@ -8,7 +8,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Attachment {
-
     public Attachment(String url, String name) {
         this.url = url;
         this.name = name;
@@ -35,4 +34,7 @@ public class Attachment {
 
     private Integer answerId;
 
+    private Integer syllabusId;
+
+    private Integer calendarId;
 }
