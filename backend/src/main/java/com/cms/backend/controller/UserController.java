@@ -260,8 +260,8 @@ public class UserController {
     public void sendSms(String phoneNumber, String signName, String templateCode, String templateParam) throws ExecutionException, InterruptedException {
         // 配置阿里云的认证信息
         StaticCredentialProvider provider = StaticCredentialProvider.create(Credential.builder()
-                .accessKeyId("") // AccessKey ID // LTAI5tBij36YnfScXHsVPysr
-                .accessKeySecret("") // AccessKey Secret // VdoPLPj2ub35GhHwOnJ5FE91P1tVJ4
+                .accessKeyId("") // AccessKey ID
+                .accessKeySecret("") // AccessKey Secret
                 .build());
 
         // 创建异步客户端
