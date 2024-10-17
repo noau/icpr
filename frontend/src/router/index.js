@@ -234,7 +234,35 @@ const router = createRouter({
       path: '/tea-end/course/examine/rating-page',
       component: () => import('@/views/tea_end/course/examine/rating_page.vue'),
       meta: { breadcrumbName: '评分页面' }
-    },    
+    }, 
+    {
+      path: '/adm-end', // 管理员主页面，默认展示学生信息管理
+      component: () => import('@/views/adm_end/index.vue'),
+      redirect: '/adm-end/stu',
+      children: [
+        {
+          path: '/adm-end/stu',
+          component: () => import('@/views/adm_end/components/stu_info.vue'),
+          meta: { breadcrumbName: '学生信息' },
+        },
+        {
+          path: '/adm-end/tea',
+          component: () => import('@/views/adm_end/components/tea_info.vue'),
+          meta: { breadcrumbName: '教师信息' },
+        },
+        {
+          path: '/adm-end/cou',
+          component: () => import('@/views/adm_end/components/cou_info.vue'),
+          meta: { breadcrumbName: '课程信息' },
+        },
+        {
+          path: '/adm-end/sc',
+          component: () => import('@/views/adm_end/components/sc_info.vue'),
+          meta: { breadcrumbName: '选课信息' },
+        },
+      ]
+    },
+   
   ]
 })
 

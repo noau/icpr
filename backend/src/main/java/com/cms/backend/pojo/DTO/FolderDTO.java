@@ -1,6 +1,6 @@
 package com.cms.backend.pojo.DTO;
 
-import com.cms.backend.pojo.Folders;
+import com.cms.backend.pojo.Folder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,9 +10,9 @@ import java.util.List;
 @Setter
 public class FolderDTO {
 
-    List<Folders> folders;
+    List<Folder> folders;
 
-    public FolderDTO(List<Folders> folders) {
+    public FolderDTO(List<Folder> folders) {
         this.folders = folders;
     }
 

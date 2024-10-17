@@ -54,4 +54,16 @@ public class User {
      * 粉丝数
      */
     private Integer fansNumber;
+
+    /**
+     * 帖子数
+     */
+    private Integer threadNumber;
+
+    private String email;
+
+    private String phoneNumber;
+
+    private String idCardNumber;
+
 }

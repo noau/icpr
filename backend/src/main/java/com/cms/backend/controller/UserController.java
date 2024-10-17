@@ -1,14 +1,19 @@
 package com.cms.backend.controller;
 
 import com.cms.backend.pojo.DTO.*;
-import com.cms.backend.pojo.Favorites;
-import com.cms.backend.pojo.Folders;
+import com.cms.backend.pojo.Favorite;
+import com.cms.backend.pojo.Folder;
+import com.cms.backend.pojo.Follow;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.UserService;
 import com.cms.backend.utils.JWTUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,8 +29,17 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String sender;
+
+    @Value("${spring.mail.nickname}")
+    private String nickname;
+
+    public UserController(UserService userService, JavaMailSender mailSender) {
         this.userService = userService;
+        this.mailSender = mailSender;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -78,7 +92,7 @@ public class UserController {
         return ResponseEntity.ok(userSubscriptionDTO);
     }
 
-    @PostMapping(value = "/change_password")
+    @PostMapping(value = "/change-password")
     public ResponseEntity<String> changePassword(@RequestBody UserChangePasswordDTO userChangePasswordDTO) {
         Integer id = userChangePasswordDTO.getId();
         String password = userChangePasswordDTO.getPassword();
@@ -98,20 +112,20 @@ public class UserController {
     }
 
     @GetMapping(value = "/folders")
-    public ResponseEntity<FolderDTO> getFolders(@RequestParam Integer id) {
-        List<Folders> folders = userService.getUserFolders(id);
+    public ResponseEntity<FolderDTO> getFolder(@RequestParam Integer id) {
+        List<Folder> folders = userService.getUserFolders(id);
         FolderDTO folderDTO = new FolderDTO(folders);
         return ResponseEntity.ok(folderDTO);
     }
 
     @GetMapping(value = "/favorites")
-    public ResponseEntity<FavoritesDTO> getFavorites(@RequestParam Integer id) {
-        List<Favorites> favorites = userService.getUserFavorites(id);
-        FavoritesDTO favoritesDTO = new FavoritesDTO(favorites);
+    public ResponseEntity<FavoriteDTO> getFavorite(@RequestParam Integer id) {
+        List<Favorite> favorites = userService.getUserFavorites(id);
+        FavoriteDTO favoritesDTO = new FavoriteDTO(favorites);
         return ResponseEntity.ok(favoritesDTO);
     }
 
-    @PostMapping(value = "/change_info")
+    @PostMapping(value = "/change-info")
     public ResponseEntity<String> changeInfo(@RequestBody User user) {
         Integer id = user.getId();
         String name = user.getName();
@@ -120,6 +134,139 @@ public class UserController {
         String gender = user.getGender();
         userService.changeInfo(id, name, userClass, academy, gender);
         return ResponseEntity.ok("");
+    }
+
+    @PostMapping(value = "/create-folder")
+    public ResponseEntity<String> createFolder(@RequestBody Folder folders) {
+        Integer userId = folders.getUserId();
+        String name = folders.getName();
+        String createdAt = folders.getCreatedAt();
+        userService.addFolder(userId, name, createdAt, 0);
+        return ResponseEntity.ok("");
+    }
+
+    @PostMapping(value = "/create-favorite")
+    public ResponseEntity<String> createFavorite(@RequestBody Favorite favorites) {
+        Integer userId = favorites.getUserId();
+        Integer threadId = favorites.getThreadId();
+        Integer folderId = favorites.getFolderId();
+        String createdAt = favorites.getCreatedAt();
+        userService.addFavorite(userId, threadId, folderId, createdAt);
+        return ResponseEntity.ok("");
+    }
+
+    @DeleteMapping(value = "/delete-folder")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<String> deleteFolder(@RequestBody Folder folder) {
+        Integer id = folder.getId();
+        userService.deleteFolder(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/change-folder")
+    public ResponseEntity<String> changeFolder(@RequestBody Folder folder) {
+        Integer id = folder.getId();
+        String name = folder.getName();
+        Integer isPrivate = folder.getIsPrivate();
+        userService.changeFolder(id, name, isPrivate);
+        return ResponseEntity.ok("");
+    }
+
+    @DeleteMapping(value = "/delete-favorite")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<String> deleteFavorite(@RequestBody Favorite favorite) {
+        Integer id = favorite.getId();
+        userService.deleteFavorite(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/change-favorite")
+    public ResponseEntity<String> changeFavorite(@RequestBody ChangeFavoriteDTO changeFavoriteDTO) {
+        Integer id = changeFavoriteDTO.getId();
+        Integer favoriteId = changeFavoriteDTO.getFavoriteId();
+        userService.changeFavorite(id, favoriteId);
+        return ResponseEntity.ok("");
+    }
+
+    @PostMapping(value = "/avatar")
+    public ResponseEntity<String> uploadAvatar(@RequestBody User user) {
+        Integer id = user.getId();
+        String avatar = user.getAvatar();
+        userService.uploadAvatar(id, avatar);
+        return ResponseEntity.ok("");
+    }
+
+    @PostMapping(value = "/make-subscription")
+    public ResponseEntity<String> makeSubscription(@RequestBody Follow follow) {
+        Integer followingId = follow.getFollowingId();
+        String followingName = (userService.findByUserName(followingId)).getName();
+        Integer subscriptionId = follow.getSubscriptionId();
+        String subscriptionName = (userService.findByUserName(subscriptionId)).getName();
+        userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
+        userService.addFollower(followingId);
+        userService.addSubscriber(subscriptionId);
+        return ResponseEntity.ok("");
+    }
+
+    @DeleteMapping(value = "/delete-subscription")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<String> deleteSubscription(@RequestBody Follow follow) {
+        Integer followingId = follow.getFollowingId();
+        Integer subscriptionId = follow.getSubscriptionId();
+        System.out.println(followingId);
+        userService.deleteSubscription(followingId, subscriptionId);
+        userService.deleteFollower(followingId);
+        userService.deleteSubscriber(subscriptionId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/reset-pwd-email")
+    public ResponseEntity<String> resetPwdEmail(@RequestBody User user) {
+        Integer id = user.getId();
+        String email = user.getEmail();
+        String idCardNumber = user.getIdCardNumber();
+        User checkUser = userService.findByUserName(id);
+        if (checkUser == null) {
+            return ResponseEntity.status(410).body("");
+        } else if (!Objects.equals(checkUser.getEmail(), email) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
+            return ResponseEntity.status(422).body("邮箱和身份证均不匹配");
+        } else if (Objects.equals(checkUser.getEmail(), email) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
+            return ResponseEntity.status(422).body("身份证不匹配");
+        } else if (!Objects.equals(checkUser.getEmail(), email) && Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
+            return ResponseEntity.status(422).body("邮箱不匹配");
+        } else {
+            userService.changePassword(id, String.valueOf(id));
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(nickname + '<' + sender + '>');
+            message.setTo(email);
+            message.setSubject("找回密码");
+            String content = "您的密码已被重置为" + id + "请尽快修改新的密码";
+            message.setText(content);
+            mailSender.send(message);
+
+            return ResponseEntity.ok("");
+        }
+    }
+
+    @PostMapping(value = "/reset-pwd-phone")
+    public ResponseEntity<String> resetPwdPhone(@RequestBody User user) {
+        Integer id = user.getId();
+        String phoneNumber = user.getPhoneNumber();
+        String idCardNumber = user.getIdCardNumber();
+        User checkUser = userService.findByUserName(id);
+        if (checkUser == null) {
+            return ResponseEntity.status(410).body("");
+        } else if (!Objects.equals(checkUser.getPhoneNumber(), phoneNumber) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
+            return ResponseEntity.status(422).body("手机号和身份证均不匹配");
+        } else if (Objects.equals(checkUser.getPhoneNumber(), phoneNumber) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
+            return ResponseEntity.status(422).body("身份证不匹配");
+        } else if (!Objects.equals(checkUser.getPhoneNumber(), phoneNumber) && Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
+            return ResponseEntity.status(422).body("手机号不匹配");
+        } else {
+
+
+            return ResponseEntity.ok("");
+        }
     }
 
 }
