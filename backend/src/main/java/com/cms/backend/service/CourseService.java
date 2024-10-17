@@ -2,7 +2,8 @@ package com.cms.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cms.backend.pojo.Course;
-import com.cms.backend.pojo.Teaching;
+import com.cms.backend.pojo.DTO.TeachingDTO;
+import com.cms.backend.pojo.TeacherInfo;
 import com.cms.backend.pojo.User;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface CourseService extends IService<Course> {
 
     void uploadResourceExercise(String courseId, Integer attachmentId);
 
-    Teaching getTeacher(String id);
+    TeachingDTO getTeacherId(String id);
 
     List<Integer> selectSubmission(Integer id);
 
@@ -33,6 +34,8 @@ public interface CourseService extends IService<Course> {
     void uploadResourceSyllabus(String courseId, Integer attachmentId);
 
     void uploadResourceCalendar(String courseId, Integer attachmentId);
+
+    TeacherInfo getTeacherInfo(Integer teachingId);
 
 }
 
