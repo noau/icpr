@@ -15,7 +15,10 @@ public interface UserMapper {
     @Results({
             @Result(property = "userClass", column = "class"),
             @Result(property = "subscriptionsNumber", column = "subscriptions_number"),
-            @Result(property = "fansNumber", column = "fans_number")
+            @Result(property = "fansNumber", column = "fans_number"),
+            @Result(property = "threadNumber", column = "thread_number"),
+            @Result(property = "phoneNumber", column = "phone_number"),
+            @Result(property = "idCardNumber", column = "id_card_number")
     })
     @Select("select * from user where id = #{id}")
     User findByUserName(Integer id);

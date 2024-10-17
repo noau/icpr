@@ -49,4 +49,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*");
         logger.info("CORS mappings configured to allow all origins, methods, and headers");
     }
+
 }
