@@ -1,72 +1,149 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-import { userLoginService } from '@/api/user.js'
-// 登录表单数据模型
-const loginData = ref({
+import { ref, onMounted } from 'vue'
+import { userLoginService,userUserInfo } from '@/api/user.js'
+import { useUserStore } from '@/stores/user.js'
+import { useRouter } from 'vue-router'
+import SIdentify from '@/components/Sidentify.vue'
+import { ElMessage } from 'element-plus' 
+
+
+const form = ref()
+// 整个的用于提交的form数据对象
+const formModel = ref({
   username: '',
   password: ''
 })
+const sidentifyMode = ref('') // 输入框验证码
+const identifyCode = ref('') // 图形验证码
+const identifyCodes = ref('1234567890abcdefjhijklinopqrsduvwxyz') // 验证码出现的数字和字母
 
-// 登录表单验证规则
-const loginRules = {
-  username: [
-    { required: true, message: '请输入学/工号', trigger: 'blur' },
-    { min: 3, max: 10, message: '学/工号长度应在3到10个字符之间', trigger: 'blur' }
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 12, message: '密码长度应在6到12个字符之间', trigger: 'blur' }
-  ]
+// 组件挂载
+onMounted(() => {
+  identifyCode.value = ''
+  makeCode(identifyCodes.value, 4)
+})
+
+// 生成随机数
+const randomNum = (min, max) => {
+  max = max + 1
+  return Math.floor(Math.random() * (max - min) + min)
 }
-// 登录函数
-const handleLogin = async () => {
-  // 调用接口，完成登录
-  let result = await userLoginService(loginData.value);
-  if (result.code === 0) {
-    alert('登录成功')
-  } else {
-    alert('登录失败')
+// 随机生成验证码字符串
+const makeCode = (o, l) => {
+  for (let i = 0; i < l; i++) {
+    identifyCode.value += o[randomNum(0, o.length)]
+  }
+}
+// 更新验证码
+const refreshCode = () => {
+  identifyCode.value = ''
+  makeCode(identifyCodes.value, 4)
+}
+
+// 登录
+const userStore = useUserStore()
+const router = useRouter()
+const login = async () => {
+  // 验证验证码不为空
+  if (!sidentifyMode.value) {
+    ElMessage({ type: 'error', message: '验证码不能为空！' })
+    return
+  }
+  // 验证验证码是否正确
+  if (sidentifyMode.value !== identifyCode.value) {
+    ElMessage({ type: 'error', message: '验证码错误' })
+    refreshCode()
+    return
+  }
+  // 执行登录逻辑
+  await form.value.validate()
+  const res = await userLoginService(formModel.value)
+  userStore.setToken(res);
+  // 存储 Token
+  localStorage.setItem('token', res);  
+  userStore.setId(formModel.value.username);
+  localStorage.setItem('userId', formModel.value.username);  
+
+  await router.push('/stu-end')
+}
+
+
+ 
+
+// 找回密码功能
+const forgotPassword = (method) => {
+  if (method === 'email') {
+    router.push('/forgot-password/email')
+  } else if (method === 'phone') {
+    router.push('/forgot-password/phone')
   }
 }
 
+const forgotPasswordModal = ref(false)
 </script>
 
 <template>
-  <div class="login-page">
-    <div class="bg"></div>
-    <div class="form-container">
-      <!-- 登录表单 -->
-      <el-form ref="form" size="large" autocomplete="off" :model="loginData" :rules="loginRules">
+  <el-row class="login-page" justify="center" align="middle">
+    <el-col :span="6" class="form">
+      <el-form
+        :model="formModel"
+        :rules="rules"
+        ref="form"
+        size="large"
+        autocomplete="off"
+      >
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
         <el-form-item prop="username">
-          <el-input :prefix-icon="User" placeholder="请输入学/工号" v-model="loginData.username"></el-input>
+          <el-input
+            v-model="formModel.username"
+            :prefix-icon="User"
+            placeholder="请输入学/工号"
+          ></el-input>
         </el-form-item>
         <el-form-item prop="password">
           <el-input
+            v-model="formModel.password"
             name="password"
             :prefix-icon="Lock"
             type="password"
             placeholder="请输入密码"
-            v-model="loginData.password"
           ></el-input>
         </el-form-item>
-        <el-form-item class="flex">
-          <div class="flex">
-            <el-checkbox>记住我</el-checkbox>
-            <el-link type="primary" :underline="false">忘记密码？</el-link>
+        <el-form-item label-width="65px" style="margin-bottom: 5px;">
+          <div class="code-row">
+            <el-input placeholder="请输入验证码" v-model="sidentifyMode" clearable style="margin-top: -15px; margin-left: -64px;"></el-input>
+            <div class="code" @click="refreshCode">
+              <SIdentify :identifyCode="identifyCode"></SIdentify>
+            </div>
           </div>
         </el-form-item>
+        <el-form-item class="flex">
+          <el-link type="primary" :underline="false" class="forgot-password-link" @click="forgotPasswordModal = true">
+            找回密码
+          </el-link>
+        </el-form-item>
         <el-form-item>
-          <el-button round class="button" type="primary" auto-insert-space @click="handleLogin">
-            登录
-          </el-button>
+          <el-button round
+            @click="login"
+            class="button"
+            type="primary"
+            auto-insert-space
+            >登录</el-button
+          >
         </el-form-item>
       </el-form>
+    </el-col>
+  </el-row>
+
+  <el-dialog title="找回密码" align-center v-model="forgotPasswordModal" append-to-body width="350px" :modal-append-to-body="false" center custom-class="forgot-password-dialog" style="height: 200px;">
+    <div class="forgot-password-options">
+      <el-button round @click="forgotPassword('email')">通过邮箱找回</el-button>
+      <el-button round style="margin-left: 0px;" @click="forgotPassword('phone')">通过手机找回</el-button>
     </div>
-  </div>
+  </el-dialog>
 </template>
 
 <style lang="scss" scoped>
@@ -77,42 +154,60 @@ const handleLogin = async () => {
   right: 0;
   bottom: 0;
   height: 100vh;
-  background-color: #fff;
+  background: url('@/assets/img/bjtu.jpg') no-repeat center / cover;
   display: flex;
-  justify-content: center;
   align-items: center;
-  .bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('@/assets/img/bjtu.jpg') no-repeat 60% center / 240px auto,
-      url('@/assets/img/bjtu.jpg') no-repeat center / cover;
-    z-index: -1;
+  justify-content: center;
+}
+.form {
+  height: 450px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  .title {
+    margin: 0 auto;
   }
-  .form-container {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    .form {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      user-select: none;
-      .title {
-        margin: 0 auto;
-      }
-      .button {
-        width: 100%;
-      }
-      .flex {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-      }
+  .button {
+    width: 100%;
+  }
+  .flex {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+  .forgot-password-link {
+    &:hover {
+      background-color: transparent;
+      text-decoration: underline;
     }
   }
 }
-</style>
+.forgot-password-options {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1rem;
+  .el-button {
+    width: 100%
+  }
+}
+.forgot-password-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.code-row {
+  // 水平对齐
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.code {
+  cursor: pointer;
+}
+</style> 
+

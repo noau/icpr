@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import course_header from '@/components/stu_end/course_header.vue';
+import course_header from '@/components/stu_end/stu_course_header.vue';
 // import { ElButton, ElInput } from 'element-plus'
 // import { ref } from 'vue'
 import navbar from './components/nav_bar.vue'
