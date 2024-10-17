@@ -21,10 +21,10 @@ public class Attachment {
 
     private String pptId;
 
-    private String exerciseId;
+    private Integer exerciseId;
 
-    private String avatarId;
+    private Integer avatarId;
 
-    private String answerId;
+    private Integer answerId;
 
 }
