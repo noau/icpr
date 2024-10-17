@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class AssignmentSubmission {
+
     @TableId
     private Integer id;
 
@@ -15,4 +16,5 @@ public class AssignmentSubmission {
     private String submittedAt;
 
     private String content;
+
 }

@@ -23,8 +23,12 @@ public class Attachment {
 
     private String exerciseId;
 
-    private String avatarId;
+    private Integer avatarId;
 
-    private String answerId;
+    private Integer answerId;
+
+    private Integer syllabusId;
+
+    private Integer calendarId;
 
 }

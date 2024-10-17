@@ -5,16 +5,16 @@ import lombok.Data;
 
 @Data
 public class AssignmentsPeerReview {
+
     @TableId
     private Integer submissionId;
-    private Integer reviewerId;
 
+    private Integer reviewerId;
 
     private Float grade;
 
-
     private String feedback;
 
-
     private String reviewedAt;
+
 }

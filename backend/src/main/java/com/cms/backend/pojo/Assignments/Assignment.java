@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Assignment {
+
     @TableId(type = IdType.AUTO)
     private Integer id;
 
@@ -40,4 +41,5 @@ public class Assignment {
     private String peerReviewEnd;
 
     private Integer minPeerReview;
+
 }
