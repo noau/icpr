@@ -3,7 +3,8 @@ package com.cms.backend.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cms.backend.mapper.CourseMapper;
 import com.cms.backend.pojo.Course;
-import com.cms.backend.pojo.Teaching;
+import com.cms.backend.pojo.DTO.TeachingDTO;
+import com.cms.backend.pojo.TeacherInfo;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.CourseService;
 import org.springframework.stereotype.Service;
@@ -59,8 +60,8 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     }
 
     @Override
-    public Teaching getTeacher(String id) {
-        return courseMapper.getTeacher(id);
+    public TeachingDTO getTeacherId(String id) {
+        return courseMapper.getTeacherId(id);
     }
 
     @Override
@@ -81,6 +82,11 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     @Override
     public void uploadResourceCalendar(String courseId, Integer attachmentId) {
         courseMapper.uploadResourceCalendar(courseId, attachmentId);
+    }
+
+    @Override
+    public TeacherInfo getTeacherInfo(Integer teachingId) {
+        return courseMapper.getTeacherInfo(teachingId);
     }
 
 }

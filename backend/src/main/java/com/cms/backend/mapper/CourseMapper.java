@@ -2,7 +2,8 @@ package com.cms.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.cms.backend.pojo.Course;
-import com.cms.backend.pojo.Teaching;
+import com.cms.backend.pojo.DTO.TeachingDTO;
+import com.cms.backend.pojo.TeacherInfo;
 import com.cms.backend.pojo.User;
 import org.apache.ibatis.annotations.*;
 
@@ -75,12 +76,10 @@ public interface CourseMapper extends BaseMapper<Course> {
 
     @Results({
             @Result(property = "id", column = "course_id"),
-            @Result(property = "userId", column = "teacher_id"),
-            @Result(property = "professionalTitle", column = "professional_title")
+            @Result(property = "teacherId", column = "teacher_id")
     })
-    @Select("select teacher_id, address, professional_title, content from teaching where course_id = #{id}")
-    Teaching getTeacher(String id);
-
+    @Select("select teacher_id from teaching where course_id = #{id}")
+    TeachingDTO getTeacherId(String id);
 
     @Select("select id from assignment_submission where assignment_id = #{id}")
     List<Integer> selectSubmission(Integer id);
@@ -101,5 +100,11 @@ public interface CourseMapper extends BaseMapper<Course> {
     })
     @Update("update attachment set calendar_id = #{courseId} where id = #{attachmentId}")
     void uploadResourceCalendar(String courseId, Integer attachmentId);
+
+    @Results({
+            @Result(property = "teachingId", column = "teaching_id")
+    })
+    @Select("select * from teacher_info where teacher_id = #{teachingId}")
+    TeacherInfo getTeacherInfo(Integer teachingId);
 
 }

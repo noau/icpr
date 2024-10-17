@@ -4,7 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.Assignments.AssignmentReview;
 import com.cms.backend.pojo.Attachment;
 import com.cms.backend.pojo.Course;
-import com.cms.backend.pojo.Teaching;
+import com.cms.backend.pojo.DTO.TeachingDTO;
+import com.cms.backend.pojo.TeacherInfo;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.AttachmentService;
 import com.cms.backend.service.CourseService;
@@ -130,9 +131,10 @@ public class CourseController {
 
     @GetMapping(value = "/get-teacher")
     public ResponseEntity<Teacher> getTeacher(@RequestParam String id) {
-        Teaching teaching = courseService.getTeacher(id);
-        User user = userService.findByUserName(teaching.getUserId());
-        Teacher teacher = new Teacher(user.getName(), user.getAcademy(), user.getGender(), user.getAcademy(), user.getEmail(), user.getPhoneNumber(), teaching.getAddress(), teaching.getProfessionalTitle(), teaching.getContent());
+        TeachingDTO teachingDTO = courseService.getTeacherId(id);
+        User user = userService.findByUserName(teachingDTO.getTeacherId());
+        TeacherInfo teacherInfo = courseService.getTeacherInfo(teachingDTO.getTeacherId());
+        Teacher teacher = new Teacher(user.getName(), user.getAcademy(), user.getGender(), user.getAcademy(), user.getEmail(), user.getPhoneNumber(), teacherInfo.getAddress(), teacherInfo.getTitle(), teacherInfo.getBrief());
 
         return ResponseEntity.ok(teacher);
     }
@@ -227,9 +229,9 @@ public class CourseController {
 
         private String address;
 
-        private String professionalTitle;
+        private String title;
 
-        private String content;
+        private String brief;
 
     }
 
