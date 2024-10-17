@@ -1,11 +1,11 @@
 package com.cms.backend.pojo;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 @Data
 public class Attachment {
+
     @TableId
     private Integer id;
 
@@ -26,4 +26,5 @@ public class Attachment {
     private String avatarId;
 
     private String answerId;
+
 }

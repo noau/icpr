@@ -16,18 +16,13 @@ public class Course {
 
     private String semesterYear;
 
-
     private Integer classNumber;
-
 
     private String start;
 
-
     private String end;
 
-
     private String academy;
-
 
     private String teacher;
 

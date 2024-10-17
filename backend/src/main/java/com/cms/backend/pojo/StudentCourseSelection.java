@@ -13,4 +13,5 @@ public class StudentCourseSelection {
     private String courseId;
 
     private Float grade;
+
 }

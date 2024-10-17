@@ -11,9 +11,7 @@ public class Follow {
 
     private Integer followingId;
 
-
     private String followingName;
-
 
     private String subscriptionName;
 
