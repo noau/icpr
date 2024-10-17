@@ -269,7 +269,7 @@ public class UserController {
                 .credentialsProvider(provider)
                 .overrideConfiguration(
                         ClientOverrideConfiguration.create()
-                                .setEndpointOverride("") // dysmsapi.aliyuncs.com
+                                .setEndpointOverride("dysmsapi.aliyuncs.com")
                 )
                 .build();
 
