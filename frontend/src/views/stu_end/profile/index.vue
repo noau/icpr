@@ -64,6 +64,7 @@
                 </div> 
                 <div class="blockBt">
                   <div class="title">我的收藏</div>
+
                   <div class="lineItem" v-for="i in collectMy">
                      <div class="til1"> {{ i?.name }}</div>
                      <div class="til2">{{ i?.name }}</div>
@@ -144,6 +145,7 @@ const tabList = (item,index)=>{
 } 
 
 //个人信息
+
 const userId =localStorage.getItem('userId');
 const userInfo = ref();
 const getInfo = async()=>{ 

@@ -27,10 +27,6 @@ const router = createRouter({
     },
 
     {
-      path: '/stu-end/notification',
-      component: () => import('@/views/stu_end/notification/index.vue')
-    },
-    {
       path: '/notification',
       component: () => import('@/views/stu_end/notification/index.vue')
     },
@@ -133,6 +129,10 @@ const router = createRouter({
       path: '/tea-end/login',
       component: () => import('@/views/tea_end/login/index.vue')
     },
+    {
+      path: '/tea-end/profile',
+      component: () => import('@/views/tea_end/profile/index.vue')
+    }, 
     {
       path: '/tea-end/notification',
       component: () => import('@/views/tea_end/notification/index.vue')

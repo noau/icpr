@@ -83,11 +83,9 @@ import httpInstance from "@/utils/http.js"
   export const userCreate_favorite = ({ userId,threadId,folderId,createdAt }) =>
   httpInstance.post('/user/create_favorite', { userId,threadId,folderId,createdAt }) 
 
-
   //点赞
   export const discussionlike = ({ id }) =>
   httpInstance.post('/user/discussion/like', { id })
-
 
   //取消关注 
   export const getDeleteSubscription = ({ id }) =>
@@ -96,6 +94,4 @@ import httpInstance from "@/utils/http.js"
   export const getdDiscussionlike = ({ id }) =>
   httpInstance.post('/user/make-subscription', { id })
 
-
- 
  

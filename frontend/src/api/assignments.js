@@ -7,11 +7,9 @@ import httpInstance from "@/utils/http.js"
 export const getIssue = ({ ...data  }) =>
 httpInstance.post('/assignments/issue', { ...data })
 
-
 //批改作业  
 export const getReviews = ({ id  }) =>
 httpInstance.post('/assignments/reviews', { id })
-
 
 //学生提交作业 
 export const getSubmissions = ({ id  }) =>
@@ -59,6 +57,4 @@ httpInstance.get('/assignments/course-assignments?id='+id, { id })
  //获得互评列表
 export const getReviewList = ({ id  }) =>
 httpInstance.get('/assignments/review-list?id='+id, { id })
- 
-
  

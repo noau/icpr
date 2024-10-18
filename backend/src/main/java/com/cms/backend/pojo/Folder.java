@@ -1,32 +1,24 @@
 package com.cms.backend.pojo;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
 
-@Getter
-@Setter
-@Entity
-@Table(name = "folder", uniqueConstraints = {@UniqueConstraint(columnNames = "id")})
+@Data
 public class Folder {
 
-    @Id
-    @Column(name = "id", nullable = false, unique = true, length = 255)
+    @TableId
     private Integer id;
 
-    @Column(name = "user_id", nullable = false, unique = true, length = 255)
     private Integer userId;
 
-    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(name = "created_at", nullable = false, length = 255)
     private String createdAt;
 
-    @Column(name = "is_default", nullable = false, length = 255)
+    private String updatedAt;
+
     private Integer isDefault;
 
-    @Column(name = "is_private", nullable = false, length = 255)
     private Integer isPrivate;
 
 }

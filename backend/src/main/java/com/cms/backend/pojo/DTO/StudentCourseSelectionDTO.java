@@ -11,9 +11,5 @@ public class StudentCourseSelectionDTO {
 
     private String courseId;
 
-    public StudentCourseSelectionDTO(Integer studentId, String courseId) {
-        this.studentId = studentId;
-        this.courseId = courseId;
-    }
-
+    public StudentCourseSelectionDTO() {}
 }
