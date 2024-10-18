@@ -79,49 +79,77 @@ const router = useRouter();
 const route = useRoute();
 
 const homeworkTitle = ref(route.query.title || '作业标题');
-const startTime = ref(route.query.startTime || '');
-const endTime = ref(route.query.endTime || '');
+const startTime = ref(route.query.start || '');
+const endTime = ref(route.query.end || '');
 
 // Function to navigate back
 const goBack = () => {
   router.back();
 };
-
-const tableData = ref([
-  {
-    id: '20233007',
-    name: '龚敏',
-    class: '软件2201',
-    email: 'gongmin@example.com',
-    submitTime: '2023-12-26 14:31:36',
-    score: 100,
-    reworkCount: 0,
-    finalScore: 100,
-    submitted: true,
-  },
-  {
-    id: '20233003',
-    name: '郑欧欣',
-    class: '软件2202',
-    email: 'zhengouxin@example.com',
-    submitTime: '2023-12-26 09:59:06',
-    score: 100,
-    reworkCount: 0,
-    finalScore: 100,
-    submitted: true,
-  },
-  {
-    id: '20233004',
-    name: '李四',
-    class: '软件2203',
-    email: 'lisi@example.com',
-    submitTime: '',
-    score: 0,
-    reworkCount: 0,
-    finalScore: 0,
-    submitted: false,
-  },
-]);
+const tableData = ref([])
+import { getReviewList } from '@/api/assignments.js'    
+const init = async()=>{
+  tableData.value = [
+    {
+        "id": 11,
+        "assignmentId": 10,
+        "studentId": 62,
+        "submittedAt": "2012-07-27 06:53:22",
+        "content": "minim deserunt",
+        "attachments": [
+            89
+        ]
+    },
+    {
+        "id": 30,
+        "assignmentId": 61,
+        "studentId": 17,
+        "submittedAt": "2021-04-14 15:14:17",
+        "content": "sunt reprehenderit Excepteur",
+        "attachments": [
+            71
+        ]
+    }
+  ];
+  const res = await getReviewList({id:route.query.id}) 
+  tableData.value = res;
+}
+init();
+// const tableData = ref([
+//   {
+//     id: '20233007',
+//     name: '龚敏',
+//     class: '软件2201',
+//     email: 'gongmin@example.com',
+//     submitTime: '2023-12-26 14:31:36',
+//     score: 100,
+//     reworkCount: 0,
+//     finalScore: 100,
+//     submitted: true,
+//   },
+//   {
+//     id: '20233003',
+//     name: '郑欧欣',
+//     class: '软件2202',
+//     email: 'zhengouxin@example.com',
+//     submitTime: '2023-12-26 09:59:06',
+//     score: 100,
+//     reworkCount: 0,
+//     finalScore: 100,
+//     submitted: true,
+//   },
+//   {
+//     id: '20233004',
+//     name: '李四',
+//     class: '软件2203',
+//     email: 'lisi@example.com',
+//     submitTime: '',
+//     score: 0,
+//     reworkCount: 0,
+//     finalScore: 0,
+//     submitted: false,
+//   },
+// ]);
 
 const filterType = ref('all');
 
@@ -145,7 +173,7 @@ const paginatedData = computed(() => {
 });
 
 const handleEdit = (row) => {
-  router.push('/tea-end/course/examine/rating-page');
+  router.push('/tea-end/course/examine/rating-page?id='+route.query.id);
 };
 
 const handleDelete = (row) => {

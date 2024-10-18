@@ -4,7 +4,7 @@
  <el-table :data="paginatedNotifications" style="width: 100%">
       <el-table-column prop="course" label="课程" width="180" />
       <el-table-column prop="sender" label="发送者" width="180" />
-      <el-table-column prop="title" label="标题" width="800" />
+      <el-table-column prop="title" label="标题" width="200" />
       <el-table-column label="收藏" width="100">
         <template #default="scope">
             <el-icon 
