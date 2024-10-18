@@ -70,6 +70,7 @@
 import { ref, computed } from 'vue';
 import { Document, Share, Delete, Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+import {getexam} from '@/api/course'
 
 const handleShare = (file) => {
   if (navigator.share) {
@@ -177,6 +178,19 @@ function handleSortChange() {
 }
 
 filteredData.value = tableData.value;
+
+
+function getexamList() {
+  let id=localStorage.getItem('kcid')
+  getexam(id).then(res => {
+    console.log(res.attachmentIdList);
+    
+  }).catch(err => {
+    console.log(err);
+  });
+}
+
+getexamList();
 </script>
 
 <style scoped>

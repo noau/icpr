@@ -4,6 +4,7 @@
   import SIdentify from '@/components/SIdentify.vue'
   import { ElMessage } from 'element-plus'
   import { useRouter } from 'vue-router'
+  import {  getResetPwdphone } from '@/api/user.js'    
   
   const router = useRouter()
   const formModel = ref({
@@ -38,7 +39,7 @@
     makeCode(identifyCodes.value, 4)
   }
     
-  const sendCode = () => {
+  const sendCode = async() => {
     // 验证用户名不为空
     if (!formModel.value.username) {
       ElMessage({ type: 'error', message: '学/工号不能为空！' })
@@ -66,8 +67,16 @@
       return
     }
     // 验证通过，发送验证码
-    console.log('发送找回密码验证码')
-    ElMessage.success('已发送找回密码验证码')
+    console.log('发送找回密码验证码') 
+    const res = await getResetPwdphone({ 
+      "id": formModel.value.username,
+      "phoneNumber": formModel.value.phoneNumber,
+      "idCardNumber": formModel.value.idNumber
+    })   
+
+    ElMessage.success('已发送找回密码验证码') 
+
+
   }
 
   const goBack = () => {

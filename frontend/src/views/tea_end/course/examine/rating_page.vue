@@ -73,53 +73,85 @@ import '@kangc/v-md-editor/lib/style/base-editor.css';
 import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
 import '@kangc/v-md-editor/lib/theme/style/github.css';
 import back_header from '@/components/back_header.vue';
-
+import { useRouter, useRoute } from 'vue-router';
+const router = useRouter();
+const route = useRoute();
 // 使用 github 主题
 VMdEditor.use(githubTheme);
 
-const tableData = ref([
-  { name: '李', score: 87 },
-  { name: '张周周张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: '正在批阅...' },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-  { name: '李', score: 87 },
-  { name: '张', score: 91 },
-  { name: '官', score: 90 },
-]);
+import { getReviewList } from '@/api/assignments.js' 
+const tableData = ref();   
+const init = async()=>{
+  tableData.value = [
+    {
+        "id": 11,
+        "assignmentId": 10,
+        "studentId": 62,
+        "submittedAt": "2012-07-27 06:53:22",
+        "content": "minim deserunt",
+        "attachments": [
+            89
+        ]
+    },
+    {
+        "id": 30,
+        "assignmentId": 61,
+        "studentId": 17,
+        "submittedAt": "2021-04-14 15:14:17",
+        "content": "sunt reprehenderit Excepteur",
+        "attachments": [
+            71
+        ]
+    }
+  ];
+  const res = await getReviewList({id:route.query.id}) 
+  tableData.value = res;
+}
+init();
+
+// const tableData = ref([
+//   { name: '李', score: 87 },
+//   { name: '张周周张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: '正在批阅...' },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+//   { name: '李', score: 87 },
+//   { name: '张', score: 91 },
+//   { name: '官', score: 90 },
+// ]);
 
 const transformedData = ref([
   { label: '姓名', ...tableData.value.reduce((acc, item, index) => ({ ...acc, [`value${index}`]: item.name }), {}) },

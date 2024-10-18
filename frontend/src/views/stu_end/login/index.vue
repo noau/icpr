@@ -4,7 +4,7 @@ import { ref, onMounted } from 'vue'
 import { userLoginService,userUserInfo } from '@/api/user.js'
 import { useUserStore } from '@/stores/user.js'
 import { useRouter } from 'vue-router'
-import SIdentify from '@/components/SIdentify.vue'
+import SIdentify from '@/components/Sidentify.vue'
 import { ElMessage } from 'element-plus' 
 
 

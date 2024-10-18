@@ -47,7 +47,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';  // Add Vue Router for navigation
 
 const router = useRouter();  // Instantiate Vue Router
-
+import { getcourseAssignments,getissueAnswer } from '@/api/assignments.js' 
 const form = ref({
   title: ''
 });
@@ -96,6 +96,18 @@ const goToAssignHomework = () => {
 function handleCurrentChange(page) {
   currentPage.value = page;
 }
+
+
+
+// 列表请求 
+const init = async()=>{
+  const res = await getcourseAssignments({id:localStorage.getItem('userId')}) 
+  tableData.value =  res?.userAssignmentList;
+}
+init();
+
+
+
 </script>
 
 <style scoped>
