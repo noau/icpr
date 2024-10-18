@@ -7,6 +7,7 @@ export const useUserStore = defineStore(
     () => {
         const token = ref('')
         const id = ref('')
+        const course = ref('')
         const setToken = (newToken) => {
             token.value = newToken
         }
@@ -18,6 +19,13 @@ export const useUserStore = defineStore(
         const removeToken = () => {
             token.value = ''
         }
+        const setCourse = (newCourse) => {
+            course.value = newCourse
+        }
+        const getCourse = () => course.value
+        const removeCourse = () => {
+            course.value = ''
+        }
 
         const user = ref({})
         const getUser = async () => {
@@ -27,7 +35,7 @@ export const useUserStore = defineStore(
         const setUser = (obj) => {
             user.value = obj
         }
-        return {token, id, setToken, removeToken, setId, getId, user, getUser, setUser}
+        return {course, token, id, setToken, removeToken, setId, getId, setCourse, getCourse, removeCourse, user, getUser, setUser}
     },
     {
         persist: true

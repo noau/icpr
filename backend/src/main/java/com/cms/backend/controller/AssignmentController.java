@@ -84,7 +84,7 @@ public class AssignmentController {
      */
     @PostMapping("/submissions")
     public ResponseEntity<Void> submitAssignment(@RequestBody AssignmentSubmissionDTO submission) {
-        var newSubmission = new AssignmentSubmission(0, submission.getAssignmentId(), submission.getStudentId(), submission.getSubmittedAt(), submission.getContent());
+        var newSubmission = new AssignmentSubmission(null, submission.getAssignmentId(), submission.getStudentId(), submission.getSubmittedAt(), submission.getContent());
         assignmentSubmissionService.save(newSubmission);
         submission.getAttachments().forEach(attachment ->
                 attachmentService.update(

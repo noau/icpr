@@ -50,7 +50,7 @@ instance.interceptors.response.use(
     // TODO 3. 处理业务失败
     // TODO 4. 摘取核心响应数据
     if (res.data.code === 0 || res.status === 200) {
-      return res.data
+      return res
     }
     // 处理业务失败，给错误提示，抛出错误
     ElMessage.error(res.data.message || '服务异常')
@@ -60,7 +60,7 @@ instance.interceptors.response.use(
     // TODO 5. 处理401错误
     // 错误的特殊情况 => 401权限不足 或 token 过期 => 拦截登录
     if (err.response?.status === 401) {
-      router.push('/login')
+      router.push('/stu-end/login')
     }
     // 错误的默认情况 => 只要给提示
     ElMessage.error(err.response.data.message || '服务异常')

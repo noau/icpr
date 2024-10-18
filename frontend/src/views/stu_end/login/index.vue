@@ -59,9 +59,9 @@ const login = async () => {
   // 执行登录逻辑
   await form.value.validate()
   const res = await userLoginService(formModel.value)
-  userStore.setToken(res);
+  userStore.setToken(res.data);
   // 存储 Token
-  localStorage.setItem('token', res);  
+  localStorage.setItem('token', res.data);
   userStore.setId(formModel.value.username);
   localStorage.setItem('userId', formModel.value.username);  
 

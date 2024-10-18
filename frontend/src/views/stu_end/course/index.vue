@@ -24,6 +24,7 @@ import course_header from '@/components/stu_end/stu_course_header.vue';
 // import { ElButton, ElInput } from 'element-plus'
 // import { ref } from 'vue'
 import navbar from './components/nav_bar.vue'
+import {useRouter} from "vue-router";
 // import breadcrumb from './components/bread_crumb.vue'
 </script>
 

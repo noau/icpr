@@ -83,7 +83,7 @@ public interface UserMapper {
     @Insert("insert into folder (user_id, name, created_at, is_default) values (#{userId}, #{name}, #{createdAt}, #{isDefault})")
     void addFolder(Integer userId, String name, String createdAt, Integer isDefault);
 
-    @Insert("insert into favorite (user_id, thread_id, folder_id, created_at) values (#{userId}, #{threadId}, #{folderid}, #{createdAt})")
+    @Insert("insert into favorite (user_id, thread_id, folder_id, created_at) values (#{userId}, #{threadId}, #{folderId}, #{createdAt})")
     void addFavorite(Integer userId, Integer threadId, Integer folderId, String createdAt);
 
     @Delete("delete from folder where id = #{id}")

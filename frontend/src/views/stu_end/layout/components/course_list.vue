@@ -15,6 +15,7 @@
 
 <script>
 import { Notebook } from '@element-plus/icons-vue';
+import {useUserStore} from "@/stores/user.js";
 
 export default {
   props: {
@@ -28,8 +29,11 @@ export default {
   },
   methods: {
     openCourse(course) {
+      const user = useUserStore();
+      console.log(course);
+      user.setCourse(course.id);
       // 跳转到课程主页
-      this.$router.push({ path: '/stu-end/course', query: { courseId: course.courseId } });
+      this.$router.push({ path: '/stu-end/course', query: { courseId: course.id } });
     },
   },
 };

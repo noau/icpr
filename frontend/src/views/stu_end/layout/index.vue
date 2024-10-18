@@ -39,7 +39,7 @@ import {userCourses} from "@/api/course.js";
 import {useUserStore} from "@/stores/user.js";
 
 const user = useUserStore();
-const courses = (await userCourses(user.id, user.token)).courses;
+const courses = (await userCourses(user.id, user.token)).data.courses;
 console.log(courses);
 
 export default {

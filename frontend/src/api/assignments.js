@@ -1,53 +1,42 @@
 // 作业相关接口 
-import httpInstance from "@/utils/http.js"
+import httpInstance from "@/utils/http.js";
 
- 
- 
-//布置作业
-export const getIssue = ({ id  }) =>
-httpInstance.post('/assignments/issue', { id })
+// 布置作业
+export const issueAssignment = (assignment) =>
+    httpInstance.post('/assignments/issue', assignment);
 
+// 批改作业
+export const reviewAssignment = (assignmentReview) =>
+    httpInstance.post('/assignments/reviews', assignmentReview);
 
-//批改作业  
-export const getReviews = ({ id  }) =>
-httpInstance.post('/assignments/reviews', { id })
+// 学生提交作业
+export const submitAssignment = (submission) =>
+    httpInstance.post('/assignments/submissions', submission);
 
+// 互评作业
+export const peerReviewAssignment = (peerReview) =>
+    httpInstance.post('/assignments/peer-reviews', peerReview);
 
-//学生提交作业 
-export const getSubmissions = ({ id  }) =>
-httpInstance.post('/assignments/submissions', { id })
+// 公布答案
+export const issueAnswer = (answer) =>
+    httpInstance.post('/assignments/issue-answer', answer);
 
-//互评作业 
-export const getpeerReviews = ({ id  }) =>
-httpInstance.post('/assignments/peer-reviews', { id })
+// 修改作业
+export const changeAssignment = (assignment) =>
+    httpInstance.post('/assignments/change', assignment);
 
-//公布答案 
-export const getissueAnswer = ({ id  }) =>
-httpInstance.post('/assignments/issue-answer', { id })
+// 删除作业
+export const deleteAssignment = (id) =>
+    httpInstance.delete('/assignments/delete', { params: { id } });
 
+// 获得作业列表
+export const getCourseAssignments = (courseId) =>
+    httpInstance.get('/assignments/course-assignments', { params: { id: courseId } });
 
-//修改作业 
-export const getChange = ({ id  }) =>
-httpInstance.post('/assignments/change', { id })
+// 获得作业详情
+export const getAssignmentDescription = (id) =>
+    httpInstance.get('/assignments/get-info', { params: { id } });
 
-//删除作业 
-export const getDelete = ({ id  }) =>
-httpInstance.post('/assignments/delete', { id })
-
-//学生获得作业列表 
-export const getAssignmentsUser= ({ id  }) =>
-httpInstance.get('/assignments/get-user', { id })
-
-//老师获得批改作业列表 
-export const getassignmentsTeacher = ({ id  }) =>
-httpInstance.get('/assignments/get-teacher', { id })
-
-//获得作业详情
-
-export const getAssignmentsInfo = ({ id  }) =>
-httpInstance.get('/assignments/get-info', { id })
-
-//获得互评列表
-export const getPeerReviews = ({ id  }) =>
-httpInstance.get('/assignments/peer-reviews', { id })
- 
+// 获得作业提交列表
+export const getAssignmentSubmissions = (assignmentId) =>
+    httpInstance.get('/assignments/review-list', { params: { id: assignmentId } });

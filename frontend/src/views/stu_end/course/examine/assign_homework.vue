@@ -19,10 +19,10 @@
         </el-upload>
         <div class="el-upload__tip">支持所有格式</div>
       </div>
-      <v-md-editor 
-        v-model="homeworkForm.requirements" 
+      <v-md-editor
+        v-model="homeworkForm.requirements"
         class="markdown-editor" style="margin-right: 500px"
-        placeholder="请输入作业要求" 
+        placeholder="请输入作业要求"
       />
       <div style="width: 500px;"></div>
     </el-form-item>
@@ -32,7 +32,7 @@
       <span style="margin-left: -68px; margin-right: 13px;">作业满分</span>
       <el-input-number v-model="homeworkForm.fullScore" :min="0" label="作业满分" placeholder="作业满分" style="width: 150px; margin-right: 60px;"></el-input-number>
       <span style="margin-right: 13px;">补交满分</span>
-      <el-input-number v-model="homeworkForm.lateFullScore" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>    
+      <el-input-number v-model="homeworkForm.lateFullScore" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>
       <el-checkbox v-model="homeworkForm.allowResubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
       <el-checkbox v-model="homeworkForm.publishGrades">公布作业成绩</el-checkbox>
     </el-form-item>
@@ -61,7 +61,7 @@
     </el-form-item>
 
     <br>
-    <el-form-item>      
+    <el-form-item>
       <el-button type="primary" @click="submitHomework" style="margin-left: 400px;">发布</el-button>
       <el-button @click="resetForm">重置</el-button>
     </el-form-item>
@@ -186,10 +186,10 @@ const resetForm = () => {
         </el-upload>
         <div class="el-upload__tip">支持所有格式</div>
       </div>
-      <v-md-editor 
-        v-model="homeworkForm.requirements" 
+      <v-md-editor
+        v-model="homeworkForm.requirements"
         class="markdown-editor" style="margin-right: 500px"
-        placeholder="请输入作业要求" 
+        placeholder="请输入作业要求"
       />
       <div style="width: 500px;"></div>
     </el-form-item>
@@ -199,7 +199,7 @@ const resetForm = () => {
       <span style="margin-left: -68px; margin-right: 13px;">作业满分</span>
       <el-input-number v-model="homeworkForm.fullScore" :min="0" label="作业满分" placeholder="作业满分" style="width: 150px; margin-right: 60px;"></el-input-number>
       <span style="margin-right: 13px;">补交满分</span>
-      <el-input-number v-model="homeworkForm.lateFullScore" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>    
+      <el-input-number v-model="homeworkForm.lateFullScore" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>
       <el-checkbox v-model="homeworkForm.allowResubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
       <el-checkbox v-model="homeworkForm.publishGrades">公布作业成绩</el-checkbox>
     </el-form-item>
@@ -228,7 +228,7 @@ const resetForm = () => {
     </el-form-item>
 
     <br>
-    <el-form-item>      
+    <el-form-item>
       <el-button round type="primary" @click="submitHomework" style="margin-left: 400px;">发布</el-button>
       <el-button round @click="resetForm">重置</el-button>
     </el-form-item>
