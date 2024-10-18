@@ -50,6 +50,8 @@
           :auto-upload="false"
           :accept="acceptedFileTypes"
           ref="uploadRef"
+           action="http://localhost:8080/courses/resource-syllabus
+"
         >
           <el-button type="text" style="margin-right: 30px">点击选择文件</el-button>
         </el-upload>
@@ -159,7 +161,10 @@ const handleExceed = () => {
 }
 
 const downloadFile = () => {
-  window.location.href = '/path-to-your-syllabus-file'  // 更新下载链接
+  let id=localStorage.getItem('kcid')
+
+
+  window.location.href = 'http://localhost:8080/courses/get-syllabus?id='+id  // 更新下载链接
 }
 
 const downloadTemplate = () => {

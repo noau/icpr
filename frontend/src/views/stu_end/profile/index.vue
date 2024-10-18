@@ -17,7 +17,7 @@
                     :src="userInfo?.avatar?userInfo?.avatar:'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'"
                   /> 
                   <label class="uploadImg" @click="photoVisible=true">上传头像</label>
-                </div>
+                </div> 
                 <div>
                   <h2>姓名:{{ userInfo?.name }}</h2>
                   <div>
@@ -56,7 +56,7 @@
                   <div class="title">收藏夹</div>
                   <div>
                     <!-- collectList -->
-                    <span v-for="i in 10" class="blocktag" > 
+                    <span v-for="i in collectFlist" class="blocktag" > 
                       <el-button>名称{{  i?.name }}</el-button><el-icon><EditPen class="editPen" @click="fileVisible=true" /></el-icon>
                     </span>
                     <span  class="blocktag"> <el-button @click="fileVisible=true"><el-icon><Plus /></el-icon>添加收藏夹</el-button></span>
@@ -64,13 +64,13 @@
                 </div> 
                 <div class="blockBt">
                   <div class="title">我的收藏</div>
-                  <div class="lineItem" v-for="i in 5">
-                     <div class="til1">我的收藏</div>
-                     <div class="til2">我的收藏我的收藏我的收藏我的收藏</div>
+                  <div class="lineItem" v-for="i in collectMy">
+                     <div class="til1"> {{ i?.name }}</div>
+                     <div class="til2">{{ i?.name }}</div>
                      <div class="flex">
                         <div class="fl_til3 flex flex-align-center">
-                          <span><el-icon><Star /></el-icon>4444</span>
-                          <span>最近更新：2024 10-1</span>
+                          <span><el-icon><Star /></el-icon>{{ i?.name }}</span>
+                          <span>最近更新：{{ i?.name }}</span>
                         </div>
                         <div>  
                           <el-dropdown> 
@@ -128,7 +128,7 @@ import fans from './components/fans.vue'
 import care from './components/care.vue' 
 import uploadPhoto from './components/uploadPhoto.vue'  
 import addFile from './components/addFile.vue'  
-import { userFolders,userUserInfo,userCreate_favorite } from '@/api/user.js'   
+import { userFolders,userUserInfo,userCreate_favorite,userFavorites } from '@/api/user.js'   
 import { useUserStore } from '@/stores/user.js'
 
 const tab = ref(['收藏夹','我的收藏','我的帖子']);
@@ -144,11 +144,11 @@ const tabList = (item,index)=>{
 } 
 
 //个人信息
-const userId = useUserStore()?.id || localStorage.getItem('userId');
+const userId =localStorage.getItem('userId');
 const userInfo = ref();
 const getInfo = async()=>{ 
   const res = await userUserInfo({id:userId}) 
-  useUserStore().setId(userInfo.value.id) 
+  // useUserStore().setId(userInfo.value、.id) 
   userInfo.value = res
 }
 getInfo();
@@ -160,13 +160,30 @@ const getUserFolders = async()=>{
 }
 getUserFolders();
 
+//我的收藏
+
+const collectMy = ref();
+const getuserFavorites = async()=>{ 
+  const res = await userFavorites({id:userId}) 
+  collectMy.value =  res?.favorites;
+}
+getuserFavorites();
+
+
 //收藏的帖子
 const collectFlist = ref();
 const getuserCreateFavorite = async()=>{ 
-  const res = await userCreate_favorite() 
+  const res = await userCreate_favorite({ 
+    "userId": userId,
+    "threadId": 1,
+    "folderId": 1,
+    "createdAt": "1999-01-07 13:49:10" 
+  }) 
   collectFlist.value =  res?.folders;
 }
 getuserCreateFavorite(); 
+
+// 我的收藏
 </script>
 
 <style scoped lang="scss">

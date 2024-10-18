@@ -298,6 +298,14 @@ const resetForm = () => {
   fileList.value = [];
 };
 
+import { getAssignmentsUser } from '@/api/assignments.js' 
+// 列表请求 
+const init = async()=>{
+  const res = await getAssignmentsUser({id:localStorage.getItem('userId')}) 
+  tableData.value =  res?.userAssignmentList;
+}
+init();
+
 onMounted(() => {
   const homeworkId = route.query.id;
   if (homeworkId) {

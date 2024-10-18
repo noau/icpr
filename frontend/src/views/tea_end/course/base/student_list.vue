@@ -43,6 +43,8 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import {allstudents} from '@/api/course'
+
 
 const form = ref({
   query: ''
@@ -98,6 +100,13 @@ const exportStudentList = () => {
 function handleCurrentChange(page) {
   currentPage.value = page;
 }
+function getallstudents(){
+  let id=localStorage.getItem('kcid')
+  allstudents(id).then(res=>{
+    console.log(res.students)
+  })
+}
+getallstudents()
 </script>
 
 <style scoped>

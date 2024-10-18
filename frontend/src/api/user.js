@@ -46,17 +46,16 @@ import httpInstance from "@/utils/http.js"
   httpInstance.post('/user/change_password', { id,password,newPassword })  
 
   //找回密码 邮箱 
-  export const resetPwdEmail = ({ data  }) =>
-  httpInstance.post('/reset-pwd-email', { data  }) 
-
-
+  export const resetPwdEmail = ({ id,email,idCardNumber  }) =>
+  httpInstance.post('/user/reset-pwd-email', { id,email,idCardNumber  }) 
+ 
   //找回密码 手机号
-  export const userChangePassword = ({   }) =>
-  httpInstance.post('/user/reset-pwd-phone', {  })  
-
+  export const getResetPwdphone = ({ id,phoneNumber,idCardNumber  }) =>
+  httpInstance.post('/user/reset-pwd-phone', { id,phoneNumber,idCardNumber })  
+  
  //上传用户头像
- export const setAvatar = ({  }) =>
- httpInstance.post('/user/avatar', {   }) 
+ export const setAvatar = ({id,avatar  }) =>
+ httpInstance.post('/user/avatar', {id,avatar   }) 
 
   //获取所有粉丝
   export const userFollowers = ({ id }) =>
@@ -81,11 +80,22 @@ import httpInstance from "@/utils/http.js"
 
 
   //收藏帖子
-  export const userCreate_favorite = ({ id }) =>
-  httpInstance.post('/user/create_favorite', { id })
+  export const userCreate_favorite = ({ userId,threadId,folderId,createdAt }) =>
+  httpInstance.post('/user/create_favorite', { userId,threadId,folderId,createdAt }) 
+
 
   //点赞
   export const discussionlike = ({ id }) =>
   httpInstance.post('/user/discussion/like', { id })
+
+
+  //取消关注 
+  export const getDeleteSubscription = ({ id }) =>
+  httpInstance.post('/user/delete-subscription', { id })
+  //取消关注 
+  export const getdDiscussionlike = ({ id }) =>
+  httpInstance.post('/user/make-subscription', { id })
+
+
  
  

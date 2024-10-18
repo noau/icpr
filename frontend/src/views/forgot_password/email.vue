@@ -4,7 +4,7 @@
   import SIdentify from '@/components/SIdentify.vue'
   import { ElMessage } from 'element-plus'
   import { useRouter } from 'vue-router'
-  
+  import { resetPwdEmail } from '@/api/user.js'    
   const router = useRouter()
   
   const formModel = ref({
@@ -39,7 +39,7 @@
     makeCode(identifyCodes.value, 4)
   }
   
-  const sendEmail = () => {
+  const sendEmail = async() => {
     // 验证用户名不为空
     if (!formModel.value.username) {
       ElMessage({ type: 'error', message: '学/工号不能为空！' })
@@ -67,9 +67,15 @@
       return
     }
     // 验证通过，发送邮件
-    const targetEmail = `${formModel.value.username}@bjtu.edu.cn`
-    console.log(`发送找回密码邮件到 ${targetEmail}`)
-    ElMessage.success(`已发送找回密码邮件到 ${targetEmail}`)
+    // const targetEmail = `${formModel.value.username}@bjtu.edu.cn`
+ 
+    const res = await resetPwdEmail({ 
+      "id": formModel.value.username,
+      "email": formModel.value.email,
+      "idCardNumber": formModel.value.idNumber
+    })  
+    // console.log(`发送找回密码邮件到 ${targetEmail}`)
+    ElMessage.success(`已发送找回密码邮件到 ${formModel.email}`)
   }
 
   const goBack = () => {

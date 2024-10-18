@@ -157,7 +157,7 @@
       </el-form-item>
       <el-form-item label="上传文件" :label-width="formLabelWidth">
         <el-upload
-          action="#"
+          action="http://localhost:8080/attachment/upload"
           :before-upload="beforeUpload"
           :on-success="handleUploadSuccess"
           :file-list="fileList"
@@ -213,7 +213,7 @@
 import { ref, computed } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-
+import {deleteFile,getppt} from '@/api/course'
 const handleShare = (file) => {
   if (navigator.share) {
     // 使用 Web Share API
@@ -448,6 +448,13 @@ function handleDeleteDirectory(item) {
 }
 
 function handleDeleteFile(item) {
+  deleteFile(item.id).then(res=>{
+    if(res.data.code===200){
+      ElMessage.success('删除成功')
+    }else{
+      ElMessage.error('删除失败')
+    }
+  })
   const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
   if (directory) {
     const index = directory.files.indexOf(item);
@@ -455,6 +462,7 @@ function handleDeleteFile(item) {
       directory.files.splice(index, 1);
     }
   }
+
 }
 
 function handleDirectorySelectionChange(val) {
@@ -503,6 +511,13 @@ const sortedFiles = computed(() => {
   }
   return files;
 });
+function getpptlist(){
+  let id=localStorage.getItem('kcid')
+  getppt(id).then(res=>{
+    console.log(res)
+  })
+}
+getpptlist()
 </script>
 
 <style scoped>

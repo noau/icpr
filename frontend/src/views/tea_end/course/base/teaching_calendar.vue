@@ -45,7 +45,7 @@
       <div class="dialog-upload-section">
         <el-upload
           class="upload-demo"
-          action="https://jsonplaceholder.typicode.com/posts/"
+           action="http://localhost:8080/courses/resource-calendar"
           :limit="1"
           :on-exceed="handleExceed"
           :file-list="fileList"
@@ -124,7 +124,10 @@ const handleExceed = () => {
 }
 
 const downloadFile = () => {
-  window.location.href = '/path-to-your-calendar-file'  // 更新下载链接
+  let id=localStorage.getItem('kcid')
+
+
+window.location.href = 'http://localhost:8080/courses/get-calendar?id='+id  // 更新下载链接
 }
 
 const downloadTemplate = () => {
