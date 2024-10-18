@@ -32,7 +32,7 @@ import httpInstance from "@/utils/http.js"
   
   //修改用户信息
   export const userChange_info = ({ old_pwd, new_pwd, re_pwd }) =>
-  httpInstance.post('/user/change_info', { old_pwd, new_pwd, re_pwd })
+  httpInstance.post('/user/change-info', { old_pwd, new_pwd, re_pwd })
 
 
   //获取用户信息
@@ -43,7 +43,7 @@ import httpInstance from "@/utils/http.js"
 
   //修改/找回密码
   export const userchange_password = ({ id,password,newPassword }) =>
-  httpInstance.post('/user/change_password', { id,password,newPassword })  
+  httpInstance.post('/user/change-password', { id,password,newPassword })  
 
   //找回密码 邮箱 
   export const resetPwdEmail = ({ id,email,idCardNumber  }) =>
@@ -76,12 +76,12 @@ import httpInstance from "@/utils/http.js"
   
   //创建收藏夹
   export const userCreate_folder = ({ userId,name,createdAt,isPrivate }) =>
-  httpInstance.post('/user/create_folder', { userId,name,createdAt,isPrivate }) 
+  httpInstance.post('/user/create-folder', { userId,name,createdAt,isPrivate }) 
 
 
   //收藏帖子
   export const userCreate_favorite = ({ userId,threadId,folderId,createdAt }) =>
-  httpInstance.post('/user/create_favorite', { userId,threadId,folderId,createdAt }) 
+  httpInstance.post('/user/create-favorite', { userId,threadId,folderId,createdAt }) 
 
 
   //点赞
