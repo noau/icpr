@@ -1,6 +1,7 @@
 package com.cms.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.cms.backend.controller.CourseController;
 import com.cms.backend.pojo.Course;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.pojo.TeacherInfo;
@@ -54,25 +55,31 @@ public interface CourseMapper extends BaseMapper<Course> {
     void addTeaching(Integer teacherId, String courseId);
 
     @Results({
-            @Result(property = "id", column = "exam_id"),
-            @Result(property = "attachmentId", column = "id")
+            @Result(property = "courseId", column = "exam_id"),
+            @Result(property = "attachmentId", column = "id"),
+            @Result(property = "allowDownload", column = "allow_download"),
+            @Result(property = "attachmentFolderId", column = "attachment_folder_id")
     })
-    @Update("update attachment set exam_id = #{courseId} where id = #{attachmentId}")
-    void uploadResourceExam(String courseId, Integer attachmentId);
+    @Update("update attachment set exam_id = #{courseId}, allow_download = #{allowDownload}, attachment_folder_id = #{attachmentFolderId} where id = #{attachmentId}")
+    void uploadResourceExam(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId);
 
     @Results({
-            @Result(property = "id", column = "ppt_id"),
-            @Result(property = "attachmentId", column = "id")
+            @Result(property = "courseId", column = "ppt_id"),
+            @Result(property = "attachmentId", column = "id"),
+            @Result(property = "allowDownload", column = "allow_download"),
+            @Result(property = "attachmentFolderId", column = "attachment_folder_id")
     })
-    @Update("update attachment set ppt_id = #{courseId} where id = #{attachmentId}")
-    void uploadResourcePpt(String courseId, Integer attachmentId);
+    @Update("update attachment set ppt_id = #{courseId}, allow_download = #{allowDownload}, attachment_folder_id = #{attachmentFolderId} where id = #{attachmentId}")
+    void uploadResourcePpt(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId);
 
     @Results({
-            @Result(property = "id", column = "exercise_id"),
-            @Result(property = "attachmentId", column = "id")
+            @Result(property = "courseId", column = "exercise_id"),
+            @Result(property = "attachmentId", column = "id"),
+            @Result(property = "allowDownload", column = "allow_download"),
+            @Result(property = "attachmentFolderId", column = "attachment_folder_id")
     })
-    @Update("update attachment set exercise_id = #{courseId} where id = #{attachmentId}")
-    void uploadResourceExercise(String courseId, Integer attachmentId);
+    @Update("update attachment set exercise_id = #{courseId}, allow_download = #{allowDownload}, attachment_folder_id = #{attachmentFolderId} where id = #{attachmentId}")
+    void uploadResourceExercise(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId);
 
     @Results({
             @Result(property = "id", column = "course_id"),
@@ -106,5 +113,15 @@ public interface CourseMapper extends BaseMapper<Course> {
     })
     @Select("select * from teacher_info where teacher_id = #{teachingId}")
     TeacherInfo getTeacherInfo(Integer teachingId);
+
+    @Insert("insert into attachment_folder (folder_name, parent_id) values (#{folderName}, #{parentId})")
+    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
+    void createAttachmentFolder(CourseController.AttachmentFolder attachmentFolder);
+
+    @Delete("delete from attachment_folder where id = #{id}")
+    void deleteAttachmentFolder(Integer id);
+
+    @Select("select * from attachment_folder where id = #{id}")
+    CourseController.AttachmentFolder getAttachmentFolder(Integer id);
 
 }

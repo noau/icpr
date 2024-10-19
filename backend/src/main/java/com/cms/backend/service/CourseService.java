@@ -1,6 +1,7 @@
 package com.cms.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cms.backend.controller.CourseController;
 import com.cms.backend.pojo.Course;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.pojo.TeacherInfo;
@@ -19,11 +20,11 @@ public interface CourseService extends IService<Course> {
 
     void addTeaching(Integer teacherId, String courseId);
 
-    void uploadResourceExam(String courseId, Integer attachmentId);
+    void uploadResourceExam(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId);
 
-    void uploadResourcePpt(String courseId, Integer attachmentId);
+    void uploadResourcePpt(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId);
 
-    void uploadResourceExercise(String courseId, Integer attachmentId);
+    void uploadResourceExercise(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId);
 
     TeachingDTO getTeacherId(String id);
 
@@ -36,6 +37,12 @@ public interface CourseService extends IService<Course> {
     void uploadResourceCalendar(String courseId, Integer attachmentId);
 
     TeacherInfo getTeacherInfo(Integer teachingId);
+
+    void createAttachmentFolder(CourseController.AttachmentFolder attachmentFolder);
+
+    void deleteAttachmentFolder(Integer id);
+
+    CourseController.AttachmentFolder getAttachmentFolder(Integer attachmentFolderId);
 
 }
 

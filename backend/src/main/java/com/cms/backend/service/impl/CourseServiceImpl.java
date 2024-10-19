@@ -1,6 +1,7 @@
 package com.cms.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cms.backend.controller.CourseController;
 import com.cms.backend.mapper.CourseMapper;
 import com.cms.backend.pojo.Course;
 import com.cms.backend.pojo.DTO.TeachingDTO;
@@ -45,18 +46,19 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         courseMapper.addTeaching(teacherId,courseId);
     }
 
-    public void uploadResourceExam(String courseId, Integer attachmentId) {
-        courseMapper.uploadResourceExam(courseId, attachmentId);
+    @Override
+    public void uploadResourceExam(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId) {
+        courseMapper.uploadResourceExam(courseId, attachmentId, allowDownload, attachmentFolderId);
     }
 
     @Override
-    public void uploadResourcePpt(String courseId, Integer attachmentId) {
-        courseMapper.uploadResourcePpt(courseId, attachmentId);
+    public void uploadResourcePpt(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId) {
+        courseMapper.uploadResourcePpt(courseId, attachmentId, allowDownload, attachmentFolderId);
     }
 
     @Override
-    public void uploadResourceExercise(String courseId, Integer attachmentId) {
-        courseMapper.uploadResourceExercise(courseId, attachmentId);
+    public void uploadResourceExercise(String courseId, Integer attachmentId, Integer allowDownload, Integer attachmentFolderId) {
+        courseMapper.uploadResourceExercise(courseId, attachmentId, allowDownload, attachmentFolderId);
     }
 
     @Override
@@ -87,6 +89,21 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     @Override
     public TeacherInfo getTeacherInfo(Integer teachingId) {
         return courseMapper.getTeacherInfo(teachingId);
+    }
+
+    @Override
+    public void createAttachmentFolder(CourseController.AttachmentFolder attachmentFolder) {
+        courseMapper.createAttachmentFolder(attachmentFolder);
+    }
+
+    @Override
+    public void deleteAttachmentFolder(Integer id) {
+        courseMapper.deleteAttachmentFolder(id);
+    }
+
+    @Override
+    public CourseController.AttachmentFolder getAttachmentFolder(Integer attachmentFolderId) {
+        return courseMapper.getAttachmentFolder(attachmentFolderId);
     }
 
 }
