@@ -32,7 +32,7 @@ import httpInstance from "@/utils/http.js"
   
   //修改用户信息
   export const userChange_info = ({ old_pwd, new_pwd, re_pwd }) =>
-  httpInstance.post('/user/change_info', { old_pwd, new_pwd, re_pwd })
+  httpInstance.post('/user/change-info', { old_pwd, new_pwd, re_pwd })
 
 
   //获取用户信息
@@ -43,7 +43,7 @@ import httpInstance from "@/utils/http.js"
 
   //修改/找回密码
   export const userchange_password = ({ id,password,newPassword }) =>
-  httpInstance.post('/user/change_password', { id,password,newPassword })  
+  httpInstance.post('/user/change-password', { id,password,newPassword })  
 
   //找回密码 邮箱 
   export const resetPwdEmail = ({ id,email,idCardNumber  }) =>
@@ -54,8 +54,8 @@ import httpInstance from "@/utils/http.js"
   httpInstance.post('/user/reset-pwd-phone', { id,phoneNumber,idCardNumber })  
   
  //上传用户头像
- export const setAvatar = ({  }) =>
- httpInstance.post('/user/avatar', {   }) 
+ export const setAvatar = ({id,avatar  }) =>
+ httpInstance.post('/user/avatar', {id,avatar   }) 
 
   //获取所有粉丝
   export const userFollowers = ({ id }) =>
@@ -68,24 +68,26 @@ import httpInstance from "@/utils/http.js"
 
   //获取所有收藏夹
   export const userFolders = ({ id }) =>
-  httpInstance.get('/user/folders?id=' + id, { id })
+  httpInstance.get('http://127.0.0.1:4523/m1/5175681-4840771-default/user/folders?id=' + id, { id })
 
   //获取指定收藏夹内容
   export const userFavorites = ({ id }) =>
-  httpInstance.get('/user/favorites?id=' + id, { id })
+  httpInstance.get('http://127.0.0.1:4523/m1/5175681-4840771-default/user/favorites?id=' + id, { id })
   
   //创建收藏夹
   export const userCreate_folder = ({ userId,name,createdAt,isPrivate }) =>
-  httpInstance.post('/user/create_folder', { userId,name,createdAt,isPrivate }) 
+  httpInstance.post('/user/create-folder', { userId,name,createdAt,isPrivate }) 
 
 
   //收藏帖子
-  export const userCreate_favorite = ({ userId,threadId,folderId,createdAt }) =>
-  httpInstance.post('/user/create_favorite', { userId,threadId,folderId,createdAt }) 
+  export const userCreate_favorite = ({ userId,threadId,folderId }) =>
+  httpInstance.post('http://127.0.0.1:4523/m1/5175681-4840771-default/user/create-favorite', { userId,threadId,folderId }) 
+
 
   //点赞
   export const discussionlike = ({ id }) =>
-  httpInstance.post('/user/discussion/like', { id })
+  httpInstance.post('http://127.0.0.1:4523/m1/5175681-4840771-default/user/discussion/like', { id })
+
 
   //取消关注 
   export const getDeleteSubscription = ({ id }) =>
@@ -94,4 +96,8 @@ import httpInstance from "@/utils/http.js"
   export const getdDiscussionlike = ({ id }) =>
   httpInstance.post('/user/make-subscription', { id })
 
+
  
+// /user/delete-favorite
+  export const userDelete_favorite = ({ id }) =>
+  httpInstance.delete('/user/delete-favorite', { id })

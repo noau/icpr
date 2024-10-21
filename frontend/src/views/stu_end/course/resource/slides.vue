@@ -4,7 +4,8 @@
       <el-input v-model="searchQuery" placeholder="输入资源名称进行搜索" class="search-input" />
     </el-col>
     <el-col :span="4">
-      <el-button round style="margin-right: 100px; margin-left: -80px; padding: 10px;" type="primary" @click="handleSearch">搜索</el-button>
+      <el-button round style="margin-right: 100px; margin-left: -80px; padding: 10px;" type="primary"
+        @click="handleSearch">搜索</el-button>
     </el-col>
   </el-row>
   <div class="box-card">
@@ -13,7 +14,9 @@
         <el-table :data="paginatedData" style="width: 100%;" class="resource-table">
           <el-table-column prop="name" label="资源名称" width="600" align="center" header-align="center">
             <template #default="scope">
-              <el-icon class="custom-icon-document"><Document /></el-icon>
+              <el-icon class="custom-icon-document">
+                <Document />
+              </el-icon>
               <span>{{ scope.row.name }}</span>
             </template>
           </el-table-column>
@@ -26,13 +29,8 @@
         </el-table>
       </div>
       <div class="pagination-container">
-        <el-pagination
-          layout="prev, pager, next"
-          :total="filteredData.length"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          @current-change="handleCurrentChange"
-        />
+        <el-pagination layout="prev, pager, next" :total="filteredData.length" :page-size="pageSize"
+          :current-page="currentPage" @current-change="handleCurrentChange" />
       </div>
     </el-card>
   </div>
@@ -40,6 +38,8 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { saveAs } from 'file-saver';
+import {getppt} from '@/api/course'
 
 const tableData = ref([
   { name: '课件资料1.pdf', url: 'https://example.com/file1.pdf' },
@@ -60,7 +60,7 @@ const tableData = ref([
   { name: '课件资料2.pdf', url: 'https://example.com/file2.pdf' },
   { name: '课件资料1.pdf', url: 'https://example.com/file1.pdf' },
   { name: '课件资料2.pdf', url: 'https://example.com/file2.pdf' },
-  
+
 ]);
 
 const pageSize = ref(8);
@@ -85,6 +85,7 @@ function handleDownload(item) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
 }
 
 function handleCurrentChange(page) {
@@ -103,6 +104,14 @@ function handleSearch() {
 }
 
 filteredData.value = tableData.value;
+
+function getpptlist(){
+  let id=localStorage.getItem('kcid')
+  getppt(id).then(res=>{
+    console.log(res)
+  })
+}
+getpptlist()
 </script>
 
 <style scoped>
@@ -137,4 +146,3 @@ filteredData.value = tableData.value;
   margin-right: 3px;
 }
 </style>
-

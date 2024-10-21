@@ -40,6 +40,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import {getexercise} from '@/api/course'
 
 const tableData = ref([
   { name: '习题1.pdf', url: 'https://example.com/file1.pdf' },
@@ -103,6 +104,17 @@ function handleSearch() {
 }
 
 filteredData.value = tableData.value;
+function getexerciseList() {
+  let id=localStorage.getItem('kcid')
+  getexercise(id).then(res => {
+    console.log(res.attachmentIdList);
+    
+  }).catch(err => {
+    console.log(err);
+  });
+}
+
+getexerciseList();
 </script>
 
 <style scoped>

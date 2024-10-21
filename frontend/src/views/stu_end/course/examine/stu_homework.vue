@@ -5,7 +5,8 @@
         <el-input v-model="searchQuery" placeholder="输入作业名称进行搜索" class="search-input" />
       </el-col>
       <el-col :span="4">
-        <el-button round style="margin-right: 100px; margin-left: -80px; padding: 10px;" type="primary" @click="handleSearch">搜索</el-button>
+        <el-button round style="margin-right: 100px; margin-left: -80px; padding: 10px;" type="primary"
+          @click="handleSearch">搜索</el-button>
       </el-col>
     </el-row>
     <div class="box-card">
@@ -41,13 +42,8 @@
           </el-table-column>
         </el-table>
         <div class="pagination-container">
-          <el-pagination
-            layout="prev, pager, next"
-            :total="filteredData.length"
-            :page-size="pageSize"
-            :current-page="currentPage"
-            @current-change="handleCurrentChange"
-          />
+          <el-pagination layout="prev, pager, next" :total="filteredData.length" :page-size="pageSize"
+            :current-page="currentPage" @current-change="handleCurrentChange" />
         </div>
       </el-card>
     </div>
@@ -56,22 +52,13 @@
     <el-dialog title="文件内容" v-model="dialogVisible" width="500px">
       <el-form ref="submitForm" :model="formData">
         <el-form-item label="作业内容">
-          <el-input
-            type="textarea"
-            v-model="formData.content"
-            placeholder="请输入3000字以内的作业内容！"
-            rows="5"
-          ></el-input>
+          <el-input type="textarea" v-model="formData.content" placeholder="请输入3000字以内的作业内容！" rows="5"></el-input>
         </el-form-item>
 
         <el-form-item label="上传文件">
-          <el-upload
-            class="upload-demo"
-            action="#"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :file-list="fileList"
-          >
+          <el-upload class="upload-demo" action="http://localhost:8080/attachment/upload"
+            :on-success="handleUploadSuccess" :headers="headers" :on-preview="handlePreview" :on-remove="handleRemove"
+            :file-list="fileList">
             <template v-slot:trigger>
               <el-button round style="padding: 10px;" size="small" type="primary">点击上传</el-button>
             </template>
@@ -88,7 +75,7 @@
       <template v-slot:footer>
         <span class="dialog-footer">
           <el-button round style="padding: 10px;" type="primary" @click="submitAssignment">确定</el-button>
-          <el-button round style="padding: 10px;" @click="dialogVisible = false">取消</el-button>      
+          <el-button round style="padding: 10px;" @click="dialogVisible = false">取消</el-button>
         </span>
       </template>
     </el-dialog>
@@ -98,8 +85,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router'; // Import Vue Router
-import { getcourseAssignments } from '@/api/assignments.js'   
+import { getcourseAssignments } from '@/api/assignments.js'
 import { useUserStore } from '@/stores/user.js'
+import { getSubmissions, getCourseAssignment } from '@/api/homework.js'
 const router = useRouter(); // Use the router instance
 
 const tableData = ref([
@@ -107,11 +95,14 @@ const tableData = ref([
   { id: '2', title: '00', start: '2024-01-03', end: '2024-02-23', submitted: '0/27', submitTime: '未提交', score: '未公布成绩', reviewStatus: '未批改' },
   // More data...
 ]);
+const headers = {
+  Authorization: localStorage.getItem('token')
+}
 
 // 列表请求 
-const init = async()=>{
-  const res = await getcourseAssignments({id:localStorage.getItem('userId')}) 
-  tableData.value =  res?.userAssignmentList;
+const init = async () => {
+  const res = await getcourseAssignments({ id: localStorage.getItem('userId') })
+  tableData.value = res?.userAssignmentList;
 }
 init();
 
@@ -134,19 +125,21 @@ const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   return filteredData.value.slice(start, start + pageSize.value);
 });
+const assignmentId = ref('')
 
 function handleSubmit(row) {
   console.log('Submit clicked for:', row);
+  assignmentId.value = row.id
   dialogVisible.value = true;
 }
 
-function viewDetails(row) { 
+function viewDetails(row) {
   console.log('Viewing details for:', row);
   // 假设 row 中有一个 id 或 title，作为作业的唯一标识
   const assignmentId = row.id; // 或者用 row.title 作为标识
   // 跳转到作业详情页面，传递作业 ID 作为路由参数
-  router.push({ 
-    path: `/stu-end/course/examine/homework-details/${assignmentId}` 
+  router.push({
+    path: `/stu-end/course/examine/homework-details/${assignmentId}`
   });
 }
 
@@ -158,10 +151,7 @@ function handleRemove(file) {
   console.log('Removing file:', file);
 }
 
-function submitAssignment() {
-  console.log('Submitting assignment:', formData.value);
-  dialogVisible.value = false;
-}
+
 
 function handleCurrentChange(page) {
   currentPage.value = page;
@@ -180,6 +170,36 @@ function handleSearch() {
 
 // 初始化时显示所有数据
 searchResult.value = tableData.value;
+const attachments = ref([])
+function handleUploadSuccess(res) {
+  console.log(res);
+  attachments.value.push(res.id)
+
+
+}
+// 提交作业
+function submitAssignment() {
+  console.log('Submitting assignment:', formData.value);
+  let obj = {
+    content: formData.value.content,
+    attachments: attachments.value,
+    studentId: localStorage.getItem('userId'),
+    assignmentId: assignmentId.value
+  }
+  getSubmissions(obj).then(Res => {
+    console.log(Res);
+  })
+  dialogVisible.value = false;
+}
+
+// 作业列表
+function getCourseAssignmentsList() {
+  let id = localStorage.getItem('kcid')
+  getCourseAssignment(id).then(res => {
+    console.log(res);
+  })
+}
+getCourseAssignmentsList()
 </script>
 
 <style scoped>
@@ -201,7 +221,8 @@ searchResult.value = tableData.value;
 }
 
 .box-card {
-  margin: 10px 20px 20px;
+  margin: 20px;
+  margin-top: 10px;
 }
 
 .search-input {

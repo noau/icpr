@@ -1,30 +1,38 @@
 <template v-slot:header>
-  <el-row :gutter="20" class="header" style="margin-top: -25px; margin-left: 10px; margin-right: 10px;">
+  <el-row :gutter="20" class="header" style="margin-top: 5px; margin-left: 10px; margin-right: 10px;">
     <el-col :span="12" style="display: flex; align-items: center;">
-      <el-select v-model="sortOrder" placeholder="选择排序方式" style="width: 200px; margin-right: 15px;" @change="handleSortChange">
+      <el-select v-model="sortOrder" placeholder="选择排序方式" style="width: 200px; margin-right: 15px;"
+        @change="handleSortChange">
         <el-option label="按文件名称排序" value="name" />
         <el-option label="按上传时间排序" value="uploadTime" />
       </el-select>
       <el-button round type="primary" @click="openUploadDialog" style="padding:10px;">上传文件</el-button>
       <el-button circle type="primary" @click="batchDelete" style="padding:10px;">
-        <el-icon><Delete /></el-icon>
+        <el-icon>
+          <Delete />
+        </el-icon>
       </el-button>
     </el-col>
     <el-col :span="12" style="display: flex; justify-content: flex-end; align-items: center;">
       <el-input v-model="searchQuery" placeholder="输入习题名称进行搜索" class="search-input" style="margin-right: 15px;" />
       <el-button circle type="primary" @click="handleSearch" style="padding: 10px;">
-        <el-icon><Search /></el-icon>
+        <el-icon>
+          <Search />
+        </el-icon>
       </el-button>
     </el-col>
   </el-row>
   <div class="box-card">
     <el-card>
       <div class="forum-list" id="data" style="max-height: 500px; overflow-y: auto;">
-        <el-table :data="paginatedData" style="width: 100%;" class="resource-table" @selection-change="handleFileSelectionChange">
+        <el-table :data="paginatedData" style="width: 100%;" class="resource-table"
+          @selection-change="handleFileSelectionChange">
           <el-table-column type="selection" width="55" />
           <el-table-column prop="name" label="资源名称" width="350" align="center" header-align="center">
             <template #default="scope">
-              <el-icon class="custom-icon-document"><Document /></el-icon>
+              <el-icon class="custom-icon-document">
+                <Document />
+              </el-icon>
               <span>{{ scope.row.name }}</span>
             </template>
           </el-table-column>
@@ -54,15 +62,26 @@
         </el-table>
       </div>
       <div class="pagination-container">
-        <el-pagination
-          layout="prev, pager, next"
-          :total="filteredData.length"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          @current-change="handleCurrentChange"
-        />
+        <el-pagination layout="prev, pager, next" :total="filteredData.length" :page-size="pageSize"
+          :current-page="currentPage" @current-change="handleCurrentChange" />
       </div>
     </el-card>
+    <!-- 上传文件对话框 -->
+    <el-dialog title="上传文件" v-model="uploadDialogVisible">
+    
+          <el-upload action="http://localhost:8080/attachment/upload" :before-upload="beforeUpload"
+            :on-success="handleUploadSuccess" :file-list="fileList" :headers="headers">
+            <!-- :headers="headers" -->
+            <el-button round type="primary">点击上传</el-button>
+          </el-upload>
+    
+      <template v-slot:footer>
+        <div class="dialog-footer">
+          <el-button round type="primary" @click="uploadFile">确定</el-button>
+          <el-button round @click="uploadDialogVisible = false">取消</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -70,7 +89,11 @@
 import { ref, computed } from 'vue';
 import { Document, Share, Delete, Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-
+import { getexercise,resourcecourse } from '@/api/course'
+const uploadDialogVisible = ref(false)
+const headers = {
+  Authorization: localStorage.getItem('token')
+}
 const handleShare = (file) => {
   if (navigator.share) {
     navigator.share({
@@ -78,8 +101,8 @@ const handleShare = (file) => {
       text: `我想分享文件: ${file.name}`,
       url: file.url,
     })
-    .then(() => console.log('分享成功'))
-    .catch(error => console.error('分享失败:', error));
+      .then(() => console.log('分享成功'))
+      .catch(error => console.error('分享失败:', error));
   } else {
     const shareLink = document.createElement('textarea');
     shareLink.value = `我想分享文件: ${file.name}\n链接: ${file.url}`;
@@ -157,7 +180,8 @@ function handleDeleteFile(item) {
 
 function openUploadDialog() {
   // 打开上传文件对话框的逻辑
-  alert('上传文件对话框打开');
+  uploadDialogVisible.value = true;
+
 }
 
 function batchDelete() {
@@ -177,6 +201,33 @@ function handleSortChange() {
 }
 
 filteredData.value = tableData.value;
+
+function getexerciseList() {
+  let id = localStorage.getItem('kcid')
+  getexercise(id).then(res => {
+    console.log(res.attachmentIdList);
+
+  }).catch(err => {
+    console.log(err);
+  });
+}
+const attachmentIdList=ref([])
+function handleUploadSuccess(response, file) {
+  attachmentIdList.value.push(response.id)
+  // 上传成功后的逻辑
+  console.log('上传成功', response, file);
+}
+getexerciseList();
+
+function uploadFile() {
+  // 更新文件逻辑
+  resourcecourse({
+    id: localStorage.getItem('kcid'),
+    attachmentIdList: attachmentIdList.value
+  }).then(res => {
+    console.log(res);
+  })
+}
 </script>
 
 <style scoped>

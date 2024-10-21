@@ -28,6 +28,7 @@ export default {
   },
   methods: {
     openCourse(course) {
+      localStorage.setItem("kcid", course.courseId)
       // 跳转到课程主页
       this.$router.push({ path: '/tea-end/course', query: { courseId: course.courseId } });
     },

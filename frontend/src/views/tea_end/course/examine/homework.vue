@@ -9,7 +9,8 @@
         </el-form>
       </el-col>
       <el-col :span="4">
-        <el-button round type="primary" style="margin-right: 100px; margin-left: -80px; padding: 10px;" @click="search">搜索</el-button>
+        <el-button round type="primary" style="margin-right: 100px; margin-left: -80px; padding: 10px;"
+          @click="search">搜索</el-button>
       </el-col>
       <el-col :span="4">
         <el-button round type="primary" style="margin-left: 495px;" @click="goToAssignHomework">布置作业</el-button>
@@ -37,13 +38,17 @@
 
             <el-table-column label="批阅作业" width="150" align="center" header-align="center">
               <template #default="scope">
-                <el-icon class="custom-icon" @click="goToSubmissonCondition(scope.row)"><EditPen /></el-icon>
+                <el-icon class="custom-icon" @click="goToSubmissonCondition(scope.row)">
+                  <EditPen />
+                </el-icon>
               </template>
             </el-table-column>
 
             <el-table-column label="成绩统计" width="150" align="center" header-align="center">
               <template #default="scope">
-                <el-icon class="custom-icon" @click="goToHomeworkStatistics(scope.row)"><TrendCharts /></el-icon>
+                <el-icon class="custom-icon" @click="goToHomeworkStatistics(scope.row)">
+                  <TrendCharts />
+                </el-icon>
               </template>
             </el-table-column>
 
@@ -60,13 +65,8 @@
         </div>
 
         <div class="pagination-container">
-          <el-pagination
-            layout="prev, pager, next"
-            :total="filteredHomeworkList.length"
-            :page-size="pageSize"
-            :current-page="currentPage"
-            @current-change="handleCurrentChange"
-          />
+          <el-pagination layout="prev, pager, next" :total="filteredHomeworkList.length" :page-size="pageSize"
+            :current-page="currentPage" @current-change="handleCurrentChange" />
         </div>
       </el-card>
     </div>
@@ -76,7 +76,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getassignmentsTeacher,getcourseAssignments,getissueAnswer } from '@/api/assignments.js'   
+import { getassignmentsTeacher, getcourseAssignments, getissueAnswer,getDelete } from '@/api/assignments.js'
 const router = useRouter();
 import { ElMessage } from 'element-plus'
 const form = ref({
@@ -117,21 +117,21 @@ const search = () => {
   currentPage.value = 1; // 重置到第一页
 };
 
-const publishHomework = async(row) => {
-  console.log('发布作业:', row); 
-   const res = await getIssue({...row}) 
-   ElMessage('发布成功！')
+const publishHomework = async (row) => {
+  console.log('发布作业:', row);
+  const res = await getIssue({ ...row })
+  ElMessage('发布成功！')
 };
 
-const publishGrades = async(row) => {
-  console.log('公布成绩:', row); 
+const publishGrades = async (row) => {
+  console.log('公布成绩:', row);
   // const res = await getissueAnswer({id:row?.id})  
   ElMessage('公布成功！')
 };
 
-const publishAnswers = async(row) => {
+const publishAnswers = async (row) => {
   console.log('公布答案:', row);
-  const res = await getissueAnswer({id:row?.id})  
+  const res = await getissueAnswer({ id: row?.id })
   ElMessage('公布成功！')
 };
 
@@ -144,6 +144,9 @@ const editHomework = (row) => {
 
 const deleteHomework = (row) => {
   console.log('删除作业:', row);
+  getDelete({ id: row.id }).then(res => {
+    ElMessage('删除成功！')
+  })
 };
 
 const goToAssignHomework = () => {
@@ -157,7 +160,7 @@ const goToSubmissonCondition = (row) => {
       title: row.title,
       start: row.start,
       end: row.end,
-      id:row.id
+      id: row.id
     }
   });
 };
@@ -172,41 +175,42 @@ function handleCurrentChange(page) {
 
 
 // 列表请求 
-const init = async()=>{
-  const res = await getcourseAssignments({id:localStorage.getItem('userId')}) 
+const init = async () => {
+  const res = await getcourseAssignments({ id: localStorage.getItem('userId') })
   // homeworkList.value =  res;
-  homeworkList.value  = [
-     {
-        "id": 93,
-        "courseId": "74",
-        "title": "果七层话",
-        "description": "组西状商次油作外都世权北等改。验到百群大准为被证该此变照术于。马知六活科天文调酸水温道装什层类。",
-        "start": "1978-01-19 05:39:53",
-        "end": "1982-05-18 06:43:14",
-        "isPrivate": 68,
-        "fullGrade": 20,
-        "delayedGrade": 89,
-        "latestEnd": "1980-06-07 03:38:54",
-        "multipleSubmission": 28,
-        "publishGrade": 14,
-        "requirePeerReview": 10,
-        "peerReviewStart": "2014-08-24 00:16:08",
-        "peerReviewEnd": "1985-05-19 19:56:28",
-        "minPeerReview": 96
+  homeworkList.value = [
+    {
+      "id": 93,
+      "courseId": "74",
+      "title": "果七层话",
+      "description": "组西状商次油作外都世权北等改。验到百群大准为被证该此变照术于。马知六活科天文调酸水温道装什层类。",
+      "start": "1978-01-19 05:39:53",
+      "end": "1982-05-18 06:43:14",
+      "isPrivate": 68,
+      "fullGrade": 20,
+      "delayedGrade": 89,
+      "latestEnd": "1980-06-07 03:38:54",
+      "multipleSubmission": 28,
+      "publishGrade": 14,
+      "requirePeerReview": 10,
+      "peerReviewStart": "2014-08-24 00:16:08",
+      "peerReviewEnd": "1985-05-19 19:56:28",
+      "minPeerReview": 96
     },
   ]
-  
+
 }
 init();
 
 
- 
+
 </script>
 
 <style scoped>
 .forum-list {
   padding: 0;
 }
+
 .pagination-container {
   display: flex;
   justify-content: center;
@@ -217,15 +221,18 @@ init();
   margin: 20px;
   margin-top: -2px;
 }
+
 .el-button {
   font-size: 14px;
   padding: 8px 10px;
 }
+
 .search-input {
   flex: 1;
   width: 300px;
   margin-left: 20px;
 }
+
 .gray-text {
   color: gray;
   font-size: 12px;
