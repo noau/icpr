@@ -120,6 +120,7 @@ const goToPost = post => {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  align-items: center;
   margin-top: 10px;
   margin-right: 30px;
   transform: translateY(30px);

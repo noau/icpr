@@ -30,33 +30,12 @@
                 <el-button @click='pwdVisible = true'>更换密码</el-button>
               </div>
             </div>
-            <div class="perInfoTop2 flex flex">
-              <div class="fl tabTop">
-                <label v-for="(item, index) in tab" :key="index" :class="active == index ? 'cur' : ''"
-                  @click="tabList(item, index)">{{ item }}</label>
-              </div>
-              <div class="flex perInfoTop2-fr flex-align-center">
-                <div class="itemBlock" @click="fansVisible = true">
-                  <label>粉丝</label>
-                  <p>{{ userInfo?.fansNumber || 0 }}</p>
-                </div>
-                <div class="itemBlock" @click="careVisible = true">
-                  <label>关注</label>
-                  <p>{{ userInfo?.subscriptionsNumber || 0 }}</p>
-                </div>
-                <div class="itemBlock">
-                  <label>发帖数</label>
-                  <p>{{ userInfo?.threadNumber || 0 }}</p>
-                </div>
-              </div>
-            </div>
 
             <div class="bottomCon">
               <div class="blockBt">
                 <div class="title">收藏夹</div>
                 <div>
                   <!-- collectList -->
-
                   <div v-for="item in collectList" class="blocktag">
                     <el-button @click="getFList(item)" type="warning">{{ item.name }}</el-button>
                     <el-icon>
@@ -72,37 +51,6 @@
                   </span>
                 </div>
               </div>
-              <!-- <div class="blockBt">
-                <div class="title">我的收藏</div>
-                <div class="lineItem" v-for="i in collectMy">
-                  <div class="til1"> {{ i?.name }}</div>
-                  <div class="til2">{{ i?.name }}</div>
-                  <div class="flex">
-                    <div class="fl_til3 flex flex-align-center">
-                      <span><el-icon>
-                          <Star />
-                        </el-icon>{{ i?.name }}</span>
-                      <span>最近更新：{{ i?.name }}</span>
-                    </div>
-                    <div>
-                      <el-dropdown>
-                        <el-button type="primary">
-                          编辑分组<el-icon class="el-icon--right"><arrow-down /></el-icon>
-                        </el-button>
-                        <template #dropdown>
-                          <el-dropdown-menu>
-                            <el-dropdown-item>Action 1</el-dropdown-item>
-                            <el-dropdown-item>Action 2</el-dropdown-item>
-                            <el-dropdown-item>Action 3</el-dropdown-item>
-                            <el-dropdown-item disabled>Action 4</el-dropdown-item>
-                            <el-dropdown-item divided>Action 5</el-dropdown-item>
-                          </el-dropdown-menu>
-                        </template>
-</el-dropdown>
-</div>
-</div>
-</div>
-</div> -->
 
               <div class="blockBt">
                 <div class="title">我的帖子</div>
@@ -116,8 +64,7 @@
                         </el-icon>4444{{ i?.name }}</span>
                       <span>最近更新：2024 10-1{{ i?.name }}</span>
                     </div>
-                    <div>
-                    </div>
+                    <div></div>
                   </div>
                 </div>
               </div>
@@ -138,12 +85,9 @@
           <div slot="header">
             <span>帖子1</span>
           </div>
-          <!-- <el-button @ style="float: right;"  type="danger"  circle> -->
-            <el-icon @click="deletTie" style="float: right">
-              <delete />
-            </el-icon>
-          <!-- </el-button> -->
-
+          <el-icon @click="deletTie" style="float: right">
+            <delete />
+          </el-icon>
         </el-card>
       </div>
     </el-drawer>
@@ -160,9 +104,6 @@ import addFile from './components/addFile.vue'
 import { userFolders, userUserInfo, userCreate_favorite, userFavorites ,userDelete_favorite} from '@/api/user.js'
 import { useUserStore } from '@/stores/user.js'
 
-// const tab = ref(['收藏夹', '我的收藏', '我的帖子']);
-const tab = ref(['收藏夹', '我的收藏', '我的帖子']);
-const active = ref(0);
 const pwdVisible = ref(false);
 const fansVisible = ref(false);
 const careVisible = ref(false);
@@ -170,63 +111,39 @@ const photoVisible = ref(false);
 const fileVisible = ref(false);
 const drawer = ref(false);
 
-const tabList = (item, index) => {
-  active.value = index;
-}
-
 //个人信息
 const userId = localStorage.getItem('userId');
 const userInfo = ref();
 const getInfo = async () => {
   const res = await userUserInfo({ id: userId })
-  // useUserStore().setId(userInfo.value、.id) 
   userInfo.value = res
 }
 getInfo();
+
 // 获取收藏夹
 const collectList = ref();
 const getUserFolders = async () => {
   const res = await userFolders({ id: userId })
-
   collectList.value = res.folders;
-  console.log(collectList.value[0].name);
-
 }
 setTimeout(() => {
   getUserFolders();
 }, 300);
 
-//我的收藏
-
+// 收藏的帖子
 const collectMy = ref();
 
-
-
-//收藏的帖子
-// const collectFlist = ref();
-const getuserCreateFavorite = async () => {
-  const res = await userCreate_favorite({
-    "userId": userId,
-    "threadId": 1,
-    "folderId": 1,
-    "createdAt": "1999-01-07 13:49:10"
-  })
-  // collectFlist.value =  res?.folders;
-}
-// getuserCreateFavorite();
-
-// 我的收藏
+// 收藏夹功能
 const getuserFavorites = async (id) => {
   const res = await userFavorites({ id })
   collectMy.value = res?.favorites;
-
 }
+
 function getFList(item) {
-  console.log(item);
   drawer.value = true;
   getuserFavorites(item.id)
-
 }
+
 function deletTie() {
   userDelete_favorite({ id: 1 }).then(res => {
     console.log(res);
@@ -279,27 +196,6 @@ function deletTie() {
         display: block;
       }
 
-    }
-  }
-
-  .perInfoTop2 {
-    background: #fff;
-    height: 50px;
-
-    .tabTop {
-      line-height: 50px;
-
-      label {
-        padding: 0 10px;
-        display: inline-block;
-        cursor: pointer;
-      }
-
-      label.cur {
-        color: #07395f;
-        font-weight: bold;
-        border-bottom: 2px solid #07395f;
-      }
     }
   }
 
@@ -356,7 +252,6 @@ function deletTie() {
 
     .til1 {
       font-size: 16px;
-      // font-weight: bold;
       color: #000;
     }
 

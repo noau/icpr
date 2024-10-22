@@ -4,7 +4,7 @@
         <el-header style="z-index: 10;">
           <notification_header />
         </el-header>
-        <el-container>
+        <el-container style="margin-top: 20px">
           <el-aside width="200px" style="z-index: 5;">
             <sidebar @update:filterStatus="filterStatus = $event" />
           </el-aside>
@@ -78,7 +78,7 @@
     left: 0;
     right: 0;
     bottom: 0;  
-    padding: 20px;
+    padding: 0px;
   }
   
   .main-content {

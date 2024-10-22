@@ -68,11 +68,11 @@ import httpInstance from "@/utils/http.js"
 
   //获取所有收藏夹
   export const userFolders = ({ id }) =>
-  httpInstance.get('http://127.0.0.1:4523/m1/5175681-4840771-default/user/folders?id=' + id, { id })
+  httpInstance.get('/user/folders?id=' + id, { id })
 
   //获取指定收藏夹内容
   export const userFavorites = ({ id }) =>
-  httpInstance.get('http://127.0.0.1:4523/m1/5175681-4840771-default/user/favorites?id=' + id, { id })
+  httpInstance.get('/user/favorites?id=' + id, { id })
   
   //创建收藏夹
   export const userCreate_folder = ({ userId,name,createdAt,isPrivate }) =>
@@ -81,12 +81,12 @@ import httpInstance from "@/utils/http.js"
 
   //收藏帖子
   export const userCreate_favorite = ({ userId,threadId,folderId }) =>
-  httpInstance.post('http://127.0.0.1:4523/m1/5175681-4840771-default/user/create-favorite', { userId,threadId,folderId }) 
+  httpInstance.post('/user/create-favorite', { userId,threadId,folderId }) 
 
 
   //点赞
   export const discussionlike = ({ id }) =>
-  httpInstance.post('http://127.0.0.1:4523/m1/5175681-4840771-default/user/discussion/like', { id })
+  httpInstance.post('/user/discussion/like', { id })
 
 
   //取消关注 
