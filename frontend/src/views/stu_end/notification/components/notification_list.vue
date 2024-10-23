@@ -5,6 +5,7 @@
       <el-table-column prop="course" label="课程" width="180" />
       <el-table-column prop="sender" label="发送者" width="180" />
       <el-table-column prop="content" label="标题" width="200" />
+      <el-table-column prop="createAt" label="时间" width="200" />
       <el-table-column label="收藏" width="100">
         <template #default="scope">
             <el-icon 
@@ -53,7 +54,10 @@ const userId = useUserStore()?.id;
 const pageList = ref();
 const init = async()=>{
   let res =   await notificationsGet({id:userId});
-  pageList.value = res;
+  console.log(res.notifications);
+
+  pageList.value = res.notifications
+;
 }
 init();
   // export default {

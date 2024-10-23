@@ -1,6 +1,6 @@
 <template>
   <div class="student-list">
-    <el-row :gutter="20" class="header" style="margin-top: -25px; margin-bottom: 5px; margin-left: 10px;">
+    <el-row :gutter="20" class="header" style="margin-top: -0px; margin-bottom: 5px; margin-left: 10px;">
       <el-col :span="8">
         <el-form :inline="true" :model="form">
           <el-form-item label="">
@@ -43,6 +43,8 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import {allstudents} from '@/api/course'
+
 
 const form = ref({
   query: ''
@@ -98,6 +100,13 @@ const exportStudentList = () => {
 function handleCurrentChange(page) {
   currentPage.value = page;
 }
+function getallstudents(){
+  let id=localStorage.getItem('kcid')
+  allstudents(id).then(res=>{
+    console.log(res.students)
+  })
+}
+getallstudents()
 </script>
 
 <style scoped>
