@@ -1,7 +1,7 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, onMounted } from 'vue'
-import { userLoginService} from '@/api/user.js'
+import { userLoginService,userUserInfo } from '@/api/user.js'
 import { useUserStore } from '@/stores/user.js'
 import { useRouter } from 'vue-router'
 import SIdentify from '@/components/Sidentify.vue'
@@ -138,14 +138,12 @@ const forgotPasswordModal = ref(false)
     </el-col>
   </el-row>
 
-   <!-- <div> -->
-    <el-dialog title="找回密码" align-center v-model="forgotPasswordModal" append-to-body width="350px" :modal-append-to-body="false" center custom-class="forgot-password-dialog" style="height: 200px;">
-      <div class="forgot-password-options">
-        <el-button round @click="forgotPassword('email')">通过邮箱找回</el-button>
-        <!-- <el-button round style="margin-left: 0px;" @click="forgotPassword('phone')">通过手机找回</el-button> -->
-      </div>
-    </el-dialog>
-  <!-- </div> -->
+  <el-dialog title="找回密码" align-center v-model="forgotPasswordModal" append-to-body width="350px" :modal-append-to-body="false" center custom-class="forgot-password-dialog" style="height: 200px;">
+    <div class="forgot-password-options">
+      <el-button round @click="forgotPassword('email')">通过邮箱找回</el-button>
+      <el-button round style="margin-left: 0px;" @click="forgotPassword('phone')">通过手机找回</el-button>
+    </div>
+  </el-dialog>
 </template>
 
 <style lang="scss" scoped>
