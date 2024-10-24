@@ -32,7 +32,7 @@ import httpInstance from "@/utils/http.js"
   
   //修改用户信息
   export const userChange_info = ({ old_pwd, new_pwd, re_pwd }) =>
-  httpInstance.post('/user/change_info', { old_pwd, new_pwd, re_pwd })
+  httpInstance.post('/user/change-info', { old_pwd, new_pwd, re_pwd })
 
 
   //获取用户信息
@@ -43,7 +43,7 @@ import httpInstance from "@/utils/http.js"
 
   //修改/找回密码
   export const userchange_password = ({ id,password,newPassword }) =>
-  httpInstance.post('/user/change_password', { id,password,newPassword })  
+  httpInstance.post('/user/change-password', { id,password,newPassword })
 
   //找回密码 邮箱 
   export const resetPwdEmail = ({ id,email,idCardNumber  }) =>
