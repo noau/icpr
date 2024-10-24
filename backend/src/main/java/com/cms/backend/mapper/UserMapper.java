@@ -145,4 +145,38 @@ public interface UserMapper {
     @Update("update user set fans_number = user.fans_number - 1 where id = #{subscriptionId}")
     void deleteSubscriber(Integer subscriptionId);
 
+    @Results({
+            @Result(property = "userId", column = "user_id"),
+            @Result(property = "threadId", column = "thread_id"),
+            @Result(property = "courseId", column = "course_id"),
+            @Result(property = "replyId", column = "reply_id"),
+            @Result(property = "createdAt", column = "created_at")
+    })
+    @Insert("insert into discussion_like (user_id, thread_id, course_id, reply_id, created_at) values (#{userId}, #{threadId}, #{courseId}, #{replyId}, #{createdAt})")
+    void like(Integer userId, Integer threadId, String courseId, Integer replyId, String createdAt);
+
+    @Results({
+            @Result(property = "threadId", column = "id")
+    })
+    @Update("update discussion_thread set likes = likes + 1 where id = #{threadId}")
+    void addLikeThread(Integer threadId);
+
+    @Results({
+            @Result(property = "replyId", column = "id")
+    })
+    @Update("update discussion_reply set likes = likes + 1 where id = #{replyId}")
+    void addLikeReply(Integer replyId);
+
+    @Results({
+            @Result(property = "threadId", column = "id")
+    })
+    @Update("update discussion_thread set favorites = favorites + 1 where id = #{threadId}")
+    void addFavorites(Integer threadId);
+
+    @Update("update discussion_thread set likes = likes - 1 where id = #{id}")
+    void deleteLikeThread(Integer id);
+
+    @Update("update discussion_reply set likes = likes - 1 where id = #{id}")
+    void deleteLikeReply(Integer id);
+
 }

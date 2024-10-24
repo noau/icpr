@@ -125,4 +125,34 @@ public class UserServiceImpl implements UserService {
         userMapper.deleteSubscriber(subscriptionId);
     }
 
+    @Override
+    public void like(Integer userId, Integer threadId, String courseId, Integer replyId, String createdAt) {
+        userMapper.like(userId, threadId, courseId, replyId, createdAt);
+    }
+
+    @Override
+    public void addLikeThread(Integer threadId) {
+        userMapper.addLikeThread(threadId);
+    }
+
+    @Override
+    public void addLikeReply(Integer replyId) {
+        userMapper.addLikeReply(replyId);
+    }
+
+    @Override
+    public void addFavorites(Integer threadId) {
+        userMapper.addFavorites(threadId);
+    }
+
+    @Override
+    public void deleteLikeThread(Integer id) {
+        userMapper.deleteLikeThread(id);
+    }
+
+    @Override
+    public void deleteLikeReply(Integer id) {
+        userMapper.deleteLikeReply(id);
+    }
+
 }
