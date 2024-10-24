@@ -1,5 +1,6 @@
 package com.cms.backend.controller;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.Assignments.AssignmentReview;
 import com.cms.backend.pojo.Attachment;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Validated
 @RestController
@@ -56,6 +58,32 @@ public class CourseController {
 
         return ResponseEntity.ok(studentList);
     }
+
+    @PostMapping(value = "/export-student-list")
+    public ResponseEntity<ExportStudentList> exportStudentList(@RequestParam String id) {
+        // 获取课程的所有学生列表
+        List<User> students = courseService.getAllStudents(id);
+
+        // 将 User 对象转换为 Student 对象
+        List<Student> studentList = students.stream()
+                .map(user -> new Student(user.getId(), user.getName()))
+                .collect(Collectors.toList());
+
+        // 定义文件的保存路径
+        String fileName = "D:\\nginx\\nginx-1.26.2\\ICPRFiles\\" + id + "学生列表" + ".xlsx";
+
+        // 使用 EasyExcel 写入文件，这里使用 Student 作为 Excel 数据模型
+        EasyExcel.write(fileName, Student.class).sheet("学生信息").doWrite(studentList);
+
+        // 定义文件在服务器上的 URL
+        String url = "http://localhost:65/" + id + "学生列表" + ".xlsx";
+
+        // 返回课程ID和文件的URL
+        return ResponseEntity.ok(new ExportStudentList(id, url));
+    }
+
+
+
 
     @PostMapping(value = "/resource-exam")
     public ResponseEntity<String> uploadResourceExam(@RequestBody CourseResourcesDTO courseResources) {
@@ -264,6 +292,13 @@ public class CourseController {
 
     @Data
     @AllArgsConstructor
+    public static class Student {
+        private Integer id;
+        private String name;
+    }
+
+    @Data
+    @AllArgsConstructor
     public static class CourseList {
 
         private List<Course> courses;
@@ -346,6 +381,11 @@ public class CourseController {
 
     @Data
     @AllArgsConstructor
+    public static class ExportStudentList {
+        private String id;
+        private String url;
+    }
+  
     public static class AttachmentFolder {
 
         private Integer id;
@@ -355,5 +395,4 @@ public class CourseController {
         private Integer parentId;
 
     }
-
 }
