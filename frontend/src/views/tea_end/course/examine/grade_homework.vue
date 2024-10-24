@@ -1,7 +1,8 @@
 <template>
   <div>
     <!-- Back Button -->
-    <el-button round @click="goBack" type="primary" style="margin-bottom: 18px; margin-top: -20px; margin-left: -20px;">返回</el-button>
+    <el-button round @click="goBack" type="primary"
+      style="margin-bottom: 18px; margin-top: 0px; margin-left: -20px;">返回</el-button>
 
     <!-- Homework Title and Submission Time Header -->
     <el-card shadow="always" class="header-card">
@@ -59,13 +60,8 @@
 
       <!-- Pagination Section -->
       <div class="pagination-container">
-        <el-pagination
-          layout="prev, pager, next"
-          :total="filteredData.length"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          @current-change="handlePageChange"
-        />
+        <el-pagination layout="prev, pager, next" :total="filteredData.length" :page-size="pageSize"
+          :current-page="currentPage" @current-change="handlePageChange" />
       </div>
     </el-card>
   </div>
@@ -87,31 +83,31 @@ const goBack = () => {
   router.back();
 };
 const tableData = ref([])
-import { getReviewList } from '@/api/assignments.js'    
-const init = async()=>{
+import { getReviewList } from '@/api/assignments.js'
+const init = async () => {
   tableData.value = [
     {
-        "id": 11,
-        "assignmentId": 10,
-        "studentId": 62,
-        "submittedAt": "2012-07-27 06:53:22",
-        "content": "minim deserunt",
-        "attachments": [
-            89
-        ]
+      "id": 11,
+      "assignmentId": 10,
+      "studentId": 62,
+      "submittedAt": "2012-07-27 06:53:22",
+      "content": "minim deserunt",
+      "attachments": [
+        89
+      ]
     },
     {
-        "id": 30,
-        "assignmentId": 61,
-        "studentId": 17,
-        "submittedAt": "2021-04-14 15:14:17",
-        "content": "sunt reprehenderit Excepteur",
-        "attachments": [
-            71
-        ]
+      "id": 30,
+      "assignmentId": 61,
+      "studentId": 17,
+      "submittedAt": "2021-04-14 15:14:17",
+      "content": "sunt reprehenderit Excepteur",
+      "attachments": [
+        71
+      ]
     }
   ];
-  const res = await getReviewList({id:route.query.id}) 
+  const res = await getReviewList({ id: route.query.id })
   tableData.value = res;
 }
 init();
@@ -167,13 +163,25 @@ const pageSize = ref(8);
 const currentPage = ref(1);
 
 // Paginated data based on current page
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  return filteredData.value.slice(start, start + pageSize.value);
-});
-
+// const paginatedData = computed(() => {
+//   const start = (currentPage.value - 1) * pageSize.value;
+//   return filteredData.value.slice(start, start + pageSize.value);
+// });
+const paginatedData = [
+  {
+    id: '20233007',
+    name: '龚敏',
+    class: '软件2201',
+    email: 'gongmin@example.com',
+    submitTime: '2023-12-26 14:31:36',
+    score: 100,
+    reworkCount: 0,
+    finalScore: 100,
+    submitted: true,
+  },
+]
 const handleEdit = (row) => {
-  router.push('/tea-end/course/examine/rating-page?id='+route.query.id);
+  router.push('/tea-end/course/examine/rating-page?id=' + route.query.id);
 };
 
 const handleDelete = (row) => {
@@ -205,12 +213,11 @@ const filterSubmitted = (type) => {
 }
 
 .left-section {
-  margin-top: -70px;
   background-color: #ffffff;
 }
 
 .right-section {
-  margin-top: -70px;
+  margin-top: -40px;
   display: flex;
   justify-content: flex-end;
 }
