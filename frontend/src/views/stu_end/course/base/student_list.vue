@@ -5,7 +5,8 @@
         <ul>
           <li v-for="(item, index) in paginatedData" :key="index">
             <div class="forum-list-info">
-              <img :src="item.avatar" alt="avatar" style="width: 30px; height: 0px; margin-right: 10px; margin-left: 20px;  border-radius: 0%;" />
+              <img :src="item.avatar" alt="avatar"
+                style="width: 30px; height: 0px; margin-right: 10px; margin-left: 20px;  border-radius: 0%;" />
               <h3 class="student-info">
                 学号：{{ item.studentId }} <span class="spacing"></span> 姓名: {{ item.name }}
               </h3>
@@ -15,13 +16,8 @@
         </ul>
       </div>
       <div class="pagination-container">
-        <el-pagination
-          layout="prev, pager, next"
-          :total="tableData.length"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          @current-change="handleCurrentChange"
-        />
+        <el-pagination layout="prev, pager, next" :total="tableData.length" :page-size="pageSize"
+          :current-page="currentPage" @current-change="handleCurrentChange" />
       </div>
     </el-card>
   </div>
@@ -92,13 +88,15 @@ function handleCurrentChange(page) {
 }
 
 .forum-list ul {
-  list-style-type: none; /* 用更具体的选择器 */
+  list-style-type: none;
+  /* 用更具体的选择器 */
 }
 
 
 .forum-list-info {
   display: flex;
-  justify-content: flex-start; /* 左对齐 */
+  justify-content: flex-start;
+  /* 左对齐 */
   align-items: center;
   margin-top: 10px;
 }
@@ -106,11 +104,13 @@ function handleCurrentChange(page) {
 .student-info {
   font-size: 16px;
   font-weight: bold;
-  margin-left: 10px; /* 减少左边距 */
+  margin-left: 10px;
+  /* 减少左边距 */
 }
 
 img {
-  margin-left: 10px; /* 如果头像过远，可以减少头像左边距 */
+  margin-left: 10px;
+  /* 如果头像过远，可以减少头像左边距 */
 }
 
 .spacing {
@@ -127,6 +127,4 @@ hr {
   justify-content: center;
   margin-top: 20px;
 }
-
 </style>
-
