@@ -372,7 +372,7 @@ function createDirectory() {
   //   newDirectory.value.description = '';
   // }
   createattachmentfolder({
-    name: newDirectory.value.name,
+    folderName: newDirectory.value.name,
     id: localStorage.getItem('kcid')
   }).then(res => {
     console.log(res);
