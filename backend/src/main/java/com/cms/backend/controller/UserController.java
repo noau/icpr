@@ -5,15 +5,14 @@ import com.aliyun.auth.credentials.provider.StaticCredentialProvider;
 import com.aliyun.sdk.service.dysmsapi20170525.AsyncClient;
 import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsRequest;
 import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsResponse;
+import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.DTO.*;
-import com.cms.backend.pojo.Favorite;
-import com.cms.backend.pojo.Folder;
-import com.cms.backend.pojo.Follow;
-import com.cms.backend.pojo.User;
 import com.cms.backend.service.UserService;
 import com.cms.backend.utils.JWTUtils;
 import com.google.gson.Gson;
 import darabonba.core.client.ClientOverrideConfiguration;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -161,6 +160,7 @@ public class UserController {
         Integer folderId = favorites.getFolderId();
         String createdAt = favorites.getCreatedAt();
         userService.addFavorite(userId, threadId, folderId, createdAt);
+        userService.addFavorites(threadId);
         return ResponseEntity.ok("");
     }
 
@@ -316,6 +316,42 @@ public class UserController {
                 return ResponseEntity.status(500).body("短信发送失败!");
             }
         }
+    }
+
+    @PostMapping(value = "/discussion/like")
+    public ResponseEntity<String> like(@RequestBody DiscussionLike discussionLike) {
+        System.out.println(discussionLike.getCreatedAt());
+        if (discussionLike.getThreadId() != 0) {
+            userService.like(discussionLike.getUserId(), discussionLike.getThreadId(), discussionLike.getCourseId(), null, discussionLike.getCreatedAt());
+            userService.addLikeThread(discussionLike.getThreadId());
+        } else {
+            userService.like(discussionLike.getUserId(), null, discussionLike.getCourseId(), discussionLike.getReplyId(), discussionLike.getCreatedAt());
+            userService.addLikeReply(discussionLike.getReplyId());
+        }
+
+        return ResponseEntity.ok("");
+    }
+
+    @DeleteMapping(value = "/discussion/delete-like")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<String> deleteLike(@RequestBody DiscussionLikeDTO discussionLikeDTO) {
+        if (discussionLikeDTO.isThread == 1) {
+            userService.deleteLikeThread(discussionLikeDTO.id);
+        } else {
+            userService.deleteLikeReply(discussionLikeDTO.id);
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class DiscussionLikeDTO {
+
+        private Integer id;
+
+        private Integer isThread;
+
     }
 
 }
