@@ -45,7 +45,6 @@
           </el-button>
           <br>
           <br>
-
         </div>
       </div>
     </el-card>
@@ -57,6 +56,7 @@
         <p>这里是教师的简介内容。</p>
         <p>这里是教师的简介内容。</p>
         <p>这里是教师的简介内容。</p>
+
     </el-card>
   </div>
 </template>
