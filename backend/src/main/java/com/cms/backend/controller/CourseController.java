@@ -385,7 +385,8 @@ public class CourseController {
         private String id;
         private String url;
     }
-  
+    @Data
+    @AllArgsConstructor
     public static class AttachmentFolder {
 
         private Integer id;

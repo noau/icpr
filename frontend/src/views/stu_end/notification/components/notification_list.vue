@@ -53,6 +53,7 @@ import { ref } from 'vue'
 const userId = useUserStore()?.id; 
 const pageList = ref();
 const init = async()=>{
+  console.log("wertyutrewwergtyjukoiuytrgef" + userId)
   let res =   await notificationsGet({id:userId});
   console.log(res.notifications);
 
