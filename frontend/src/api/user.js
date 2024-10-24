@@ -54,8 +54,8 @@ import httpInstance from "@/utils/http.js"
   httpInstance.post('/user/reset-pwd-phone', { id,phoneNumber,idCardNumber })  
   
  //上传用户头像
- export const setAvatar = ({  }) =>
- httpInstance.post('/user/avatar', {   }) 
+ export const setAvatar = ({id,avatar  }) =>
+ httpInstance.post('/user/avatar', {id,avatar   }) 
 
   //获取所有粉丝
   export const userFollowers = ({ id }) =>
@@ -76,16 +76,18 @@ import httpInstance from "@/utils/http.js"
   
   //创建收藏夹
   export const userCreate_folder = ({ userId,name,createdAt,isPrivate }) =>
-  httpInstance.post('/user/create_folder', { userId,name,createdAt,isPrivate }) 
+  httpInstance.post('/user/create-folder', { userId,name,createdAt,isPrivate }) 
 
 
   //收藏帖子
-  export const userCreate_favorite = ({ userId,threadId,folderId,createdAt }) =>
-  httpInstance.post('/user/create_favorite', { userId,threadId,folderId,createdAt }) 
+  export const userCreate_favorite = ({ userId,threadId,folderId }) =>
+  httpInstance.post('/user/create-favorite', { userId,threadId,folderId }) 
+
 
   //点赞
   export const discussionlike = ({ id }) =>
   httpInstance.post('/user/discussion/like', { id })
+
 
   //取消关注 
   export const getDeleteSubscription = ({ id }) =>
@@ -94,4 +96,8 @@ import httpInstance from "@/utils/http.js"
   export const getdDiscussionlike = ({ id }) =>
   httpInstance.post('/user/make-subscription', { id })
 
+
  
+// /user/delete-favorite
+  export const userDelete_favorite = ({ id }) =>
+  httpInstance.delete('/user/delete-favorite', { id })

@@ -40,6 +40,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import {getexam} from '@/api/course'
 
 const tableData = ref([
   { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
@@ -103,6 +104,17 @@ function handleSearch() {
 }
 
 filteredData.value = tableData.value;
+function getexamList() {
+  let id=localStorage.getItem('kcid')
+  getexam(id).then(res => {
+    console.log(res.attachmentIdList);
+    
+  }).catch(err => {
+    console.log(err);
+  });
+}
+
+getexamList();
 </script>
 
 <style scoped>

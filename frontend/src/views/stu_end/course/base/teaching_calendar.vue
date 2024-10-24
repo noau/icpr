@@ -1,42 +1,42 @@
 <template>
-    <el-card class="course-card">
-      <div class="course-header">
-        <div class="course-name">课程名</div>
-      </div>
-      <div class="course-info">
-        教学大纲的详细内容
-      </div>
-    </el-card>
+    <vue-office-pdf 
+        :src="pdf"
+        style="height: 100vh"
+        @rendered="renderedHandler"
+        @error="errorHandler"
+    />
   </template>
   
-  <script setup>
-  import { Notebook } from '@element-plus/icons-vue';
+  <script>
+  //引入VueOfficePdf组件
+  import VueOfficePdf from '@vue-office/pdf'
+  import { getcalendar } from '@/api/course'
+  
+  export default {
+    components: {
+        VueOfficePdf
+    },
+    data() {
+        return {
+            pdf: 'http://static.shanhuxueyuan.com/test.pdf' //设置文档地址
+        }
+      },
+    mounted () {
+        this.getCalendar()
+    },
+    methods: {
+        renderedHandler() {
+            console.log("渲染完成")
+        },
+        errorHandler() {
+            console.log("渲染失败")
+        },
+        getCalendar() {
+            let id = localStorage.getItem('kcid')
+            getcalendar(id).then(res => {
+                console.log(res)
+            })
+        }
+    }
+  }
   </script>
-  
-  <style scoped>
-  .course-card {
-    width: 100%;          /* 使卡片占满列的宽度 */
-    height: auto;         /* 高度根据内容自动调整 */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 10px;
-  }
-  
-  .course-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px; /* 增加下方信息的间距 */
-  }
-  
-  .course-name {
-    font-size: 16px;
-    font-weight: bold;
-  }
-  
-  .course-info {
-    font-size: 14px;
-    color: gray;
-  }
-  </style>
-  

@@ -1,12 +1,14 @@
 <template v-slot:header>
-  <el-row :gutter="20" class="header" style="margin-top: -30px; margin-left: 10px; margin-right: 20px;">
+  <el-row :gutter="20" class="header" style="margin-top: 10px; margin-left: 10px; margin-right: 20px;">
     <el-col :span="12">
       <el-button round type="primary" @click="openUploadDialog" style="padding:10px;">上传文件</el-button>
       <el-button round type="primary" @click="openCreateDialog" style="padding:10px;">新建目录</el-button>
     </el-col>
     <el-col :span="12" style="text-align: right;">
       <el-button circle type="primary" @click="batchDelete" style="padding:10px;">
-        <el-icon><Delete /></el-icon>
+        <el-icon>
+          <Delete />
+        </el-icon>
       </el-button>
     </el-col>
   </el-row>
@@ -14,7 +16,8 @@
     <!-- 目录卡片 -->
     <el-card style="margin-top: 2px;">
       <div class="forum-list" id="directory-data" style="max-height: 200px; margin-top: -10px; overflow-y: auto;">
-        <el-table :data="directoryData" style="width: 100%;" class="resource-table" @selection-change="handleDirectorySelectionChange">
+        <el-table :data="directoryData" style="width: 100%;" class="resource-table"
+          @selection-change="handleDirectorySelectionChange">
           <el-table-column type="selection" width="55" />
           <el-table-column prop="name" label="目录名称" width="300" align="center" header-align="center">
             <template #default="scope">
@@ -43,9 +46,11 @@
     <!-- 文件排序方式选择 -->
     <el-row :gutter="20" class="header" style="margin-top: 10px;">
       <el-col :span="12" style="margin-left: 20px;">
-        <el-select v-model="selectedDirectory" placeholder="选择目录" style="width: 200px; margin-right: 15px; margin-left: -20px;" @change="handleDirectoryChange">
+        <el-select v-model="selectedDirectory" placeholder="选择目录"
+          style="width: 200px; margin-right: 15px; margin-left: -20px;" @change="handleDirectoryChange">
           <el-option label="所有文件" value="all" />
-          <el-option v-for="directory in directoryData" :key="directory.name" :label="directory.name" :value="directory.name" />
+          <el-option v-for="directory in directoryData" :key="directory.name" :label="directory.name"
+            :value="directory.name" />
         </el-select>
         <el-select v-model="sortOrder" placeholder="选择排序方式" style="width: 200px;" @change="handleSortChange">
           <el-option label="按文件名称排序" value="name" />
@@ -57,14 +62,17 @@
       </el-col>
       <el-col :span="2">
         <el-button circle style="margin-left: 115px; padding: 10px;" type="primary" @click="handleSearch">
-          <el-icon><Search /></el-icon>
+          <el-icon>
+            <Search />
+          </el-icon>
         </el-button>
       </el-col>
     </el-row>
     <!-- 文件卡片 -->
     <el-card style="margin-top: 2px;">
       <div class="forum-list" id="file-data" style="max-height: 300px; margin-top: -10px; overflow-y: auto;">
-        <el-table :data="sortedFiles" style="width: 100%;" class="resource-table" @selection-change="handleFileSelectionChange">
+        <el-table :data="sortedFiles" style="width: 100%;" class="resource-table"
+          @selection-change="handleFileSelectionChange">
           <el-table-column type="selection" width="55" />
           <el-table-column prop="name" label="文件名称" width="350" align="center" header-align="center">
             <template #default="scope">
@@ -92,19 +100,14 @@
             <template #default="scope">
               <!-- <el-button type="text" @click="openEditFileDialog(scope.row)">编辑</el-button> -->
               <el-button type="text" @click="handleDownload(scope.row)">下载</el-button>
-              <el-button type="text" @click="handleDeleteFile(scope.row)">删除</el-button> 
+              <el-button type="text" @click="handleDeleteFile(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
       </div>
       <div class="pagination-container">
-        <el-pagination
-          layout="prev, pager, next"
-          :total="sortedFiles.length"
-          :page-size="pageSize"
-          :current-page="currentPage"
-          @current-change="handleCurrentChange"
-        />
+        <el-pagination layout="prev, pager, next" :total="sortedFiles.length" :page-size="pageSize"
+          :current-page="currentPage" @current-change="handleCurrentChange" />
       </div>
     </el-card>
   </div>
@@ -116,10 +119,10 @@
         <el-input v-model="newDirectory.name" maxlength="60"></el-input>
         <span class="input-tip">目录名称长度不超过60个汉字</span>
       </el-form-item>
-      <el-form-item label="目录描述" :label-width="formLabelWidth">
+      <!-- <el-form-item label="目录描述" :label-width="formLabelWidth">
         <el-input type="textarea" v-model="newDirectory.description" maxlength="300"></el-input>
         <span class="input-tip">300字以内</span>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <template v-slot:footer>
       <div class="dialog-footer">
@@ -136,15 +139,15 @@
         <el-input v-model="currentDirectory.name" maxlength="60"></el-input>
         <span class="input-tip">目录名称长度不超过60个汉字</span>
       </el-form-item>
-      <el-form-item label="目录描述" :label-width="formLabelWidth">
+      <!-- <el-form-item label="目录描述" :label-width="formLabelWidth">
         <el-input type="textarea" v-model="currentDirectory.description" maxlength="300"></el-input>
         <span class="input-tip">300字以内</span>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
     <template v-slot:footer>
       <div class="dialog-footer">
         <el-button round type="primary" @click="updateDirectory">确定</el-button>
-        <el-button round @click="editDialogVisible = false">取消</el-button>    
+        <el-button round @click="editDialogVisible = false">取消</el-button>
       </div>
     </template>
   </el-dialog>
@@ -152,23 +155,22 @@
   <!-- 上传文件对话框 -->
   <el-dialog title="上传文件" v-model="uploadDialogVisible">
     <el-form :model="newFile">
-      <el-form-item label="课程资源名称" :label-width="formLabelWidth">
+      <!-- <el-form-item label="课程资源名称" :label-width="formLabelWidth">
         <el-input v-model="newFile.name" maxlength="60"></el-input>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="上传文件" :label-width="formLabelWidth">
-        <el-upload
-          action="#"
-          :before-upload="beforeUpload"
-          :on-success="handleUploadSuccess"
-          :file-list="fileList"
-        >
+        <el-upload action="http://localhost:8080/attachment/upload" :before-upload="beforeUpload"
+          :on-success="handleUploadSuccess" :file-list="fileList" :headers="headers">
+          <!-- :headers="headers" -->
           <el-button round type="primary">点击上传</el-button>
         </el-upload>
-        <span class="input-tip">允许上传的文件类型: doc, pdf, ppt, xls, docx, pptx, xlsx, mp4, mp3, avi, wmv, 3gp, mov, rmvb, flv, f4v, asf, asx, jpg, gif, jpeg, png, bmp, zip, rar, 文件不超过2G。</span>
+        <span class="input-tip">允许上传的文件类型: doc, pdf, ppt, xls, docx, pptx, xlsx, mp4, mp3, avi, wmv, 3gp, mov, rmvb,
+          flv,
+          f4v, asf, asx, jpg, gif, jpeg, png, bmp, zip, rar, 文件不超过2G。</span>
       </el-form-item>
-      <el-form-item label="描述" :label-width="formLabelWidth">
+      <!-- <el-form-item label="描述" :label-width="formLabelWidth">
         <el-input type="textarea" v-model="newFile.description" maxlength="300"></el-input>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="允许学生下载" :label-width="formLabelWidth">
         <el-radio-group v-model="newFile.allowDownload">
           <el-radio :label="true">是</el-radio>
@@ -213,7 +215,10 @@
 import { ref, computed } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-
+import { deleteFile, getppt, resourceppt, createattachmentfolder } from '@/api/course'
+const headers = {
+  Authorization: localStorage.getItem('token')
+}
 const handleShare = (file) => {
   if (navigator.share) {
     // 使用 Web Share API
@@ -222,8 +227,8 @@ const handleShare = (file) => {
       text: `我想分享文件: ${file.name}`,
       url: file.url,
     })
-    .then(() => console.log('分享成功'))
-    .catch(error => console.error('分享失败:', error));
+      .then(() => console.log('分享成功'))
+      .catch(error => console.error('分享失败:', error));
   } else {
     // 兼容不支持 Web Share API 的浏览器
     const shareLink = document.createElement('textarea');
@@ -237,33 +242,33 @@ const handleShare = (file) => {
 };
 
 const directoryData = ref([
-  { 
-    name: '2023-2024第一学期', 
-    published: true, 
+  {
+    name: '2023-2024第一学期',
+    published: true,
     description: '这是2023-2024学年的第一学期',
     files: [
-    { name: '文件2.pdf', url: 'https://example.com/file2.pdf', allowDownload: true, published: true, uploadTime: '2023-02-01' },
+      { name: '文件2.pdf', url: 'https://example.com/file2.pdf', allowDownload: true, published: true, uploadTime: '2023-02-01' },
       { name: '文件1.pdf', url: 'https://example.com/file1.pdf', allowDownload: true, published: true, uploadTime: '2023-01-01' },
-      
-    ] 
+
+    ]
   },
-  { 
-    name: '2023-2023第二学期', 
-    published: true, 
+  {
+    name: '2023-2023第二学期',
+    published: true,
     description: '这是2023-2023学年的第二学期',
     files: [
       { name: '文件3.pdf', url: 'https://example.com/file3.pdf', allowDownload: true, published: true, uploadTime: '2023-03-01' },
       { name: '文件4.pdf', url: 'https://example.com/file4.pdf', allowDownload: true, published: true, uploadTime: '2023-04-01' }
-    ] 
+    ]
   },
-  { 
-    name: '2022-2023第一学期', 
-    published: true, 
+  {
+    name: '2022-2023第一学期',
+    published: true,
     description: '这是2022-2023学年的第一学期',
     files: [
       { name: '文件5.pdf', url: 'https://example.com/file5.pdf', allowDownload: true, published: true, uploadTime: '2023-05-01' },
       { name: '文件6.pdf', url: 'https://example.com/file6.pdf', allowDownload: true, published: true, uploadTime: '2023-06-01' }
-    ] 
+    ]
   },
   // ... 其他目录数据 ...
 ]);
@@ -355,17 +360,23 @@ function openCreateDialog() {
 }
 
 function createDirectory() {
-  if (newDirectory.value.name && newDirectory.value.description) {
-    directoryData.value.push({
-      name: newDirectory.value.name,
-      description: newDirectory.value.description,
-      published: false,
-      files: []
-    });
-    createDialogVisible.value = false;
-    newDirectory.value.name = '';
-    newDirectory.value.description = '';
-  }
+  // if (newDirectory.value.name && newDirectory.value.description) {
+  //   directoryData.value.push({
+  //     name: newDirectory.value.name,
+  //     description: newDirectory.value.description,
+  //     published: false,
+  //     files: []
+  //   });
+  //   createDialogVisible.value = false;
+  //   newDirectory.value.name = '';
+  //   newDirectory.value.description = '';
+  // }
+  createattachmentfolder({
+    folderName: newDirectory.value.name,
+    id: localStorage.getItem('kcid')
+  }).then(res => {
+    console.log(res);
+  })
 }
 
 function openUploadDialog() {
@@ -381,34 +392,45 @@ function beforeUpload(file) {
   // 文件上传前的处理逻辑
   return true;
 }
-
+const uploadProps = ref({
+  attachmentIdList: []
+})
 function handleUploadSuccess(response, file, fileList) {
   newFile.value.url = file.url;
+  console.log(response);
+  uploadProps.value.attachmentIdList.push(response.id)
+  uploadProps.value.id = localStorage.getItem('kcid')
+
 }
 
 function uploadFile() {
-  if (newFile.value.name && newFile.value.url) {
-    const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
-    if (directory) {
-      directory.files.push({
-        name: newFile.value.name,
-        description: newFile.value.description,
-        allowDownload: newFile.value.allowDownload,
-        url: newFile.value.url,
-        published: false,
-        uploadTime: new Date().toISOString().split('T')[0] // 添加上传时间
-      });
-    }
-    uploadDialogVisible.value = false;
-    newFile.value.name = '';
-    newFile.value.description = '';
-    newFile.value.allowDownload = true;
-    newFile.value.url = '';
-    fileList.value = [];
-    handleSearch(); // 更新搜索结果
-  } else {
-    this.$message.error('请填写完整信息并上传文件');
-  }
+  console.log(uploadProps.value);
+
+  resourceppt(uploadProps.value).then(res => {
+    console.log(res)
+  })
+  // if (newFile.value.name && newFile.value.url) {
+  //   const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
+  //   if (directory) {
+  //     directory.files.push({
+  //       name: newFile.value.name,
+  //       description: newFile.value.description,
+  //       allowDownload: newFile.value.allowDownload,
+  //       url: newFile.value.url,
+  //       published: false,
+  //       uploadTime: new Date().toISOString().split('T')[0] // 添加上传时间
+  //     });
+  //   }
+  //   uploadDialogVisible.value = false;
+  //   newFile.value.name = '';
+  //   newFile.value.description = '';
+  //   newFile.value.allowDownload = true;
+  //   newFile.value.url = '';
+  //   fileList.value = [];
+  //   handleSearch(); // 更新搜索结果
+  // } else {
+  //   this.$message.error('请填写完整信息并上传文件');
+  // }
 }
 
 function openEditDialog(directory) {
@@ -417,11 +439,12 @@ function openEditDialog(directory) {
 }
 
 function updateDirectory() {
-  const index = directoryData.value.findIndex(dir => dir.name === currentDirectory.value.name);
-  if (index !== -1) {
-    directoryData.value[index] = { ...currentDirectory.value };
-  }
-  editDialogVisible.value = false;
+  // const index = directoryData.value.findIndex(dir => dir.name === currentDirectory.value.name);
+  // if (index !== -1) {
+  //   directoryData.value[index] = { ...currentDirectory.value };
+  // }
+  // editDialogVisible.value = false;
+
 }
 
 function openEditFileDialog(file) {
@@ -448,6 +471,13 @@ function handleDeleteDirectory(item) {
 }
 
 function handleDeleteFile(item) {
+  deleteFile(item.id).then(res => {
+    if (res.data.code === 200) {
+      ElMessage.success('删除成功')
+    } else {
+      ElMessage.error('删除失败')
+    }
+  })
   const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
   if (directory) {
     const index = directory.files.indexOf(item);
@@ -455,6 +485,7 @@ function handleDeleteFile(item) {
       directory.files.splice(index, 1);
     }
   }
+
 }
 
 function handleDirectorySelectionChange(val) {
@@ -503,6 +534,13 @@ const sortedFiles = computed(() => {
   }
   return files;
 });
+function getpptlist() {
+  let id = localStorage.getItem('kcid')
+  getppt(id).then(res => {
+    console.log(res)
+  })
+}
+getpptlist()
 </script>
 
 <style scoped>

@@ -1,6 +1,6 @@
 <template>
   <div class="student-list">
-    <el-row :gutter="20" class="header" style="margin-top: -25px; margin-bottom: 5px; margin-left: 10px;">
+    <el-row :gutter="20" class="header" style="margin-top: -0px; margin-bottom: 5px; margin-left: 10px;">
       <el-col :span="8">
         <el-form :inline="true" :model="form">
           <el-form-item label="">
@@ -20,7 +20,8 @@
         <div class="forum-list" id="data" style="max-height: 500px; overflow-y: auto;">
           <el-table :data="paginatedData" style="width: 100%;" class="student-table">
             <el-table-column prop="index" label="序号" width="100" align="center" header-align="center"></el-table-column>
-            <el-table-column prop="studentId" label="学号" width="200" align="center" header-align="center"></el-table-column>
+            <el-table-column prop="studentId" label="学号" width="200" align="center"
+              header-align="center"></el-table-column>
             <el-table-column prop="name" label="姓名" width="200" align="center" header-align="center"></el-table-column>
             <el-table-column prop="class" label="班级" width="200" align="center" header-align="center"></el-table-column>
             <el-table-column prop="email" label="邮箱" width="220" align="center" header-align="center"></el-table-column>
@@ -28,13 +29,8 @@
           </el-table>
         </div>
         <div class="pagination-container">
-          <el-pagination
-            layout="prev, pager, next"
-            :total="filteredStudentList.length"
-            :page-size="pageSize"
-            :current-page="currentPage"
-            @current-change="handleCurrentChange"
-          />
+          <el-pagination layout="prev, pager, next" :total="filteredStudentList.length" :page-size="pageSize"
+            :current-page="currentPage" @current-change="handleCurrentChange" />
         </div>
       </el-card>
     </div>
@@ -43,6 +39,8 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { allstudents,exportstudentlist } from '@/api/course'
+
 
 const form = ref({
   query: ''
@@ -92,12 +90,23 @@ const search = () => {
 
 const exportStudentList = () => {
   console.log('导出学生名单');
+  let id=localStorage.getItem('kcid')
+  exportstudentlist(id).then(res => {
+    console.log(res)
+  })
   // 这里可以添加导出学生名单的逻辑，例如生成 CSV 文件并下载
 };
 
 function handleCurrentChange(page) {
   currentPage.value = page;
 }
+function getallstudents() {
+  let id = localStorage.getItem('kcid')
+  allstudents(id).then(res => {
+    console.log(res.students)
+  })
+}
+getallstudents()
 </script>
 
 <style scoped>

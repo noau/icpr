@@ -51,4 +51,16 @@ public interface UserService {
 
     void deleteSubscriber(Integer subscriptionId);
 
+    void like(Integer userId, Integer threadId, String courseId, Integer replyId, String createdAt);
+
+    void addLikeThread(Integer ThreadId);
+
+    void addLikeReply(Integer replyId);
+
+    void addFavorites(Integer threadId);
+
+    void deleteLikeThread(Integer id);
+
+    void deleteLikeReply(Integer id);
+
 }

@@ -3,6 +3,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/',
+      redirect: '/stu-end/login'
+    },
     // 找回密码路由（学生、教师统一）
     {
       path: '/forgot-password/email',
@@ -26,6 +30,10 @@ const router = createRouter({
       component: () => import('@/views/stu_end/login/index.vue')
     },
 
+    {
+      path: '/stu-end/notification',
+      component: () => import('@/views/stu_end/notification/index.vue')
+    },
     {
       path: '/notification',
       component: () => import('@/views/stu_end/notification/index.vue')
@@ -129,10 +137,6 @@ const router = createRouter({
       path: '/tea-end/login',
       component: () => import('@/views/tea_end/login/index.vue')
     },
-    {
-      path: '/tea-end/profile',
-      component: () => import('@/views/tea_end/profile/index.vue')
-    }, 
     {
       path: '/tea-end/notification',
       component: () => import('@/views/tea_end/notification/index.vue')

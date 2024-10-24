@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -85,30 +86,34 @@ public class CourseController {
 
 
     @PostMapping(value = "/resource-exam")
-    public ResponseEntity<String> uploadResourceExam(@RequestBody CourseResources courseResources) {
-        List<Integer> attachments = courseResources.getAttachmentIdList();
-        for (var attachmentId : attachments) {
-            courseService.uploadResourceExam(courseResources.getId(), attachmentId);
+    public ResponseEntity<String> uploadResourceExam(@RequestBody CourseResourcesDTO courseResources) {
+        List<AttachmentResources> attachments = courseResources.getAttachmentIdList();
+        for (var attachment : attachments) {
+            courseService.uploadResourceExam(courseResources.getId(), attachment.getId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId());
         }
 
         return ResponseEntity.ok("");
     }
 
     @PostMapping(value = "/resource-ppt")
-    public ResponseEntity<String> uploadResourcePpt(@RequestBody CourseResources courseResources) {
-        List<Integer> attachments = courseResources.getAttachmentIdList();
-        for (var attachmentId : attachments) {
-            courseService.uploadResourcePpt(courseResources.getId(), attachmentId);
+    public ResponseEntity<String> uploadResourcePpt(@RequestBody CourseResourcesDTO courseResources) {
+        List<AttachmentResources> attachments = courseResources.getAttachmentIdList();
+        for (var attachment : attachments) {
+            System.out.println(courseResources.getId());
+            System.out.println(attachment.getId());
+            System.out.println(attachment.getAllowDownload());
+            System.out.println(attachment.getAttachmentFolderId());
+            courseService.uploadResourcePpt(courseResources.getId(), attachment.getId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId());
         }
 
         return ResponseEntity.ok("");
     }
 
     @PostMapping(value = "/resource-exercise")
-    public ResponseEntity<String> uploadResourceExercise(@RequestBody CourseResources courseResources) {
-        List<Integer> attachments = courseResources.getAttachmentIdList();
-        for (var attachmentId : attachments) {
-            courseService.uploadResourceExercise(courseResources.getId(), attachmentId);
+    public ResponseEntity<String> uploadResourceExercise(@RequestBody CourseResourcesDTO courseResources) {
+        List<AttachmentResources> attachments = courseResources.getAttachmentIdList();
+        for (var attachment : attachments) {
+            courseService.uploadResourceExercise(courseResources.getId(), attachment.getId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId());
         }
 
         return ResponseEntity.ok("");
@@ -168,25 +173,46 @@ public class CourseController {
     }
 
     @GetMapping(value = "/get-exam")
-    public ResponseEntity<AttachmentIdList> getExam(@RequestParam String id) {
+    public ResponseEntity<AttachmentListDTO> getExam(@RequestParam String id) {
         List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id));
-        AttachmentIdList attachmentIdList = new AttachmentIdList(attachmentList);
+        List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
+        for (var attachment : attachmentList) {
+            AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
+            AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
+            attachmentDTOList.add(attachmentDTO);
+        }
+
+        AttachmentListDTO attachmentIdList = new AttachmentListDTO(attachmentDTOList);
 
         return ResponseEntity.ok(attachmentIdList);
     }
 
     @GetMapping(value = "/get-ppt")
-    public ResponseEntity<AttachmentIdList> getPpt(@RequestParam String id) {
+    public ResponseEntity<AttachmentListDTO> getPpt(@RequestParam String id) {
         List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getPptId, id));
-        AttachmentIdList attachmentIdList = new AttachmentIdList(attachmentList);
+        List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
+        for (var attachment : attachmentList) {
+            AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
+            AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
+            attachmentDTOList.add(attachmentDTO);
+        }
+
+        AttachmentListDTO attachmentIdList = new AttachmentListDTO(attachmentDTOList);
 
         return ResponseEntity.ok(attachmentIdList);
     }
 
     @GetMapping(value = "/get-exercise")
-    public ResponseEntity<AttachmentIdList> getExercise(@RequestParam String id) {
+    public ResponseEntity<AttachmentListDTO> getExercise(@RequestParam String id) {
         List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExerciseId, id));
-        AttachmentIdList attachmentIdList = new AttachmentIdList(attachmentList);
+        List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
+        for (var attachment : attachmentList) {
+            AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
+            AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
+            attachmentDTOList.add(attachmentDTO);
+        }
+
+        AttachmentListDTO attachmentIdList = new AttachmentListDTO(attachmentDTOList);
 
         return ResponseEntity.ok(attachmentIdList);
     }
@@ -203,6 +229,47 @@ public class CourseController {
         GradeList gradeList = new GradeList(assignmentReviewList);
 
         return ResponseEntity.ok(gradeList);
+    }
+
+    @PostMapping(value = "/create-attachment-folder")
+    public ResponseEntity<String> createAttachmentFolder(@RequestBody AttachmentFolder attachmentFolder) {
+        if (attachmentFolder.parentId == null) {
+            attachmentFolder.parentId = 0;
+        }
+
+        courseService.createAttachmentFolder(attachmentFolder);
+        Integer id = attachmentFolder.getId();
+        return ResponseEntity.ok(String.valueOf(id));
+    }
+
+    @DeleteMapping(value = "/delete-attachment-folder")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<String> deleteAttachmentFolder(@RequestParam Integer id) {
+        courseService.deleteAttachmentFolder(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AttachmentResources {
+
+        private Integer id;
+
+        private Integer allowDownload;
+
+        private Integer attachmentFolderId;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class CourseResourcesDTO {
+
+        private String id;
+
+        private List<AttachmentResources> attachmentIdList;
+
     }
 
     @Data
@@ -235,6 +302,40 @@ public class CourseController {
     public static class CourseList {
 
         private List<Course> courses;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AttachmentDTO {
+
+        private Integer id;
+
+        private String url;
+
+        private String name;
+
+        private String examId;
+
+        private String pptId;
+
+        private String exerciseId;
+
+        private Integer allowDownload;
+
+        private Integer attachmentFolderId;
+
+        private String folderName;
+
+        private Integer parentId;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AttachmentListDTO {
+
+        private List<AttachmentDTO> attachmentIdList;
 
     }
 
@@ -283,5 +384,15 @@ public class CourseController {
     public static class ExportStudentList {
         private String id;
         private String url;
+    }
+  
+    public static class AttachmentFolder {
+
+        private Integer id;
+
+        private String folderName;
+
+        private Integer parentId;
+
     }
 }
