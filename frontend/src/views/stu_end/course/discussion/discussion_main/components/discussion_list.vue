@@ -31,7 +31,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Like } from '@icon-park/vue-next';
-import { getcourse, getdiscussionlike } from '@/api/discussion';
+import { getcourse, getdiscussionlike,getdelete_like } from '@/api/discussion';
 import { userFolders, userCreate_favorite } from '@/api/user.js';
 
 const router = useRouter();
@@ -63,11 +63,18 @@ const toggleLike = post => {
     userId: localStorage.getItem("userId"),
     threadId: post.id
   };
-  getdiscussionlike(obj).then(res => {
-    console.log(res);
-  }).catch(err => {
-    console.error("点赞失败:", err);
-  });
+  if (!post.liked) {
+    getdiscussionlike(obj).then(res => {
+      console.log(res);
+    }).catch(err => {
+      console.error("点赞失败:", err);
+    });
+  }else{
+    getdelete_like(obj).then(res => {
+      console.log(res);
+    })
+  }
+
 };
 
 // 获取收藏夹

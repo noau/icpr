@@ -3,10 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: '/stu-end/login'
-    },
     // 找回密码路由（学生、教师统一）
     {
       path: '/forgot-password/email',
