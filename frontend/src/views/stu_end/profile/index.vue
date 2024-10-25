@@ -131,7 +131,11 @@ function deletFloder(item) {
   
   userDelete_folder({ id: item.id }).then(res => {
     console.log(res);
-  })
+    getUserFolders();
+
+  }).catch(err => {
+      getUserFolders();
+    })
 }
 function editFile(item){
   // console.log(item);

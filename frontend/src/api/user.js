@@ -99,8 +99,15 @@ export const userDelete_favorite = ({ id }) =>
   httpInstance.delete('/user/delete-favorite', { id });
 
 // /user/delete-folder
-export const userDelete_folder = ({ id }) =>
-  httpInstance.delete('/user/delete-folder', { id });
+export const userDelete_folder = (data) => {
+  console.log(data);
+
+  return httpInstance({
+    url: '/user/delete-folder',
+    method: 'delete',
+    data: data
+  })
+};
 
 // /user/change-folder
 export const userChange_folder = ({ id, name, isPrivate }) =>
