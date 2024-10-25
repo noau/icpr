@@ -21,14 +21,14 @@
                 v-model="ruleForm.newPassword"
                 type="password"
                 autocomplete="off"
-                placeholder="请输入旧密码"
+                placeholder="请输入新密码"
             />
         </el-form-item> 
         <el-form-item label="确认密码" prop="newPassword1">
             <el-input
                 v-model="ruleForm.newPassword1"
                 type="password"
-                placeholder="请输入旧密码"
+                placeholder="请输入新密码"
                 autocomplete="off"
             />
         </el-form-item>
