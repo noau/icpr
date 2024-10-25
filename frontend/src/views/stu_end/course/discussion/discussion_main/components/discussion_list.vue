@@ -45,8 +45,8 @@ function getcourseList() {
   let kcid = localStorage.getItem("kcid"); // 获取课程ID
   getcourse({ id: kcid }).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
-    console.log(res);
-    posts.value = res;
+    console.log(res.discussionThreads);
+    posts.value = res.discussionThreads;
   }).catch(err => {
     console.error("获取帖子数据失败:", err);
   });
@@ -59,6 +59,8 @@ getcourseList();
 const toggleLike = post => {
   post.liked = !post.liked;
   post.likes += post.liked ? 1 : -1;
+  console.log(post);
+
   let obj = {
     userId: localStorage.getItem("userId"),
     threadId: post.id

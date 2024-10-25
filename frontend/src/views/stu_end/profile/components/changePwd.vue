@@ -69,7 +69,13 @@ const handleClose = (done: () => void) => {
     
 }
 const submitForm = async()=>{
-    const res = await userchange_password(ruleForm)  
+    // const res = await userchange_password(ruleForm)  
+    userchange_password(ruleForm).then(res => {
+
+}).catch(err => {
+    emits('cancel')
+
+})
 }
 const cancel = ()=>{
   emits('cancel')
