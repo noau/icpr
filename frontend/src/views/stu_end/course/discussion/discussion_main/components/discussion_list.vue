@@ -31,7 +31,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { Like } from '@icon-park/vue-next';
-import { getcourse, getdiscussionlike } from '@/api/discussion';
+import { getcourse, getdiscussionlike,getdelete_like } from '@/api/discussion';
 import { userFolders, userCreate_favorite } from '@/api/user.js';
 
 const router = useRouter();
@@ -45,8 +45,8 @@ function getcourseList() {
   let kcid = localStorage.getItem("kcid"); // 获取课程ID
   getcourse({ id: kcid }).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
-    console.log(res);
-    posts.value = res;
+    console.log(res.discussionThreads);
+    posts.value = res.discussionThreads;
   }).catch(err => {
     console.error("获取帖子数据失败:", err);
   });
@@ -59,15 +59,24 @@ getcourseList();
 const toggleLike = post => {
   post.liked = !post.liked;
   post.likes += post.liked ? 1 : -1;
+  console.log(post);
+
   let obj = {
     userId: localStorage.getItem("userId"),
     threadId: post.id
   };
-  getdiscussionlike(obj).then(res => {
-    console.log(res);
-  }).catch(err => {
-    console.error("点赞失败:", err);
-  });
+  if (!post.liked) {
+    getdiscussionlike(obj).then(res => {
+      console.log(res);
+    }).catch(err => {
+      console.error("点赞失败:", err);
+    });
+  }else{
+    getdelete_like(obj).then(res => {
+      console.log(res);
+    })
+  }
+
 };
 
 // 获取收藏夹

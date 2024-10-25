@@ -21,14 +21,14 @@
                 v-model="ruleForm.newPassword"
                 type="password"
                 autocomplete="off"
-                placeholder="请输入旧密码"
+                placeholder="请输入新密码"
             />
         </el-form-item> 
         <el-form-item label="确认密码" prop="newPassword1">
             <el-input
                 v-model="ruleForm.newPassword1"
                 type="password"
-                placeholder="请输入旧密码"
+                placeholder="请输入新密码"
                 autocomplete="off"
             />
         </el-form-item>
@@ -69,7 +69,13 @@ const handleClose = (done: () => void) => {
     
 }
 const submitForm = async()=>{
-    const res = await userchange_password(ruleForm)  
+    // const res = await userchange_password(ruleForm)  
+    userchange_password(ruleForm).then(res => {
+        emits('cancel')
+
+}).catch(err => {
+
+})
 }
 const cancel = ()=>{
   emits('cancel')

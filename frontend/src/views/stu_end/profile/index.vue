@@ -38,8 +38,11 @@
                   <!-- collectList -->
                   <div v-for="item in collectList" class="blocktag">
                     <el-button @click="getFList(item)" type="warning">{{ item.name }}</el-button>
+                    <el-icon @click="deletFloder(item)" style="margin-right: 10px;">
+                      <delete />
+                    </el-icon>
                     <el-icon>
-                      <EditPen class="editPen" @click="fileVisible = true" />
+                      <EditPen class="editPen" @click="editFile(item)" />
                     </el-icon>
                   </div>
                   <span class="blocktag">
@@ -79,6 +82,7 @@
     <care :dialogVisible='careVisible' />
     <uploadPhoto :dialogVisible='photoVisible' />
     <addFile :dialogVisible='fileVisible' @cancel="fileVisible = false; getUserFolders()" />
+    <addFileEdit :folder="folder" :dialogVisible='fileEditVisible' @cancel="fileEditVisible = false" />
     <el-drawer title="我是标题" v-model="drawer" :with-header="false">
       <div>
         <el-card shadow="always" :body-style="{ padding: '20px' }">
@@ -101,7 +105,8 @@ import fans from './components/fans.vue'
 import care from './components/care.vue'
 import uploadPhoto from './components/uploadPhoto.vue'
 import addFile from './components/addFile.vue'
-import { userFolders, userUserInfo, userCreate_favorite, userFavorites ,userDelete_favorite} from '@/api/user.js'
+import addFileEdit from './components/addFileEdit.vue'
+import { userFolders, userUserInfo, userCreate_favorite, userFavorites, userDelete_favorite, userDelete_folder } from '@/api/user.js'
 import { useUserStore } from '@/stores/user.js'
 
 const pwdVisible = ref(false);
@@ -109,7 +114,9 @@ const fansVisible = ref(false);
 const careVisible = ref(false);
 const photoVisible = ref(false);
 const fileVisible = ref(false);
+const fileEditVisible = ref(false);
 const drawer = ref(false);
+const folder= ref();
 
 //个人信息
 const userId = localStorage.getItem('userId');
@@ -119,7 +126,24 @@ const getInfo = async () => {
   userInfo.value = res
 }
 getInfo();
+function deletFloder(item) {
+  console.log(item.id);
+  
+  userDelete_folder({ id: item.id }).then(res => {
+    console.log(res);
+    getUserFolders();
 
+  }).catch(err => {
+      getUserFolders();
+    })
+}
+function editFile(item){
+  // console.log(item);
+  folder.value = item;
+  localStorage.setItem('folder',JSON.stringify(item))
+  
+  fileEditVisible.value = true;
+}
 // 获取收藏夹
 const collectList = ref();
 const getUserFolders = async () => {
