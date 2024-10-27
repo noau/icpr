@@ -50,7 +50,7 @@ function getcourseList() {
   getcourse({ id: kcid }).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
     console.log(res);
-    posts.value = res;
+    posts.value = res.discussionThreads;
   }).catch(err => {
     console.error("获取帖子数据失败:", err);
   });

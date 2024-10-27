@@ -1,18 +1,21 @@
 <template>
   <div class="comments-list">
     <h2>评论</h2>
-    <CommentItem
-      v-for="comment in comments"
-      :key="comment.id"
-      :comment="comment"
-      @likeComment="likeComment"
-      @replyComment="replyComment"
-    />
+    <div  v-for="comment in comments" :key="comment.id"> 
+      <comment_item :comment="comment"
+        @likeComment="likeComment"
+        @replyComment="replyComment">
+      </comment_item>
+    </div>
   </div>
 </template>
 
 <script setup>
-import CommentItem from './comment_item.vue';
+import comment_item from './comment_item.vue';
+import {  getget_thread } from '@/api/discussion';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router'
+const route = useRoute();
 
 const props = defineProps({
   comments: Array,
@@ -27,6 +30,7 @@ const likeComment = (comment) => {
 const replyComment = (comment, replyContent) => {
   emits('replyComment', comment, replyContent);
 };
+
 </script>
 
 <style scoped>

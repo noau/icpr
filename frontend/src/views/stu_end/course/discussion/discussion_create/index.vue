@@ -38,7 +38,9 @@ const summary = ref('');
 const tags = ref('');
 const visibility = ref('全部可见');
 const isAnonymous = ref(false);
-
+import { useRouter } from 'vue-router'; // 使用路由进行跳转
+  
+  const router = useRouter(); // 初始化路由
 const submitPost = () => {
   // 提交逻辑
   console.log('标题：', title.value);
@@ -56,6 +58,8 @@ const submitPost = () => {
   }
   getthread(obj).then(res => {
     console.log(res);
+    router.go(-1);
+
   })
   // 在这里添加你的提交逻辑，例如发送 API 请求
 };
