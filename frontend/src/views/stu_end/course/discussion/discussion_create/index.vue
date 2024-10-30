@@ -4,6 +4,7 @@
     <div class="title-and-button">
       <!-- 标题输入组件 -->
       <TitleInput v-model="title" class="title-input" />
+      <input v-model="top" type="checkbox" > 置顶
       <!-- 发布按钮 -->
       <SubmitButton @submit="submitPost" class="submit-button" />
     </div>
@@ -36,6 +37,7 @@ const title = ref('');
 const content = ref('');
 const summary = ref('');
 const tags = ref('');
+const top=ref(false)
 const visibility = ref('全部可见');
 const isAnonymous = ref(false);
 import { useRouter } from 'vue-router'; // 使用路由进行跳转
@@ -54,6 +56,7 @@ const submitPost = () => {
     authorId: localStorage.getItem('id'),
     title: title.value,
     content: content.value,
+    top: top.value,
     tag: tags.value,
   }
   getthread(obj).then(res => {
