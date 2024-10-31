@@ -3,7 +3,7 @@
     <el-container>
       <!-- Header 占满整个页面宽度 -->
       <el-header>
-        <course_header />
+        <stu_course_header />
       </el-header>
 
       <!-- Main 布局 -->

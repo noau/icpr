@@ -28,11 +28,12 @@ import PostContent from "./components/post_content.vue";
 import PostActions from "./components/post_actions.vue";
 import CommentInput from "./components/comment_input.vue";
 import CommentsList from "./components/comments_list.vue";
-import { useRoute } from "vue-router";
+import { useRoute ,useRouter} from "vue-router";
 import { getReplies, getget_thread } from "@/api/discussion";
 
 // 获取路由参数中的帖子ID
 const route = useRoute();
+const router = useRouter()
 const postId = route.params.id;
 
 // 模拟帖子数据，可以通过 API 获取
@@ -70,20 +71,6 @@ const handleFavorite = () => {
   post.value.favorites += post.value.favorited ? 1 : -1;
 };
 
-// 添加评论
-const addComment = (content) => {
-  comments.value.push({
-    id: Date.now(),
-    author: {
-      name: "当前用户",
-      avatar: "https://via.placeholder.com/50",
-    },
-    content: content,
-    likes: 0,
-    liked: false,
-    replies: [],
-  });
-};
 
 // 点赞评论
 const likeComment = (comment) => {
@@ -103,18 +90,65 @@ const replyComment = (comment, replyContent) => {
     likes: 0,
     liked: false,
   });
+
+
 };
 
+
+// 添加评论
+const addComment = (content) => {
+  // console.log(comments.value);
+  // comments.value.push({
+  //   id: Date.now(),
+  //   author: {
+  //     name: "当前用户",
+  //     avatar: "https://via.placeholder.com/50",
+  //   },
+  //   content: content,
+  //   likes: 0,
+  //   liked: false,
+  //   replies: [],
+  // });
+  comments.value=[]
+    getget_threadList();
+    router.go(0)
+
+};
 function getget_threadList() {
+  
   getget_thread({
     id: threadId,
   }).then((res) => {
-    // console.log(res);
+    console.log(res);
+    
+    // res.replies=res.replyList
+    res.replyList.forEach(item=>{
+      let obj={
+          likes: 0,
+          id: Date.now(),
+          liked: false,
+          author:{
+            name: "当前用户",
+            avatar: "https://via.placeholder.com/50",
+          },
+          content: item.content,
+          replies: []
+      }
+      // obj.content=item.content
+      // obj.avatar={
+      //   name: "当前用户",
+      //   avatar: "https://via.placeholder.com/50",
+      // }
+      // obj.replies=[]
+      comments.value.push(obj)
+    })
+
+    console.log(comments.value)
+
     post.value.title = res.title;
     post.value.content = res.content;
     post.value.likes = res.likes;
     post.value.favorites = res.favorites;
-    console.log(post.value);
     post.value.avatar = {
       name: "帖主姓名",
       avatar: "https://via.placeholder.com/50",

@@ -35,7 +35,7 @@ function getget_threadList() {
   getget_thread({
     id: threadId
   }).then(res=>{
-    console.log(res);
+    // console.log(res);
   })
 }
 getget_threadList();

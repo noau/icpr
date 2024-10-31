@@ -2,7 +2,7 @@
   <div class="posts-list">
     <el-card v-for="post in posts" :key="post.id" class="post-card">
       <h3>{{ post.title }}</h3>
-      <p>{{ post.contentSnippet }}...</p>
+      <div v-html="post.content"></div>
       <div class="post-actions">
 
         <Like :theme="post.liked ? 'filled' : 'outline'" size="15" fill="#333" @click="toggleLike(post)" />
@@ -65,7 +65,7 @@ const toggleLike = post => {
     userId: localStorage.getItem("userId"),
     threadId: post.id
   };
-  if (!post.liked) {
+  if (post.liked) {
     getdiscussionlike(obj).then(res => {
       console.log(res);
     }).catch(err => {
