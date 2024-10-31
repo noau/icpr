@@ -15,7 +15,7 @@ export const userRegisterService = ({ username, password, repassword }) =>
 
 //   登录接口
 export const userLoginService = ({ username, password }) =>
-  httpInstance.post('/user/login', { id: username, password });
+  httpInstance.post('/user/login/student', { id: username, password });
 
 // 基本信息
 export const userGetInfoService = () => httpInstance.get('/my/userinfo');
