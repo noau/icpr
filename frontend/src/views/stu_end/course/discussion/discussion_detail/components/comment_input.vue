@@ -23,12 +23,16 @@ const emits = defineEmits(['submitComment']);
 const content = ref('');
 
 const submitComment = () => {
+  var date = new Date();
   getReplies({
     content: content.value,
     threadId,
-    userId: localStorage.getItem('userId')
+    replyId: 1,
+    userId: localStorage.getItem('userId'),
+    // TODO: Replace with current date
+    createdAt: "" + date.getFullYear() + "-" + date.getMonth() + "-" + date.getDay() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() // "2024-06-24 21:35:47"
   })
-  emits('submitComment', content.value);
+  // emits('submitComment', content.value);
   content.value = '';
 };
 function getget_threadList() {

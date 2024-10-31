@@ -32,13 +32,10 @@ export const deleteFile = (id, token) =>
   });
 
 export const getppt = (id, token) =>
-  httpInstance.get('/courses/get-ppt', {
+  httpInstance.get('/courses/get-ppt?id=' + id, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token,
-    },
-    params: {
-      id: id,
     },
   });
 
