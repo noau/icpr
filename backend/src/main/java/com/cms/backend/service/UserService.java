@@ -21,11 +21,11 @@ public interface UserService {
 
     List<Favorite> getUserFavorites(Integer id);
 
-    void changeInfo(Integer id, String name, String userClass, String academy, String gender);
+    void changeInfo(Integer id, String email, String phoneNumber);
 
-    void addUser(Integer id, String name, String password, String userClass, String academy, String gender);
+    void addUser(Integer id, String name, String password, String userClass, String academy, String gender, String email, String phoneNumber, String idCardNumber);
 
-    void addFolder(Integer userId, String name, String createdAt, Integer isDefault);
+    void addFolder(Integer userId, String name, String createdAt, Integer isDefault, Integer isPrivate);
 
     void addFavorite(Integer userId, Integer threadId, Integer folderId, String createdAt);
 
@@ -62,5 +62,7 @@ public interface UserService {
     void deleteLikeThread(Integer id);
 
     void deleteLikeReply(Integer id);
+
+    void addUserTeacher(Integer id, String address, String title, String brief);
 
 }

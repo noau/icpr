@@ -61,29 +61,36 @@ public interface UserMapper {
     List<Favorite> getUserFavorites(Integer id);
 
     @Results({
-            @Result(property = "userClass", column = "class"),
+            @Result(property = "phoneNumber", column = "phone_number"),
     })
-    @Update("update user set name = #{name}, class = #{userClass}, academy = #{academy}, gender = #{gender} where id = #{id}")
-    void changeInfo(Integer id, String name, String userClass, String academy, String gender);
+    @Update("update user set email = #{email}, phone_number = #{phoneNumber} where id = #{id}")
+    void changeInfo(Integer id, String email, String phoneNumber);
 
     @Results({
             @Result(property = "userClass", column = "class"),
-            @Result(property = "subscriptionsNumber", column = "subscriptions_number"),
-            @Result(property = "fansNumber", column = "fans_number")
+            @Result(property = "phoneNumber", column = "phone_number"),
+            @Result(property = "idCardNumber", column = "id_card_number")
     })
-    @Insert("insert into user (id, name, password, class, academy, gender, avatar) values (#{id}, #{name}, #{password}, #{userClass}, #{academy}, #{gender}, 'default_avatar.png')")
-    void addUser(Integer id, String name, String password, String userClass, String academy, String gender);
+    @Insert("insert into user (id, name, password, class, academy, gender, avatar, email, phone_number, id_card_number) values (#{id}, #{name}, #{password}, #{userClass}, #{academy}, #{gender}, 'http://localhost:65/maomao.png', #{email}, #{phoneNumber}, #{idCardNumber})")
+    void addUser(Integer id, String name, String password, String userClass, String academy, String gender, String email, String phoneNumber, String idCardNumber);
 
     @Results({
             @Result(property = "userId", column = "user_id"),
             @Result(property = "createdAt", column = "created_at"),
             @Result(property = "updatedAt", column = "updated_at"),
-            @Result(property = "isDefault", column = "is_default")
+            @Result(property = "isDefault", column = "is_default"),
+            @Result(property = "isPrivate", column = "is_private")
     })
-    @Insert("insert into folder (user_id, name, created_at, is_default) values (#{userId}, #{name}, #{createdAt}, #{isDefault})")
-    void addFolder(Integer userId, String name, String createdAt, Integer isDefault);
+    @Insert("insert into folder (user_id, name, created_at, is_default, is_private) values (#{userId}, #{name}, #{createdAt}, #{isDefault}, #{isPrivate})")
+    void addFolder(Integer userId, String name, String createdAt, Integer isDefault, Integer isPrivate);
 
-    @Insert("insert into favorite (user_id, thread_id, folder_id, created_at) values (#{userId}, #{threadId}, #{folderid}, #{createdAt})")
+    @Results({
+            @Result(property = "userId", column = "user_id"),
+            @Result(property = "threadId", column = "thread_id"),
+            @Result(property = "folderId", column = "folder_id"),
+            @Result(property = "createdAt", column = "created_at")
+    })
+    @Insert("insert into favorite (user_id, thread_id, folder_id, created_at) values (#{userId}, #{threadId}, #{folderId}, #{createdAt})")
     void addFavorite(Integer userId, Integer threadId, Integer folderId, String createdAt);
 
     @Delete("delete from folder where id = #{id}")
@@ -178,5 +185,8 @@ public interface UserMapper {
 
     @Update("update discussion_reply set likes = likes - 1 where id = #{id}")
     void deleteLikeReply(Integer id);
+
+    @Insert("insert into teacher_info values (#{id}, #{address}, #{title}, #{brief})")
+    void addUserTeacher(Integer id, String address, String title, String brief);
 
 }

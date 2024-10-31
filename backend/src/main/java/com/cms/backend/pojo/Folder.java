@@ -15,8 +15,6 @@ public class Folder {
 
     private String createdAt;
 
-    private String updatedAt;
-
     private Integer isDefault;
 
     private Integer isPrivate;

@@ -32,9 +32,10 @@ public class AttachmentController {
     }
 
     @GetMapping(value = "/get")
-    public ResponseEntity<AttachmentDTO> getAttachment(@RequestParam int id) {
-        var attachment = attachmentService.getById(id);
-        return ResponseEntity.ok(new AttachmentDTO(attachment.getName(), attachment.getUrl()));
+    public ResponseEntity<AttachmentDTO> getAttachment(@RequestBody Attachment attachment) {
+        var id = attachment.getId();
+        var getAttachment = attachmentService.getById(id);
+        return ResponseEntity.ok(new AttachmentDTO(getAttachment.getName(), getAttachment.getUrl(), getAttachment.getAllowDownload(), getAttachment.getAttachmentFolderId()));
     }
 
     @PostMapping(value = "upload")
@@ -70,6 +71,8 @@ public class AttachmentController {
     public static class AttachmentDTO {
         private String name;
         private String url;
+        private Integer allowDownload;
+        private Integer attachmentFolderId;
     }
 
     @Data

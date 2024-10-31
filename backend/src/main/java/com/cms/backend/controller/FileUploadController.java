@@ -2,11 +2,14 @@ package com.cms.backend.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.metadata.CellExtra;
+import com.alibaba.excel.metadata.data.ReadCellData;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.cms.backend.pojo.Course;
 import com.cms.backend.pojo.DTO.StudentCourseSelectionDTO;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.pojo.DTO.UserDTO;
+import com.cms.backend.pojo.DTO.UserTeacherDTO;
 import com.cms.backend.service.CourseService;
 import com.cms.backend.service.UserService;
 import lombok.Getter;
@@ -20,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 @Getter
@@ -28,7 +32,6 @@ import java.util.Objects;
 public class FileUploadController {
 
     private static final Logger logger = LoggerFactory.getLogger(FileUploadController.class);
-
     private final UserService userService;
     private final CourseService courseService;
 
@@ -37,11 +40,23 @@ public class FileUploadController {
         this.courseService = courseService;
     }
 
-    // 上传用户文件
-    @PostMapping("/uploading/users")
+    // 上传学生文件
+    @PostMapping("/uploading/users/student")
     public ResponseEntity<String> uploadUserFile(MultipartFile file) {
         try {
             EasyExcel.read(file.getInputStream(), UserDTO.class, new UserUploadListener(userService)).sheet().doRead();
+            return ResponseEntity.ok("用户文件上传并处理成功");
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.status(500).body("用户信息导入失败!");
+        }
+    }
+
+    // 上传教师文件
+    @PostMapping("/uploading/users/teacher")
+    public ResponseEntity<String> uploadUserTeacherFile(MultipartFile file) {
+        try {
+            EasyExcel.read(file.getInputStream(), UserTeacherDTO.class, new UserTeacherUploadListener(userService)).sheet().doRead();
             return ResponseEntity.ok("用户文件上传并处理成功");
         } catch (Exception e) {
             logger.error(e.getMessage());
@@ -72,6 +87,8 @@ public class FileUploadController {
             return ResponseEntity.status(500).body("课程信息导入失败！");
         }
     }
+
+    // 上传教课文件
     @PostMapping("/uploading/teach")
     public ResponseEntity<String> uploadTeachingFile(MultipartFile file) {
         try {
@@ -85,13 +102,22 @@ public class FileUploadController {
 
 }
 
-
 @Getter
 final class UserUploadListener implements ReadListener<UserDTO> {
     private final UserService userService;
 
     UserUploadListener(UserService userService) {
         this.userService = userService;
+    }
+
+    @Override
+    public void onException(Exception exception, AnalysisContext context) throws Exception {
+        ReadListener.super.onException(exception, context);
+    }
+
+    @Override
+    public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
+        ReadListener.super.invokeHead(headMap, context);
     }
 
     @Override
@@ -102,7 +128,10 @@ final class UserUploadListener implements ReadListener<UserDTO> {
                 user.getPassword(),
                 user.getUserClass(),
                 user.getAcademy(),
-                user.getGender()
+                user.getGender(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getIdCardNumber()
         );
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -111,7 +140,12 @@ final class UserUploadListener implements ReadListener<UserDTO> {
 
         String time = sdf.format(date);
 
-        userService.addFolder(user.getId(), "默认收藏夹", time, 1);
+        userService.addFolder(user.getId(), "默认收藏夹", time, 1, 0);
+    }
+
+    @Override
+    public void extra(CellExtra extra, AnalysisContext context) {
+        ReadListener.super.extra(extra, context);
     }
 
     @Override
@@ -120,24 +154,73 @@ final class UserUploadListener implements ReadListener<UserDTO> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (UserUploadListener) obj;
-        return Objects.equals(this.userService, that.userService);
+    public boolean hasNext(AnalysisContext context) {
+        return ReadListener.super.hasNext(context);
+    }
+
+}
+
+@Getter
+final class UserTeacherUploadListener implements ReadListener<UserTeacherDTO> {
+    private final UserService userService;
+
+    UserTeacherUploadListener(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(userService);
+    public void onException(Exception exception, AnalysisContext context) throws Exception {
+        ReadListener.super.onException(exception, context);
     }
 
     @Override
-    public String toString() {
-        return "UserUploadListener[" +
-                "userService=" + userService + ']';
+    public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
+        ReadListener.super.invokeHead(headMap, context);
     }
 
+    @Override
+    public void invoke(UserTeacherDTO user, AnalysisContext analysisContext) {
+        userService.addUser(
+                user.getId(),
+                user.getName(),
+                user.getPassword(),
+                user.getUserClass(),
+                user.getAcademy(),
+                user.getGender(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getIdCardNumber()
+        );
+        userService.addUserTeacher(
+                user.getId(),
+                user.getAddress(),
+                user.getTitle(),
+                user.getBrief()
+        );
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        Date date = new Date();
+
+        String time = sdf.format(date);
+
+        userService.addFolder(user.getId(), "默认收藏夹", time, 1, 0);
+    }
+
+    @Override
+    public void extra(CellExtra extra, AnalysisContext context) {
+        ReadListener.super.extra(extra, context);
+    }
+
+    @Override
+    public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+
+    }
+
+    @Override
+    public boolean hasNext(AnalysisContext context) {
+        return ReadListener.super.hasNext(context);
+    }
 
 }
 
@@ -147,6 +230,16 @@ final class CourseUploadListener implements ReadListener<Course> {
 
     CourseUploadListener(CourseService courseService) {
         this.courseService = courseService;
+    }
+
+    @Override
+    public void onException(Exception exception, AnalysisContext context) throws Exception {
+        ReadListener.super.onException(exception, context);
+    }
+
+    @Override
+    public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
+        ReadListener.super.invokeHead(headMap, context);
     }
 
     @Override
@@ -160,9 +253,13 @@ final class CourseUploadListener implements ReadListener<Course> {
         String start = course.getStart();
         String end = course.getEnd();
         String teacher = course.getTeacher();
-        System.out.println(id);
 
         courseService.addCourse(id, courseNumber, name, semesterYear, classNumber, start, end, academy, teacher);
+    }
+
+    @Override
+    public void extra(CellExtra extra, AnalysisContext context) {
+        ReadListener.super.extra(extra, context);
     }
 
     @Override
@@ -171,24 +268,9 @@ final class CourseUploadListener implements ReadListener<Course> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (CourseUploadListener) obj;
-        return Objects.equals(this.courseService, that.courseService);
+    public boolean hasNext(AnalysisContext context) {
+        return ReadListener.super.hasNext(context);
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(courseService);
-    }
-
-    @Override
-    public String toString() {
-        return "CourseUploadListener[" +
-                "courseService=" + courseService + ']';
-    }
-
 
 }
 
@@ -201,12 +283,26 @@ final class CourseSelectionUploadListener implements ReadListener<StudentCourseS
     }
 
     @Override
+    public void onException(Exception exception, AnalysisContext context) throws Exception {
+        ReadListener.super.onException(exception, context);
+    }
+
+    @Override
+    public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
+        ReadListener.super.invokeHead(headMap, context);
+    }
+
+    @Override
     public void invoke(StudentCourseSelectionDTO studentCourseSelectionDTO, AnalysisContext analysisContext) {
-        System.out.println(studentCourseSelectionDTO.getStudentId());
         courseService.addStudentCourseSelection(
                 studentCourseSelectionDTO.getStudentId(),
                 studentCourseSelectionDTO.getCourseId()
         );
+    }
+
+    @Override
+    public void extra(CellExtra extra, AnalysisContext context) {
+        ReadListener.super.extra(extra, context);
     }
 
     @Override
@@ -215,30 +311,28 @@ final class CourseSelectionUploadListener implements ReadListener<StudentCourseS
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (CourseSelectionUploadListener) obj;
-        return Objects.equals(this.courseService, that.courseService);
+    public boolean hasNext(AnalysisContext context) {
+        return ReadListener.super.hasNext(context);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(courseService);
-    }
-
-    @Override
-    public String toString() {
-        return "CourseSelectionUploadListener[" +
-                "courseService=" + courseService + ']';
-    }
 }
+
 @Getter
 final class TeachingUploadListener implements ReadListener<TeachingDTO> {
     private final CourseService courseService;
 
     TeachingUploadListener(CourseService courseService) {
         this.courseService = courseService;
+    }
+
+    @Override
+    public void onException(Exception exception, AnalysisContext context) throws Exception {
+        ReadListener.super.onException(exception, context);
+    }
+
+    @Override
+    public void invokeHead(Map<Integer, ReadCellData<?>> headMap, AnalysisContext context) {
+        ReadListener.super.invokeHead(headMap, context);
     }
 
     @Override
@@ -249,25 +343,18 @@ final class TeachingUploadListener implements ReadListener<TeachingDTO> {
     }
 
     @Override
+    public void extra(CellExtra extra, AnalysisContext context) {
+        ReadListener.super.extra(extra, context);
+    }
+
+    @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (TeachingUploadListener) obj;
-        return Objects.equals(this.courseService, that.courseService);
+    public boolean hasNext(AnalysisContext context) {
+        return ReadListener.super.hasNext(context);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(courseService);
-    }
-
-    @Override
-    public String toString() {
-        return "TeachingUploadListener[" +
-                "courseService=" + courseService + ']';
-    }
 }

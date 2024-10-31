@@ -27,4 +27,6 @@ public class Notification {
 
     private String courseId;
 
+    private Integer isStar;
+
 }

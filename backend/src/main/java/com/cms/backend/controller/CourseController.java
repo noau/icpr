@@ -13,8 +13,7 @@ import com.cms.backend.service.CourseService;
 import com.cms.backend.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -34,8 +33,6 @@ public class CourseController {
     private final AttachmentService attachmentService;
 
     private final UserService userService;
-
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     public CourseController(CourseService courseService, AttachmentService attachmentService, UserService userService) {
         this.courseService = courseService;
@@ -81,9 +78,6 @@ public class CourseController {
         // 返回课程ID和文件的URL
         return ResponseEntity.ok(new ExportStudentList(id, url));
     }
-
-
-
 
     @PostMapping(value = "/resource-exam")
     public ResponseEntity<String> uploadResourceExam(@RequestBody CourseResourcesDTO courseResources) {
@@ -178,13 +172,26 @@ public class CourseController {
         List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
         for (var attachment : attachmentList) {
             AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
-            AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
+            AttachmentDTO attachmentDTO = getAttachmentDTO(attachment, attachmentFolder);
+
             attachmentDTOList.add(attachmentDTO);
         }
 
         AttachmentListDTO attachmentIdList = new AttachmentListDTO(attachmentDTOList);
 
         return ResponseEntity.ok(attachmentIdList);
+    }
+
+    @NotNull
+    private static AttachmentDTO getAttachmentDTO(Attachment attachment, AttachmentFolder attachmentFolder) {
+        AttachmentDTO attachmentDTO;
+        if (attachment.getAttachmentFolderId() == null) {
+            attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), null, null, null);
+        } else {
+            attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
+        }
+
+        return attachmentDTO;
     }
 
     @GetMapping(value = "/get-ppt")
