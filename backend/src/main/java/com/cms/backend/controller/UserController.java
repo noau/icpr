@@ -5,8 +5,11 @@ import com.aliyun.auth.credentials.provider.StaticCredentialProvider;
 import com.aliyun.sdk.service.dysmsapi20170525.AsyncClient;
 import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsRequest;
 import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsResponse;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.DTO.*;
+import com.cms.backend.service.DiscussionThreadService;
+import com.cms.backend.service.FolderService;
 import com.cms.backend.service.UserService;
 import com.cms.backend.utils.JWTUtils;
 import com.google.gson.Gson;
@@ -39,20 +42,26 @@ public class UserController {
 
     private final JavaMailSender mailSender;
 
+    private final DiscussionThreadService discussionThreadService;
+
+    private final FolderService folderService;
+
     @Value("${spring.mail.username}")
     private String sender;
 
     @Value("${spring.mail.nickname}")
     private String nickname;
 
-    public UserController(UserService userService, JavaMailSender mailSender) {
+    public UserController(UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService) {
         this.userService = userService;
         this.mailSender = mailSender;
+        this.discussionThreadService = discussionThreadService;
+        this.folderService = folderService;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-    @PostMapping(value = "/login")
+    @PostMapping(value = "/login/student")
     public ResponseEntity<String> login(@RequestBody User user) {
         Integer id = user.getId();
         String password = user.getPassword();
@@ -62,6 +71,7 @@ public class UserController {
         User userLogin = userService.findByUserName(id);
         if (userLogin == null) {
             logger.warn("Login failed. User not found: {}", id);
+
             return ResponseEntity.status(410).body(""); // 用户不存在
         } else {
 
@@ -72,24 +82,76 @@ public class UserController {
                 logger.info("User logged in successfully: {}", id);
                 var token = JWTUtils.genToken(claims);
                 logger.warn("User token: {}", token);
+
                 return ResponseEntity.ok(token);
             } else {
                 logger.warn("Login failed. Incorrect password for account: {}", id);
+
                 return ResponseEntity.status(422).body(""); // 密码错误
             }
         }
     }
 
+    @PostMapping(value = "/login/teacher")
+    public ResponseEntity<String> loginTeacher(@RequestBody User user) {
+        Integer id = user.getId();
+        String password = user.getPassword();
+        logger.info("Login attempt for account: {}", id);
+
+        // 验证用户是否存在
+        User userLogin = userService.findByUserName(id);
+        if (userLogin == null) {
+            logger.warn("Login failed. User not found: {}", id);
+
+            return ResponseEntity.status(410).body(""); // 用户不存在
+        } else {
+
+            // 验证密码是否正确
+            if (Objects.equals(password, user.getPassword())) {
+                Map<String, Object> claims = new HashMap<>();
+                claims.put("account", id);
+                logger.info("User logged in successfully: {}", id);
+                var token = JWTUtils.genToken(claims);
+                logger.warn("User token: {}", token);
+
+                return ResponseEntity.ok(token);
+            } else {
+                logger.warn("Login failed. Incorrect password for account: {}", id);
+
+                return ResponseEntity.status(422).body(""); // 密码错误
+            }
+        }
+    }
+
+    @PostMapping(value = "/login/administrator")
+    public ResponseEntity<String> loginAdministrator(@RequestParam String password) {
+        // 验证密钥是否正确
+        if (Objects.equals(password, "icpr")) {
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("account", 123456789);
+            var token = JWTUtils.genToken(claims);
+            return ResponseEntity.ok(token);
+        } else {
+
+            return ResponseEntity.status(422).body(""); // 密码错误
+        }
+    }
+
     @GetMapping(value = "/info")
-    public ResponseEntity<User> getUserInfo(@RequestParam Integer id) {
+    public ResponseEntity<UserInfo> getUserInfo(@RequestParam Integer id) {
         User user = userService.findByUserName(id);
-        return ResponseEntity.ok(user);
+        List<DiscussionThread> threadList = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getUserId, id));
+        List<Folder> folderList = folderService.list(new LambdaQueryWrapper<Folder>().eq(Folder::getUserId, id));
+        UserInfo userInfo = new UserInfo(user.getId(), user.getName(), user.getUserClass(), user.getAcademy(), user.getGender(), user.getAvatar(), user.getSubscriptionsNumber(), user.getFansNumber(), user.getThreadNumber(), user.getEmail(), user.getPhoneNumber(), user.getIdCardNumber(), folderList, threadList);
+
+        return ResponseEntity.ok(userInfo);
     }
 
     @GetMapping(value = "/followers")
     public ResponseEntity<UserFollowDTO> getFollowers(@RequestParam Integer id) {
         List<FollowDTO> userFollowers = userService.getUserFollowers(id);
         UserFollowDTO userFollowDTO = new UserFollowDTO(userFollowers);
+
         return ResponseEntity.ok(userFollowDTO);
     }
 
@@ -97,6 +159,7 @@ public class UserController {
     public ResponseEntity<UserSubscriptionDTO> getSubscriptions(@RequestParam Integer id) {
         List<SubscriptionDTO> userSubscriptions = userService.getUserSubscriptions(id);
         UserSubscriptionDTO userSubscriptionDTO = new UserSubscriptionDTO(userSubscriptions);
+
         return ResponseEntity.ok(userSubscriptionDTO);
     }
 
@@ -112,9 +175,11 @@ public class UserController {
         // 验证密码是否正确
         if (Objects.equals(password, user.getPassword())) {
             userService.changePassword(id, newPassword);
+
             return ResponseEntity.ok("");
         } else {
             logger.warn("Login failed. Incorrect password for account: {}", id);
+
             return ResponseEntity.status(422).body(""); // 密码错误
         }
     }
@@ -123,6 +188,7 @@ public class UserController {
     public ResponseEntity<FolderDTO> getFolder(@RequestParam Integer id) {
         List<Folder> folders = userService.getUserFolders(id);
         FolderDTO folderDTO = new FolderDTO(folders);
+
         return ResponseEntity.ok(folderDTO);
     }
 
@@ -130,26 +196,28 @@ public class UserController {
     public ResponseEntity<FavoriteDTO> getFavorite(@RequestParam Integer id) {
         List<Favorite> favorites = userService.getUserFavorites(id);
         FavoriteDTO favoritesDTO = new FavoriteDTO(favorites);
+
         return ResponseEntity.ok(favoritesDTO);
     }
 
     @PostMapping(value = "/change-info")
     public ResponseEntity<String> changeInfo(@RequestBody User user) {
         Integer id = user.getId();
-        String name = user.getName();
-        String userClass = user.getUserClass();
-        String academy = user.getAcademy();
-        String gender = user.getGender();
-        userService.changeInfo(id, name, userClass, academy, gender);
+        String email = user.getEmail();
+        String phoneNumber = user.getPhoneNumber();
+        userService.changeInfo(id, email, phoneNumber);
+
         return ResponseEntity.ok("");
     }
 
     @PostMapping(value = "/create-folder")
-    public ResponseEntity<String> createFolder(@RequestBody Folder folders) {
-        Integer userId = folders.getUserId();
-        String name = folders.getName();
-        String createdAt = folders.getCreatedAt();
-        userService.addFolder(userId, name, createdAt, 0);
+    public ResponseEntity<String> createFolder(@RequestBody Folder folder) {
+        Integer userId = folder.getUserId();
+        String name = folder.getName();
+        String createdAt = folder.getCreatedAt();
+        Integer isPrivate = folder.getIsPrivate();
+        userService.addFolder(userId, name, createdAt, 0, isPrivate);
+
         return ResponseEntity.ok("");
     }
 
@@ -161,6 +229,7 @@ public class UserController {
         String createdAt = favorites.getCreatedAt();
         userService.addFavorite(userId, threadId, folderId, createdAt);
         userService.addFavorites(threadId);
+
         return ResponseEntity.ok("");
     }
 
@@ -169,6 +238,7 @@ public class UserController {
     public ResponseEntity<String> deleteFolder(@RequestBody Folder folder) {
         Integer id = folder.getId();
         userService.deleteFolder(id);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -178,6 +248,7 @@ public class UserController {
         String name = folder.getName();
         Integer isPrivate = folder.getIsPrivate();
         userService.changeFolder(id, name, isPrivate);
+
         return ResponseEntity.ok("");
     }
 
@@ -186,6 +257,7 @@ public class UserController {
     public ResponseEntity<String> deleteFavorite(@RequestBody Favorite favorite) {
         Integer id = favorite.getId();
         userService.deleteFavorite(id);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -194,6 +266,7 @@ public class UserController {
         Integer id = changeFavoriteDTO.getId();
         Integer favoriteId = changeFavoriteDTO.getFavoriteId();
         userService.changeFavorite(id, favoriteId);
+
         return ResponseEntity.ok("");
     }
 
@@ -202,6 +275,7 @@ public class UserController {
         Integer id = user.getId();
         String avatar = user.getAvatar();
         userService.uploadAvatar(id, avatar);
+
         return ResponseEntity.ok("");
     }
 
@@ -214,6 +288,7 @@ public class UserController {
         userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
         userService.addFollower(followingId);
         userService.addSubscriber(subscriptionId);
+
         return ResponseEntity.ok("");
     }
 
@@ -226,6 +301,7 @@ public class UserController {
         userService.deleteSubscription(followingId, subscriptionId);
         userService.deleteFollower(followingId);
         userService.deleteSubscriber(subscriptionId);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -313,6 +389,7 @@ public class UserController {
                 return ResponseEntity.ok("");
             } catch (Exception e) {
                 logger.error(e.getMessage());
+
                 return ResponseEntity.status(500).body("短信发送失败!");
             }
         }
@@ -351,6 +428,40 @@ public class UserController {
         private Integer id;
 
         private Integer isThread;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class UserInfo {
+
+        private Integer id;
+
+        private String name;
+
+        private String userClass;
+
+        private String academy;
+
+        private String gender;
+
+        private String avatar;
+
+        private Integer subscriptionsNumber;
+
+        private Integer fansNumber;
+
+        private Integer threadNumber;
+
+        private String email;
+
+        private String phoneNumber;
+
+        private String idCardNumber;
+
+        private List<Folder> folderList;
+
+        private List<DiscussionThread> threadList;
 
     }
 

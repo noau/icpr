@@ -3,8 +3,10 @@ package com.cms.backend.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.DiscussionReply;
 import com.cms.backend.pojo.DiscussionThread;
+import com.cms.backend.pojo.User;
 import com.cms.backend.service.DiscussionReplyService;
 import com.cms.backend.service.DiscussionThreadService;
+import com.cms.backend.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -22,9 +24,12 @@ public class DiscussionController {
 
     private final DiscussionReplyService discussionReplyService;
 
-    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService) {
+    private final UserService userService;
+
+    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService) {
         this.discussionThreadService = discussionThreadService;
         this.discussionReplyService = discussionReplyService;
+        this.userService = userService;
     }
 
     @PostMapping(value = "/thread")
@@ -56,6 +61,7 @@ public class DiscussionController {
     @GetMapping(value = "/get-thread")
     public ResponseEntity<DiscussionReplyList> getThread(@RequestParam Integer id) {
         DiscussionThread discussionThread = discussionThreadService.getById(id);
+        User user = userService.findByUserName(discussionThread.getUserId());
         List<DiscussionReply> replyList = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId, id));
         List<DiscussionReply> replyReplyList = new ArrayList<>();
         for (DiscussionReply discussionReply : replyList) {
@@ -64,7 +70,7 @@ public class DiscussionController {
         }
 
         replyList.addAll(replyReplyList);
-        DiscussionReplyList discussionReplyList = new DiscussionReplyList(discussionThread.getCourseId(), discussionThread.getUserId(), discussionThread.getTitle(), discussionThread.getContent(), discussionThread.getLikes(), discussionThread.getFavorites(), discussionThread.getClosed(), discussionThread.getTop(), discussionThread.getCreatedAt(), discussionThread.getTag(), discussionThread.getUpdatedAt(), replyList);
+        DiscussionReplyList discussionReplyList = new DiscussionReplyList(discussionThread.getCourseId(), discussionThread.getUserId(), discussionThread.getTitle(), discussionThread.getContent(), discussionThread.getLikes(), discussionThread.getFavorites(), discussionThread.getClosed(), discussionThread.getTop(), discussionThread.getCreatedAt(), discussionThread.getTag(), discussionThread.getUpdatedAt(), replyList, user.getName(), user.getAvatar());
 
         return ResponseEntity.ok(discussionReplyList);
     }
@@ -127,6 +133,10 @@ public class DiscussionController {
         private String updatedAt;
 
         private List<DiscussionReply> replyList;
+
+        private String name;
+
+        private String avatar;
 
     }
 

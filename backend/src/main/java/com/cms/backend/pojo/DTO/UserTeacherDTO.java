@@ -3,7 +3,7 @@ package com.cms.backend.pojo.DTO;
 import lombok.Data;
 
 @Data
-public class UserDTO {
+public class UserTeacherDTO {
 
     private Integer id;
 
@@ -23,7 +23,13 @@ public class UserDTO {
 
     private String idCardNumber;
 
-    public UserDTO(Integer id, String name, String password, String userClass, String academy, String gender, String email, String phoneNumber, String idCardNumber) {
+    private String address;
+
+    private String title;
+
+    private String brief;
+
+    public UserTeacherDTO(Integer id, String name, String password, String userClass, String academy, String gender, String email, String phoneNumber, String idCardNumber, String address, String title, String brief) {
         this.id = id;
         this.name = name;
         this.password = password;
@@ -33,9 +39,13 @@ public class UserDTO {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.idCardNumber = idCardNumber;
+        this.address = address;
+        this.title = title;
+        this.brief = brief;
     }
 
-    public UserDTO() {
+    public UserTeacherDTO() {
+
     }
 
 }

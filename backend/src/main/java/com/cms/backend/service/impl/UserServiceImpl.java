@@ -51,18 +51,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changeInfo(Integer id, String name, String userClass, String academy, String gender) {
-        userMapper.changeInfo(id, name, userClass, academy, gender);
+    public void changeInfo(Integer id, String email, String phoneNumber) {
+        userMapper.changeInfo(id, email, phoneNumber);
     }
 
     @Override
-    public void addUser(Integer id, String name, String password, String userClass, String academy, String gender) {
-        userMapper.addUser(id, name, password, userClass, academy, gender);
+    public void addUser(Integer id, String name, String password, String userClass, String academy, String gender, String email, String phoneNumber, String idCardNumber) {
+        userMapper.addUser(id, name, password, userClass, academy, gender, email, phoneNumber, idCardNumber);
     }
 
     @Override
-    public void addFolder(Integer userId, String name, String createdAt, Integer isDefault) {
-        userMapper.addFolder(userId, name, createdAt, isDefault);
+    public void addFolder(Integer userId, String name, String createdAt, Integer isDefault, Integer isPrivate) {
+        userMapper.addFolder(userId, name, createdAt, isDefault, isPrivate);
     }
 
     @Override
@@ -153,6 +153,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteLikeReply(Integer id) {
         userMapper.deleteLikeReply(id);
+    }
+
+    @Override
+    public void addUserTeacher(Integer id, String address, String title, String brief) {
+        userMapper.addUserTeacher(id, address, title, brief);
     }
 
 }
