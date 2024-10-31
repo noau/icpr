@@ -124,4 +124,12 @@ public interface CourseMapper extends BaseMapper<Course> {
     @Select("select * from attachment_folder where id = #{id}")
     CourseController.AttachmentFolder getAttachmentFolder(Integer id);
 
+    @Results({
+            @Result(property = "userClass", column = "class"),
+            @Result(property = "courseNumber", column = "course_number"),
+            @Result(property = "semesterYear", column = "semester_year"),
+            @Result(property = "classNumber", column = "class_number")
+    })
+    @Select("select * from course where id in (select teaching.course_id from teaching where teaching.teacher_id = #{id})")
+    List<Course> getAllCourseTeacher(Integer id);
 }
