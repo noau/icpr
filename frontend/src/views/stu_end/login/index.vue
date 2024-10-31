@@ -65,7 +65,7 @@ const login = async () => {
   userStore.setId(formModel.value.username);
   localStorage.setItem('userId', formModel.value.username);  
 
-  await router.push('/stu-end')
+  await router.push('/tea-end')
 }
 
 

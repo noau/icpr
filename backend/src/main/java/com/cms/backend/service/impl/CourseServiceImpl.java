@@ -106,4 +106,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         return courseMapper.getAttachmentFolder(attachmentFolderId);
     }
 
+    @Override
+    public List<Course> getAllCourseTeacher(Integer id) {
+        return courseMapper.getAllCourseTeacher(id);
+    }
+
 }

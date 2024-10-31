@@ -48,6 +48,14 @@ public class CourseController {
         return ResponseEntity.ok(courseList);
     }
 
+    @GetMapping(value = "/all-teach")
+    public ResponseEntity<CourseList> getAllCourseTeacher(@RequestParam Integer id) {
+        List<Course> courses = courseService.getAllCourseTeacher(id);
+        CourseList courseList = new CourseList(courses);
+
+        return ResponseEntity.ok(courseList);
+    }
+
     @GetMapping(value = "/all-students")
     public ResponseEntity<StudentList> getAllStudents(@RequestParam String id) {
         List<User> students = courseService.getAllStudents(id);

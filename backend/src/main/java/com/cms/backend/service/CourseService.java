@@ -44,5 +44,7 @@ public interface CourseService extends IService<Course> {
 
     CourseController.AttachmentFolder getAttachmentFolder(Integer attachmentFolderId);
 
+    List<Course> getAllCourseTeacher(Integer id);
+
 }
 
