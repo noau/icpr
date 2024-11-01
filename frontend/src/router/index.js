@@ -3,6 +3,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // 根路由
+    {
+      path: '/',
+      redirect: '/login'
+    },
+    // 登录路由
+    {
+      path: '/login',
+      component: () => import('@/views/login/index.vue')
+    },
     // 找回密码路由（学生、教师统一）
     {
       path: '/forgot-password/email',
@@ -136,10 +146,10 @@ const router = createRouter({
       path: '/tea-end',
       component: () => import('@/views/tea_end/layout/index.vue'),
     },
-    {
-      path: '/tea-end/login',
-      component: () => import('@/views/tea_end/login/index.vue')
-    },
+    // {
+    //   path: '/tea-end/login',
+    //   component: () => import('@/views/tea_end/login/index.vue')
+    // },
     {
       path: '/tea-end/notification',
       component: () => import('@/views/tea_end/notification/index.vue')
