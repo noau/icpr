@@ -1,11 +1,11 @@
 <template>
   <div class="status_select">
-    <button 
-      :class="['status_btn', { active: modelValue === 'all' }]" 
+    <button
+      :class="['status_btn', { active: modelValue === 'all' }]"
       @click="handleClick('all')"
     >所有</button>
-    <button 
-      :class="['status_btn', { active: modelValue === 'unread' }]" 
+    <button
+      :class="['status_btn', { active: modelValue === 'unread' }]"
       @click="handleClick('unread')"
     >未读</button>
   </div>
@@ -23,7 +23,7 @@ export default {
   methods: {
     handleClick(newStatus) {
       // 按钮点击时，向父组件发出 update:modelValue 事件
-      this.$emit('update:modelValue', newStatus); 
+      this.$emit('update:modelValue', newStatus);
     }
   }
 };

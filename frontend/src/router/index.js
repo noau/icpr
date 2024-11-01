@@ -22,28 +22,35 @@ const router = createRouter({
       path: '/forgot-password/phone',
       component: () => import('@/views/forgot_password/phone.vue')
     },
-    {
-      path: '/stu-end/notification',
-      component: () => import('@/views/stu_end/notification/index.vue')
-    },
     // 学生端路由
     {
       path: '/stu-end',
       component: () => import('@/views/stu_end/layout/index.vue'),
     },
-    // {
-    //   path: '/stu-end/login',
-    //   component: () => import('@/views/stu_end/login/index.vue')
-    // },
-
+    {
+      path: '/stu-end/login',
+      component: () => import('@/views/stu_end/login/index.vue'),
+    },
+      // 通知信箱路由
     {
       path: '/stu-end/notification',
-      component: () => import('@/views/stu_end/notification/index.vue')
+      component: () => import('@/views/stu_end/notification/index.vue'),
+      children:[
+        {
+          path: '', // 当路径是 /stu-end/notification 时重定向
+          redirect: '/stu-end/notification/list' // 重定向到 list
+        },
+        {
+          path: '/stu-end/notification/list',
+          component: () => import('@/views/stu_end/notification/components/notification_list.vue')
+        },
+        {
+          path: '/stu-end/notification/collection',
+          component: () => import('@/views/stu_end/notification/components/notification_collection.vue')
+        },
+      ]
     },
-    {
-      path: '/notification',
-      component: () => import('@/views/stu_end/notification/index.vue')
-    },
+      //个人界面
     {
       path: '/profile',
       component: () => import('@/views/stu_end/profile/index.vue')

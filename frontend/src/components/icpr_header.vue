@@ -23,7 +23,7 @@ export default {
   methods: {
     goToNotifications() {
       // 跳转到通知页面
-      this.$router.push('/notification');
+      this.$router.push('/stu-end/notification');
     },
     goToProfile() {
       // 跳转到个人中心页面

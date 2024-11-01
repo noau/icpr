@@ -28,10 +28,10 @@
               :style="{ color: scope.row.isRead ? 'green' : 'inherit' }"
               @click="toggleCompleted(scope.row)">
             <template v-if="scope.row.isRead">
-              <CircleCheckFilled/>  <!-- 已读状态图标 -->
+              <CircleCheckFilled/>
             </template>
             <template v-else>
-              <CircleCheck/>  <!-- 未读状态图标 -->
+              <CircleCheck/>
             </template>
           </el-icon>
         </template>
@@ -45,7 +45,12 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog :visible.sync="dialogVisible" title="通知详情">
+
+    <el-drawer
+        title="通知详情"
+        :visible.sync="drawerVisible"
+        direction="rtl"
+        :before-close="handleClose">
       <div v-if="selectedNotification">
         <p><strong>标题:</strong> {{ selectedNotification.content }}</p>
         <p><strong>发送者:</strong> {{ selectedNotification.userName }}</p>
@@ -54,9 +59,9 @@
         <p><strong>内容:</strong> {{ selectedNotification.content }}</p>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">关闭</el-button>
+        <el-button @click="drawerVisible = false">关闭</el-button>
       </span>
-    </el-dialog>
+    </el-drawer>
 
     <!-- 分页 -->
     <el-pagination
@@ -65,7 +70,7 @@
         :current-page="currentPage"
         :page-size="pageSize"
         layout="prev, pager, next"
-        :total="notificationsLength"
+        :total="filteredNotifications.length"
         class="pagination"
     />
   </div>
@@ -98,66 +103,36 @@ const props = defineProps({
 });
 
 const userId = useUserStore()?.id;
-console.log("User ID: " + userId);
 
 const notificationList = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(10);
-const notificationsLength = ref(0);
 
 const init = async () => {
   try {
     let res = await notificationsGet({id: userId});
-    console.log(res);
     notificationList.value = res.notifications;
-    notificationsLength.value = res.notifications.length;
-    console.log("通知总长为:" + notificationsLength.value);
   } catch (error) {
     console.error("获取通知列表时出错:", error);
   }
 };
 
-//详情页面
-const dialogVisible = ref(true);
+// 详情页面
+const drawerVisible = ref(false);
 const selectedNotification = ref(null);
 
 const showDetails = (notification) => {
-  console.log("成功连接详情页")
   selectedNotification.value = notification;
-  console.log(selectedNotification.value); // 检查是否正确
-  dialogVisible.value = true;
-  console.log(dialogVisible.value);
+  drawerVisible.value = true;
 };
 
-// 根据筛选状态、搜索文本和排序选项过滤和排序通知
+// 过滤和排序仅显示收藏的或已读的通知
 const filteredNotifications = computed(() => {
-  let notifications = notificationList.value;
-
-  // 根据筛选状态过滤通知
-  if (props.filterStatus === 'unread') {
-    notifications = notifications.filter(notification => !notification.isRead); // 只返回未读通知
-  }
-
-  // 根据搜索文本过滤通知
-  if (props.searchText) {
-    notifications = notifications.filter(notification =>
-        notification.content.includes(props.searchText) // 根据内容搜索
-    );
-  }
-
-// 根据排序选项排序通知
-  if (props.sortOption === 'date') {
-    notifications.sort((a, b) => {
-      return new Date(b.createdAt) - new Date(a.createdAt); // 按日期排序
-    });
-  } else if (props.sortOption === 'title') {
-    notifications.sort((a, b) => {
-      return a.content.localeCompare(b.content); // 按标题排序
-    });
-  }
-
-
-  return notifications;
+  return notificationList.value.filter(notification =>
+      notification.isStar || notification.isRead
+  ).filter(notification =>
+      notification.content.includes(props.searchText) // 基于搜索文本过滤
+  );
 });
 
 // 切换收藏状态
@@ -165,10 +140,10 @@ const toggleStar = async (notification) => {
   notification.isStar = !notification.isStar;
   notification.isStar = notification.isStar ? 1 : 0; // 转换为 1 和 0
   try {
-    await updateCollectionNotification({
-      ...notification,
-    });
-    console.log("收藏状态更新成功");
+    await updateCollectionNotification({...notification});
+    if (!notification.isStar) {
+      notificationList.value = notificationList.value.filter(n => n.id !== notification.id);
+    }
   } catch (error) {
     console.error("更新收藏状态时出错:", error);
   }
@@ -179,10 +154,7 @@ const toggleCompleted = async (notification) => {
   notification.isRead = !notification.isRead;
   notification.isRead = notification.isRead ? 1 : 0; // 转换为 1 和 0
   try {
-    await updateReadNotification({
-      ...notification
-    });
-    console.log("已读状态更新成功");
+    await updateReadNotification({...notification});
   } catch (error) {
     console.error("更新已读状态时出错:", error);
   }
@@ -191,25 +163,26 @@ const toggleCompleted = async (notification) => {
 // 删除通知函数
 const deleteNotification = async (notificationId) => {
   try {
-    await deleteSignalNotification(notificationId); // 调用删除API
-    notificationList.value = notificationList.value.filter(notification => notification.id !== notificationId); // 更新本地通知列表
-    notificationsLength.value -= 1; // 更新通知总数
-    console.log("通知删除成功");
+    await deleteSignalNotification(notificationId);
+    notificationList.value = notificationList.value.filter(notification => notification.id !== notificationId);
   } catch (error) {
     console.error("删除通知时出错:", error);
   }
 };
 
-
 // 分页处理函数
 const handleSizeChange = (size) => {
   pageSize.value = size;
-  init(); // 重新加载通知列表
+  init();
 };
 
 const handleCurrentChange = (page) => {
   currentPage.value = page;
-  init(); // 重新加载通知列表
+  init();
+};
+
+const handleClose = (done) => {
+  done();
 };
 
 init();
@@ -228,11 +201,11 @@ init();
 }
 
 .icons el-icon {
-  margin-right: 10px; /* 图标之间的间距 */
+  margin-right: 10px;
 }
 
 .el-icon.active {
-  color: #de8f0f !important; /* 收藏状态的颜色 */
+  color: #de8f0f !important;
 }
 
 .el-icon {
@@ -242,20 +215,18 @@ init();
 .el-icon[style*="color: green"] {
   color: green !important; /* 确保已读状态的颜色为绿色 */
 }
-
 .pagination {
   margin-top: 10px;
   text-align: center;
 }
 
 .details-button {
-  background-color: #003366; /* 深蓝色 */
-  color: white; /* 文字颜色 */
-  border-color: #003366; /* 边框颜色 */
+  background-color: #003366;
+  color: white;
+  border-color: #003366;
 }
 
 .details-button:hover {
-  background-color: #002244; /* 悬停时的颜色 */
+  background-color: #002244;
 }
-
 </style>
