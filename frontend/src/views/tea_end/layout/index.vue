@@ -35,6 +35,18 @@ import icpr_header from '@/components/icpr_header.vue';
 import search_bar from './components/search_bar.vue';
 import course_list from './components/course_list.vue';
 import reminder_card from './components/reminder_card.vue'
+import { teacherCourses } from "@/api/course.js";
+import { useUserStore } from "@/stores/user.js";
+const user = useUserStore();
+if (user.id) {
+  localStorage.setItem("id", user.id);
+
+}
+console.log(user.id);
+
+let id = localStorage.getItem("id");
+const courses = (await teacherCourses(id, user.token)).courses;
+console.log(courses);
 
 export default {
   components: {
@@ -45,20 +57,7 @@ export default {
   },
   data() {
     return {
-      courses: [
-        { name: '课程1', courseId: '001', classId: 'A01' },
-        { name: '课程2', courseId: '002', classId: 'A02' },
-        { name: '课程3', courseId: '003', classId: 'A03' },
-        { name: '课程4', courseId: '004', classId: 'A03' },
-        { name: '课程5', courseId: '005', classId: 'A03' },
-        { name: '课程6', courseId: '006', classId: 'A03' },
-        { name: '课程7', courseId: '007', classId: 'A03' },
-        { name: '课程8', courseId: '008', classId: 'A03' },
-        { name: '课程9', courseId: '009', classId: 'A03' },
-        { name: '课程10', courseId: '010', classId: 'A03' },
-        { name: '课程11', courseId: '011', classId: 'A03' },
-        { name: '课程12', courseId: '012', classId: 'A03' },
-      ],
+      courses: courses,
       searchQuery: '',
       reminders: [
         { type: '作业', title: '作业标题', deadline: '2024-09-15' },

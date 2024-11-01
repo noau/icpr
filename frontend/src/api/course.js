@@ -1,11 +1,21 @@
 import httpInstance from '@/utils/http.js';
 
+//courses/all
 export const userCourses = (id, token) =>
   httpInstance.get('/courses/all?id=' + id, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token,
     },
+  });
+  
+//courses/all-teach
+  export const teacherCourses = (id, token) =>
+    httpInstance.get('/courses/all-teach?id=' + id, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token,
+      },
   });
 
 // /courses/all-students
