@@ -63,9 +63,10 @@ const login = async () => {
   // 存储 Token
   localStorage.setItem('token', res);  
   userStore.setId(formModel.value.username);
-  localStorage.setItem('userId', formModel.value.username);  
+  localStorage.setItem('userId', formModel.value.username);
 
-  await router.push('/tea-end')
+
+  await router.push('/stu-end')
 }
 
 

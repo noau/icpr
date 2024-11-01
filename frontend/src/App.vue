@@ -1,5 +1,20 @@
 <script setup>
+import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/user.js'
 import { RouterView } from 'vue-router'
+
+const userStore = useUserStore()
+
+onMounted(() => {
+  const token = localStorage.getItem('token')
+  const userId = localStorage.getItem('userId')
+  if (token) {
+    userStore.setToken(token)
+  }
+  if (userId) {
+    userStore.setId(userId)
+  }
+})
 </script>
 
 <template>
