@@ -66,7 +66,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { getcalendar } from '@/api/course'
+import { getcalendar } from '@/api/course.js'
 
 const fileList = ref([])
 const fileContent = ref('')

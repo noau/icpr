@@ -215,7 +215,7 @@
 import { ref, computed } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { deleteFile, getppt, resourceppt, createattachmentfolder } from '@/api/course'
+import { deleteFile, getppt, resourceppt, createattachmentfolder } from '@/api/course.js'
 const headers = {
   Authorization: localStorage.getItem('token')
 }

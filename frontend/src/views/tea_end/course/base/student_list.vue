@@ -39,7 +39,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { allstudents,exportstudentlist } from '@/api/course'
+import { allstudents,exportstudentlist } from '@/api/course.js'
 
 
 const form = ref({

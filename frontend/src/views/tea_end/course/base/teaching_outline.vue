@@ -72,7 +72,7 @@ const dialogVisible = ref(false)
 const courseId = "16" // 假设课程ID为16，实际可以根据需求传递
 const uploaderId = 10018 // 上传者ID
 const uploaderName = "陈旭东" // 上传者姓名
-import { resourcesyllabus,getsyllabus } from '@/api/course'
+import { resourcesyllabus,getsyllabus } from '@/api/course.js'
 
 const beforeUpload = (file) => {
   const isAllowedSize = file.size / 1024 / 1024 < 2048  // 文件大小限制为 2G

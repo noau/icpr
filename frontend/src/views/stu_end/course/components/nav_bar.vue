@@ -80,6 +80,7 @@ const handleSelect = (key) => {
       router.push('/stu-end/course/base/teacher-info')
       break
     case '2-1':
+      console.log('跳转到课件页面');
       router.push('/stu-end/course/resource/slides')
       break
     case '2-2':
