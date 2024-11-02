@@ -279,9 +279,8 @@ const forgotPassword = (method) => {
   justify-content: center;
 }
 .form {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.0);
   border-radius: 10px;
-  padding: 1rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-width: 400px;
   .title {
@@ -290,6 +289,8 @@ const forgotPassword = (method) => {
   .role-tabs {
     display: flex;
     border-radius: 10px;
+    height: 100%;
+    width: 100%;
     background-color: rgba(255, 255, 255, 0.8);
   }
   .button {
