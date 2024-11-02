@@ -13,7 +13,6 @@ public class Course {
 
     private String name;
 
-
     private String semesterYear;
 
     private Integer classNumber;
@@ -25,5 +24,7 @@ public class Course {
     private String academy;
 
     private String teacher;
+
+    private String introduction;
 
 }
