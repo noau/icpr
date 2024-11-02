@@ -26,10 +26,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -96,12 +93,10 @@ public class UserController {
     public ResponseEntity<String> loginTeacher(@RequestBody User user) {
         Integer id = user.getId();
         String password = user.getPassword();
-        logger.info("Login attempt for account: {}", id);
 
         // 验证用户是否存在
         User userLogin = userService.findByUserName(id);
         if (userLogin == null) {
-            logger.warn("Login failed. User not found: {}", id);
 
             return ResponseEntity.status(410).body(""); // 用户不存在
         } else {
@@ -110,13 +105,10 @@ public class UserController {
             if (Objects.equals(password, user.getPassword())) {
                 Map<String, Object> claims = new HashMap<>();
                 claims.put("account", id);
-                logger.info("User logged in successfully: {}", id);
                 var token = JWTUtils.genToken(claims);
-                logger.warn("User token: {}", token);
 
                 return ResponseEntity.ok(token);
             } else {
-                logger.warn("Login failed. Incorrect password for account: {}", id);
 
                 return ResponseEntity.status(422).body(""); // 密码错误
             }
@@ -124,7 +116,8 @@ public class UserController {
     }
 
     @PostMapping(value = "/login/administrator")
-    public ResponseEntity<String> loginAdministrator(@RequestParam String password) {
+    public ResponseEntity<String> loginAdministrator(@RequestBody User user) {
+        String password = user.getPassword();
         // 验证密钥是否正确
         if (Objects.equals(password, "icpr")) {
             Map<String, Object> claims = new HashMap<>();
@@ -140,8 +133,30 @@ public class UserController {
     @GetMapping(value = "/info")
     public ResponseEntity<UserInfo> getUserInfo(@RequestParam Integer id) {
         User user = userService.findByUserName(id);
-        List<DiscussionThread> threadList = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getUserId, id));
         List<Folder> folderList = folderService.list(new LambdaQueryWrapper<Folder>().eq(Folder::getUserId, id));
+        List<DiscussionThread> threadListList = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getUserId, id));
+        List<DiscussionInfoDTO> threadList = new ArrayList<>();
+        for (DiscussionThread discussionThread : threadListList) {
+            User threadUser = userService.findByUserName(discussionThread.getUserId());
+            DiscussionInfoDTO discussionInfoDTO = new DiscussionInfoDTO(
+                    discussionThread.getId(),
+                    discussionThread.getCourseId(),
+                    discussionThread.getUserId(),
+                    discussionThread.getTitle(),
+                    discussionThread.getContent(),
+                    discussionThread.getLikes(),
+                    discussionThread.getFavorites(),
+                    discussionThread.getClosed(),
+                    discussionThread.getTop(),
+                    discussionThread.getCreatedAt(),
+                    discussionThread.getTag(),
+                    discussionThread.getUpdatedAt(),
+                    threadUser.getName(),
+                    user.getAvatar()
+            );
+            threadList.add(discussionInfoDTO);
+        }
+
         UserInfo userInfo = new UserInfo(user.getId(), user.getName(), user.getUserClass(), user.getAcademy(), user.getGender(), user.getAvatar(), user.getSubscriptionsNumber(), user.getFansNumber(), user.getThreadNumber(), user.getEmail(), user.getPhoneNumber(), user.getIdCardNumber(), folderList, threadList);
 
         return ResponseEntity.ok(userInfo);
@@ -178,7 +193,6 @@ public class UserController {
 
             return ResponseEntity.ok("");
         } else {
-            logger.warn("Login failed. Incorrect password for account: {}", id);
 
             return ResponseEntity.status(422).body(""); // 密码错误
         }
@@ -461,7 +475,41 @@ public class UserController {
 
         private List<Folder> folderList;
 
-        private List<DiscussionThread> threadList;
+        private List<DiscussionInfoDTO> threadList;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class DiscussionInfoDTO {
+
+        private Integer id;
+
+        private String courseId;
+
+        private Integer userId;
+
+        private String title;
+
+        private String content;
+
+        private Integer likes;
+
+        private Integer favorites;
+
+        private Integer closed;
+
+        private Integer top;
+
+        private String createdAt;
+
+        private String tag;
+
+        private String updatedAt;
+
+        private String userName;
+
+        private String userAvatar;
 
     }
 
