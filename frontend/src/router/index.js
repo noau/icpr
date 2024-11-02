@@ -33,7 +33,7 @@ const router = createRouter({
       component: () => import('@/views/stu_end/notification/index.vue'),
       children:[
         {
-          path: '', // 当路径是 /stu-end/notification 时重定向
+          path: '', // 重定向
           redirect: '/stu-end/notification/list' // 重定向到 list
         },
         {

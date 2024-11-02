@@ -22,6 +22,7 @@
   </div>
 </template>
 
+
 <script>
 import notification_header from "./components/notification_header.vue";
 import sidebar from './components/sidebar.vue';

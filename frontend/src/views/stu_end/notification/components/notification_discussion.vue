@@ -94,6 +94,7 @@ import {CircleCheck, CircleCheckFilled, Star, StarFilled} from "@element-plus/ic
 const userId = useUserStore()?.id;
 const notificationType = "讨论区通知";
 
+
 const notificationList = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(10);

@@ -104,6 +104,7 @@
   </div>
 </template>
 
+
 <script lang="ts" setup>
 import {
   updateCollectionNotification,

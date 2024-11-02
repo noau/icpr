@@ -8,7 +8,6 @@ export const notificationsGet = ({ id  }) =>
 export const updateCollectionNotification = (notificationData) =>
     httpInstance.post('/notifications/star', notificationData);
 
-
 // 更新通知
 export const updateReadNotification = (notificationData) =>
     httpInstance.post('/notifications/read', notificationData);

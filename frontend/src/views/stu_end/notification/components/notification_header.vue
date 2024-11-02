@@ -20,6 +20,7 @@ const return_back = () => {
 };
 </script>
 
+
 <style scoped>
 .notification-header {
   background-color: #07395f; /* 自定义头部背景色 */
