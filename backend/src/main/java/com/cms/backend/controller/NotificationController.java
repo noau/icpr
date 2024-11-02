@@ -7,7 +7,6 @@ import com.cms.backend.service.NotificationService;
 import com.cms.backend.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.boot.autoconfigure.ssl.SslProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -110,13 +109,98 @@ public class NotificationController {
         return ResponseEntity.ok().build();
     }
 
-    //删除通知
+    /**
+     * 删除通知信息
+     *
+     * @param id 删除的通知信息ID
+     * @return 删除结果
+     */
     @DeleteMapping(value = "/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> notificationDelete(@RequestParam Integer id) {
         System.out.println(id);
         notificationService.removeById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 获取所有收藏通知信息
+     *
+     * @param id 用户ID
+     * @return 返回所有收藏通知
+     */
+    @GetMapping(value = "/get-all-collection")
+    public ResponseEntity<NotificationList> getStarredNotifications(@RequestParam Integer id) {
+        List<NotificationDTO> notifications = new ArrayList<>();
+        // 查询指定用户的收藏通知（isStar = 1）
+        List<Notification> starredNotificationList = notificationService.list(
+                new LambdaQueryWrapper<Notification>()
+                        .eq(Notification::getUserId, id)
+                        .eq(Notification::getIsStar, 1) // 过滤收藏的通知
+        );
+
+        // 遍历收藏通知列表并转换为DTO
+        for (Notification notification : starredNotificationList) {
+            NotificationDTO notificationDTO = new NotificationDTO(
+                    notification.getId(),
+                    notification.getUserId(),
+                    notification.getTriggeredBy(),
+                    notification.getType(),
+                    notification.getRelatedId(),
+                    notification.getContent(),
+                    notification.getIsRead(),
+                    notification.getCreatedAt(),
+                    notification.getCourseId(),
+                    notification.getIsStar(),
+                    userService.findByUserName(notification.getTriggeredBy()).getName()
+            );
+
+            notifications.add(notificationDTO);
+        }
+
+        NotificationList notificationsList = new NotificationList(notifications);
+
+        return ResponseEntity.ok(notificationsList);
+    }
+
+    /**
+     * 获取指定类型的通知信息
+     *
+     * @param id   用户ID
+     * @param type 通知类型
+     * @return 返回指定类型的通知
+     */
+    @GetMapping(value = "/get-notification-by-type")
+    public ResponseEntity<NotificationList> getStarredNotificationsByType(@RequestParam Integer id, @RequestParam String type) {
+        List<NotificationDTO> notifications = new ArrayList<>();
+        // 查询指定用户的收藏通知（isStar = 1）并根据类型过滤
+        List<Notification> starredNotificationList = notificationService.list(
+                new LambdaQueryWrapper<Notification>()
+                        .eq(Notification::getUserId, id)
+                        .eq(Notification::getType, type) // 根据类型过滤
+        );
+
+        // 遍历收藏通知列表并转换为DTO
+        for (Notification notification : starredNotificationList) {
+            NotificationDTO notificationDTO = new NotificationDTO(
+                    notification.getId(),
+                    notification.getUserId(),
+                    notification.getTriggeredBy(),
+                    notification.getType(),
+                    notification.getRelatedId(),
+                    notification.getContent(),
+                    notification.getIsRead(),
+                    notification.getCreatedAt(),
+                    notification.getCourseId(),
+                    notification.getIsStar(),
+                    userService.findByUserName(notification.getTriggeredBy()).getName()
+            );
+
+            notifications.add(notificationDTO);
+        }
+
+        NotificationList notificationsList = new NotificationList(notifications);
+        return ResponseEntity.ok(notificationsList);
     }
 
     @Data
@@ -146,6 +230,7 @@ public class NotificationController {
         private String userName;
 
     }
+
     @Data
     @AllArgsConstructor
     public static class UpdateNotificationDTO {
@@ -155,6 +240,7 @@ public class NotificationController {
 
         private Integer isStar;
     }
+
     @Data
     @AllArgsConstructor
     public static class NotificationList {

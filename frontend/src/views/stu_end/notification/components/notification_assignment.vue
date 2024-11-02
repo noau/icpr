@@ -6,7 +6,8 @@
       <el-table-column prop="userName" label="发送者" width="180"/>
       <el-table-column prop="content" label="标题" width="200"/>
       <el-table-column prop="createdAt" label="时间" width="200"/>
-      <el-table-column prop="type" label="通知类型" width="200"/>
+
+      <!-- 收藏标识 -->
       <el-table-column label="收藏" width="100">
         <template #default="scope">
           <el-icon
@@ -21,6 +22,24 @@
           </el-icon>
         </template>
       </el-table-column>
+
+      <!-- 已读/未读标识 -->
+      <el-table-column label="已读" width="100">
+        <template #default="scope">
+          <el-icon
+              :class="{ 'active': scope.row.isRead }"
+              :style="{ color: scope.row.isRead ? 'green' : 'inherit' }"
+              @click="toggleCompleted(scope.row)">
+            <template v-if="scope.row.isRead">
+              <CircleCheckFilled/>
+            </template>
+            <template v-else>
+              <CircleCheck/>
+            </template>
+          </el-icon>
+        </template>
+      </el-table-column>
+
       <el-table-column label="操作" width="200">
         <template #default="scope">
           <div style="display: flex; gap: 10px;">
@@ -64,15 +83,16 @@
 <script lang="ts" setup>
 import {
   updateCollectionNotification,
-  collectionNotificationsGet,
-  deleteSignalNotification
+  typeNotificationsByTypeGet,
+  deleteSignalNotification,
+  updateReadNotification
 } from '@/api/notification.js';
 import {useUserStore} from '@/stores/user.js';
 import {ref} from 'vue';
-import { Star, StarFilled} from "@element-plus/icons-vue";
-
+import {CircleCheck, CircleCheckFilled, Star, StarFilled} from "@element-plus/icons-vue";
 
 const userId = useUserStore()?.id;
+const notificationType = "作业通知";
 
 const notificationList = ref([]);
 const currentPage = ref(1);
@@ -80,8 +100,8 @@ const pageSize = ref(10);
 
 const init = async () => {
   try {
-    let res = await collectionNotificationsGet({id: userId});
-    console.log(res.notifications)
+    let res = await typeNotificationsByTypeGet({id: userId, type: notificationType});
+    console.log(res);
     notificationList.value = res.notifications;
   } catch (error) {
     console.error("获取通知列表时出错:", error);
@@ -108,6 +128,17 @@ const toggleStar = async (notification) => {
     }
   } catch (error) {
     console.error("更新收藏状态时出错:", error);
+  }
+};
+
+// 切换已读状态
+const toggleCompleted = async (notification) => {
+  notification.isRead = !notification.isRead;
+  notification.isRead = notification.isRead ? 1 : 0;
+  try {
+    await updateReadNotification({...notification});
+  } catch (error) {
+    console.error("更新已读状态时出错:", error);
   }
 };
 
@@ -172,5 +203,13 @@ init();
 
 .details-button:hover {
   background-color: #002244;
+}
+
+.el-icon {
+  color: inherit; /* 继承父元素颜色，防止被覆盖 */
+}
+
+.el-icon[style*="color: green"] {
+  color: green !important; /* 确保已读状态的颜色为绿色 */
 }
 </style>

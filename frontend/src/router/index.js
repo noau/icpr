@@ -27,11 +27,7 @@ const router = createRouter({
       path: '/stu-end',
       component: () => import('@/views/stu_end/layout/index.vue'),
     },
-    {
-      path: '/stu-end/login',
-      component: () => import('@/views/stu_end/login/index.vue'),
-    },
-      // 通知信箱路由
+      // 通知信箱
     {
       path: '/stu-end/notification',
       component: () => import('@/views/stu_end/notification/index.vue'),
@@ -48,6 +44,14 @@ const router = createRouter({
           path: '/stu-end/notification/collection',
           component: () => import('@/views/stu_end/notification/components/notification_collection.vue')
         },
+        {
+          path: '/stu-end/notification/type/assignment',
+          component:()=>import('@/views/stu_end/notification/components/notification_assignment.vue')
+        },
+        {
+          path: '/stu-end/notification/type/comment',
+          component:()=>import('@/views/stu_end/notification/components/notification_discussion.vue')
+        }
       ]
     },
       //个人界面

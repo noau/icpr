@@ -1,5 +1,5 @@
 <template>
-  <el-header>
+  <el-header class="notification-header">
     <div class="header-content">
       <!-- 返回按钮 -->
       <el-icon class="common-icon" @click="return_back">
@@ -13,6 +13,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+import {ArrowLeftBold} from "@element-plus/icons-vue";
 const router = useRouter();
 const return_back = () => {
   router.push('/stu-end');
@@ -20,13 +21,13 @@ const return_back = () => {
 </script>
 
 <style scoped>
-.el-header {
+.notification-header {
   background-color: #07395f; /* 自定义头部背景色 */
   display: flex;
   justify-content: flex-start; /* 左对齐内容 */
   align-items: center;
-  padding: 0 20px;
   height: 60px;
+  width: 100%;
 }
 
 .header-content {
