@@ -215,7 +215,7 @@
 import { ref, computed } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { deleteFile, getppt, resourceppt, createattachmentfolder, getexercise,resourcecourse } from '@/api/course'
+import { deleteFile, getppt, resourceppt, createattachmentfolder } from '@/api/course'
 const headers = {
   Authorization: localStorage.getItem('token')
 }
@@ -224,7 +224,7 @@ const handleShare = (file) => {
     // 使用 Web Share API
     navigator.share({
       title: '分享文件',
-      text: `我想分享文件: ${file.name}`,
+      text: 我想分享文件: ${file.name},
       url: file.url,
     })
       .then(() => console.log('分享成功'))
@@ -232,7 +232,7 @@ const handleShare = (file) => {
   } else {
     // 兼容不支持 Web Share API 的浏览器
     const shareLink = document.createElement('textarea');
-    shareLink.value = `我想分享文件: ${file.name}\n链接: ${file.url}`;
+    shareLink.value = 我想分享文件: ${file.name}\n链接: ${file.url};
     document.body.appendChild(shareLink);
     shareLink.select();
     document.execCommand('copy');
@@ -349,14 +349,7 @@ function handleSearch() {
 function handleDirectoryChange() {
   currentPage.value = 1;
   handleSearch();
-  
-  // 找到选中的目录对象并设置其 ID
-  const selectedDirectoryObj = directoryData.value.find(dir => dir.name === selectedDirectory.value);
-  if (selectedDirectoryObj) {
-    selectedDirectoryId.value = selectedDirectoryObj.id; // 假设目录对象中有 `id` 字段
-  }
 }
-
 
 function handleSortChange() {
   currentPage.value = 1;
@@ -365,26 +358,30 @@ function handleSortChange() {
 function openCreateDialog() {
   createDialogVisible.value = true;
 }
-// 调用 createattachmentfolder API 创建目录
+
 function createDirectory() {
+  // if (newDirectory.value.name && newDirectory.value.description) {
+  //   directoryData.value.push({
+  //     name: newDirectory.value.name,
+  //     description: newDirectory.value.description,
+  //     published: false,
+  //     files: []
+  //   });
+  //   createDialogVisible.value = false;
+  //   newDirectory.value.name = '';
+  //   newDirectory.value.description = '';
+  // }
   createattachmentfolder({
     folderName: newDirectory.value.name,
-    parentId: null // 如果有父目录ID请替换此值
+    id: localStorage.getItem('kcid')
   }).then(res => {
-    console.log("目录创建成功:", res);
-    // 目录创建成功后关闭对话框
-    createDialogVisible.value = false;
-    // 清空新目录的名称
-    newDirectory.value.name = '';
-    // 可以在这里刷新目录列表
-  }).catch(error => {
-    console.error("目录创建失败:", error);
-  });
+    console.log(res);
+  })
 }
-
 
 function openUploadDialog() {
   if (!selectedDirectory.value || selectedDirectory.value === 'all') {
+    // 弹出alert('请选择一个目录！');
     alert('请选择一个目录！');
     return;
   }
@@ -398,30 +395,42 @@ function beforeUpload(file) {
 const uploadProps = ref({
   attachmentIdList: []
 })
-const selectedDirectoryId = ref(null);
-
 function handleUploadSuccess(response, file, fileList) {
-  uploadProps.value.attachmentIdList.push({ 
-    id: response.id, 
-    allowDownload: newFile.value.allowDownload, 
-    attachmentFolderId: selectedDirectoryId.value // 使用 `selectedDirectoryId.value`
-  });
+  newFile.value.url = file.url;
+  console.log(response);
+  uploadProps.value.attachmentIdList.push(response.id)
+  uploadProps.value.id = localStorage.getItem('kcid')
+
 }
 
-
 function uploadFile() {
-  const uploadData = {
-    id: localStorage.getItem('kcid'), // 课程ID
-    introduction: newFile.value.description, // 文件描述
-    attachmentIdList: uploadProps.value.attachmentIdList
-  };
+  console.log(uploadProps.value);
 
-  resourceppt(uploadData).then(res => {
-    console.log("文件上传成功:", res);
-    // 上传成功后刷新文件列表或进行其他操作
-  }).catch(error => {
-    console.error("文件上传失败:", error);
-  });
+  resourceppt(uploadProps.value).then(res => {
+    console.log(res)
+  })
+  // if (newFile.value.name && newFile.value.url) {
+  //   const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
+  //   if (directory) {
+  //     directory.files.push({
+  //       name: newFile.value.name,
+  //       description: newFile.value.description,
+  //       allowDownload: newFile.value.allowDownload,
+  //       url: newFile.value.url,
+  //       published: false,
+  //       uploadTime: new Date().toISOString().split('T')[0] // 添加上传时间
+  //     });
+  //   }
+  //   uploadDialogVisible.value = false;
+  //   newFile.value.name = '';
+  //   newFile.value.description = '';
+  //   newFile.value.allowDownload = true;
+  //   newFile.value.url = '';
+  //   fileList.value = [];
+  //   handleSearch(); // 更新搜索结果
+  // } else {
+  //   this.$message.error('请填写完整信息并上传文件');
+  // }
 }
 
 function openEditDialog(directory) {
@@ -527,7 +536,7 @@ const sortedFiles = computed(() => {
 });
 function getpptlist() {
   let id = localStorage.getItem('kcid')
-  getexercise(id).then(res => {
+  getppt(id).then(res => {
     console.log(res)
   })
 }

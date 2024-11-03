@@ -349,7 +349,14 @@ function handleSearch() {
 function handleDirectoryChange() {
   currentPage.value = 1;
   handleSearch();
+  
+  // 找到选中的目录对象并设置其 ID
+  const selectedDirectoryObj = directoryData.value.find(dir => dir.name === selectedDirectory.value);
+  if (selectedDirectoryObj) {
+    selectedDirectoryId.value = selectedDirectoryObj.id; // 假设目录对象中有 `id` 字段
+  }
 }
+
 
 function handleSortChange() {
   currentPage.value = 1;
@@ -359,29 +366,26 @@ function openCreateDialog() {
   createDialogVisible.value = true;
 }
 
+// 调用 createattachmentfolder API 创建目录
 function createDirectory() {
-  // if (newDirectory.value.name && newDirectory.value.description) {
-  //   directoryData.value.push({
-  //     name: newDirectory.value.name,
-  //     description: newDirectory.value.description,
-  //     published: false,
-  //     files: []
-  //   });
-  //   createDialogVisible.value = false;
-  //   newDirectory.value.name = '';
-  //   newDirectory.value.description = '';
-  // }
   createattachmentfolder({
     folderName: newDirectory.value.name,
-    id: localStorage.getItem('kcid')
+    parentId: null // 如果有父目录ID请替换此值
   }).then(res => {
-    console.log(res);
-  })
+    console.log("目录创建成功:", res);
+    // 目录创建成功后关闭对话框
+    createDialogVisible.value = false;
+    // 清空新目录的名称
+    newDirectory.value.name = '';
+    // 可以在这里刷新目录列表
+  }).catch(error => {
+    console.error("目录创建失败:", error);
+  });
 }
+
 
 function openUploadDialog() {
   if (!selectedDirectory.value || selectedDirectory.value === 'all') {
-    // 弹出alert('请选择一个目录！');
     alert('请选择一个目录！');
     return;
   }
@@ -395,42 +399,31 @@ function beforeUpload(file) {
 const uploadProps = ref({
   attachmentIdList: []
 })
-function handleUploadSuccess(response, file, fileList) {
-  newFile.value.url = file.url;
-  console.log(response);
-  uploadProps.value.attachmentIdList.push(response.id)
-  uploadProps.value.id = localStorage.getItem('kcid')
 
+const selectedDirectoryId = ref(null);
+
+function handleUploadSuccess(response, file, fileList) {
+  // 在上传成功后处理文件ID
+  uploadProps.value.attachmentIdList.push({ 
+  id: response.id, 
+  allowDownload: newFile.value.allowDownload ? 1 : 0, // 将布尔值转换为整数
+  attachmentFolderId: selectedDirectoryId 
+});
 }
 
 function uploadFile() {
-  console.log(uploadProps.value);
+  const uploadData = {
+    id: localStorage.getItem('kcid'), // 课程ID
+    introduction: newFile.value.description, // 文件描述
+    attachmentIdList: uploadProps.value.attachmentIdList
+  };
 
-  resourceppt(uploadProps.value).then(res => {
-    console.log(res)
-  })
-  // if (newFile.value.name && newFile.value.url) {
-  //   const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
-  //   if (directory) {
-  //     directory.files.push({
-  //       name: newFile.value.name,
-  //       description: newFile.value.description,
-  //       allowDownload: newFile.value.allowDownload,
-  //       url: newFile.value.url,
-  //       published: false,
-  //       uploadTime: new Date().toISOString().split('T')[0] // 添加上传时间
-  //     });
-  //   }
-  //   uploadDialogVisible.value = false;
-  //   newFile.value.name = '';
-  //   newFile.value.description = '';
-  //   newFile.value.allowDownload = true;
-  //   newFile.value.url = '';
-  //   fileList.value = [];
-  //   handleSearch(); // 更新搜索结果
-  // } else {
-  //   this.$message.error('请填写完整信息并上传文件');
-  // }
+  resourceppt(uploadData).then(res => {
+    console.log("文件上传成功:", res);
+    // 上传成功后刷新文件列表或进行其他操作
+  }).catch(error => {
+    console.error("文件上传失败:", error);
+  });
 }
 
 function openEditDialog(directory) {
