@@ -23,8 +23,8 @@
     <!-- 通知列表显示 -->
     <el-table :data="filteredNotifications" style="width: 100%">
       <el-table-column prop="courseId" label="课程ID" width="300"/>
-      <el-table-column prop="userName" label="发送者" width="180"/>
-      <el-table-column prop="content" label="标题" width="250"/>
+      <el-table-column prop="userName" label="发送者" width="150"/>
+      <el-table-column prop="title" label="标题" width="300"/>
       <el-table-column prop="createdAt" label="时间" width="200"/>
 
       <!-- 收藏标识 -->
@@ -79,11 +79,11 @@
         :before-close="drawerClose"
     >
       <div v-if="selectedNotification" class="notification-details">
-        <h2 class="notification-title">{{ selectedNotification.content }}</h2>
+        <h2 class="notification-title">{{ selectedNotification.title }}</h2>
         <p><strong>发送人:</strong> {{ selectedNotification.userName }}</p>
-        <p><strong>内容:</strong> {{ selectedNotification.content }}</p>
         <p><strong>时间:</strong> {{ new Date(selectedNotification.createdAt).toLocaleString() }}</p>
         <p><strong>通知类型:</strong> {{ selectedNotification.type }}</p>
+        <p><strong>内容:</strong> {{ selectedNotification.content }}</p>
       </div>
       <div v-else>
         <p>未选择任何通知。</p>
@@ -141,14 +141,14 @@ const filteredNotifications = computed(() => {
   // 使用正则表达式进行模糊搜索（不区分大小写，部分匹配）
   if (localSearchText.value) {
     const searchRegex = new RegExp(localSearchText.value, 'i');
-    notifications = notifications.filter(notification => searchRegex.test(notification.content));
+    notifications = notifications.filter(notification => searchRegex.test(notification.title));
   }
 
   // 根据排序选项排序通知
   if (sortOption.value === 'date') {
     notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } else if (sortOption.value === 'title') {
-    notifications.sort((a, b) => a.content.localeCompare(b.content));
+    notifications.sort((a, b) => a.title.localeCompare(b.title));
   }
 
   return notifications;
