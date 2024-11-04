@@ -51,7 +51,8 @@ public class NotificationController {
                     notification.getCreatedAt(),
                     notification.getCourseId(),
                     notification.getIsStar(),
-                    userService.findByUserName(notification.getTriggeredBy()).getName()
+                    userService.findByUserName(notification.getTriggeredBy()).getName(),
+                    notification.getTitle()
             );
 
             notifications.add(notificationDTO);
@@ -153,7 +154,8 @@ public class NotificationController {
                     notification.getCreatedAt(),
                     notification.getCourseId(),
                     notification.getIsStar(),
-                    userService.findByUserName(notification.getTriggeredBy()).getName()
+                    userService.findByUserName(notification.getTriggeredBy()).getName(),
+                    notification.getTitle()
             );
 
             notifications.add(notificationDTO);
@@ -194,7 +196,8 @@ public class NotificationController {
                     notification.getCreatedAt(),
                     notification.getCourseId(),
                     notification.getIsStar(),
-                    userService.findByUserName(notification.getTriggeredBy()).getName()
+                    userService.findByUserName(notification.getTriggeredBy()).getName(),
+                    notification.getTitle()
             );
 
             notifications.add(notificationDTO);
@@ -229,6 +232,8 @@ public class NotificationController {
         private Integer isStar;
 
         private String userName;
+
+        private String title;
 
     }
 

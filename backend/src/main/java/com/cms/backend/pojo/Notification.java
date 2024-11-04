@@ -13,6 +13,8 @@ public class Notification {
 
     private Integer userId;
 
+    private String title;
+
     private Integer triggeredBy;
 
     private String type;
