@@ -21,16 +21,20 @@
         <el-icon><ChatDotRound /></el-icon>
         讨论区通知
       </el-menu-item>
+      <el-menu-item index="3-3">
+        <el-icon><Data-board /></el-icon>
+        系统通知
+      </el-menu-item>
     </el-sub-menu>
   </el-menu>
 </template>
 
 
 <script>
-import { MessageBox, Management, Filter, Bell, ChatDotRound } from '@element-plus/icons-vue';
+import {MessageBox, Management, Filter, Bell, ChatDotRound, DataBoard} from '@element-plus/icons-vue';
 
 export default {
-  components: {ChatDotRound, Bell, Filter, MessageBox, Management},
+  components: {DataBoard, ChatDotRound, Bell, Filter, MessageBox, Management},
   methods: {
     handleSelect(index) {
       console.log('Selected:', index);
@@ -46,6 +50,9 @@ export default {
       } else if (index === '3-2') {
         this.$router.push('/stu-end/notification/type/comment'); // 跳转到通知列表页面
         this.$emit('update:filterStatus', 'comment'); // 显示评论通知
+      } else if(index === '3-3'){
+        this.$router.push('/stu-end/notification/type/system'); // 跳转到通知列表页面
+        this.$emit('update:filterStatus', 'system'); // 显示评论通知
       }
     }
   }

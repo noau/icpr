@@ -46,11 +46,15 @@ const router = createRouter({
         },
         {
           path: '/stu-end/notification/type/assignment',
-          component:()=>import('@/views/stu_end/notification/components/notification_assignment.vue')
+          component:()=>import('@/views/stu_end/notification/components/type/notification_assignment.vue')
         },
         {
           path: '/stu-end/notification/type/comment',
-          component:()=>import('@/views/stu_end/notification/components/notification_discussion.vue')
+          component:()=>import('@/views/stu_end/notification/components/type/notification_discussion.vue')
+        },
+        {
+          path: '/stu-end/notification/type/system',
+          component:()=>import('@/views/stu_end/notification/components/type/notification_system.vue')
         }
       ]
     },

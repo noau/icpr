@@ -15,8 +15,7 @@
       <div class="search-bar">
         <el-input
             placeholder="搜索"
-            :value="localSearchText"
-            @input="updateLocalSearchText"
+            v-model="localSearchText"
             @keyup.enter="submitSearch"
             class="search-input"
         />
@@ -78,18 +77,26 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog :visible.sync="dialogVisible" title="通知详情">
-      <div v-if="selectedNotification">
-        <p><strong>标题:</strong> {{ selectedNotification.content }}</p>
-        <p><strong>发送者:</strong> {{ selectedNotification.userName }}</p>
-        <p><strong>时间:</strong> {{ selectedNotification.createdAt }}</p>
-        <p><strong>通知类型:</strong> {{ selectedNotification.type }}</p>
+    <el-drawer
+        title="通知详情"
+        class="drawer"
+        v-model="dialogVisible"
+        direction="rtl"
+        size="30%"
+        :before-close="drawerClose"
+    >
+      <div v-if="selectedNotification" class="notification-details">
+        <h2 class="notification-title">{{ selectedNotification.content }}</h2>
+        <p><strong>发送人:</strong> {{ selectedNotification.userName }}</p>
         <p><strong>内容:</strong> {{ selectedNotification.content }}</p>
+        <p><strong>时间:</strong> {{ new Date(selectedNotification.createdAt).toLocaleString() }}</p>
+        <p><strong>通知类型:</strong> {{ selectedNotification.type }}</p>
       </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">关闭</el-button>
-      </span>
-    </el-dialog>
+      <div v-else>
+        <p>未选择任何通知。</p>
+      </div>
+    </el-drawer>
+
 
     <!-- 分页 -->
     <el-pagination
@@ -122,6 +129,7 @@ const notificationList = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const notificationsLength = ref(0);
+
 const filterStatus = ref('all'); // 状态选择
 const localSearchText = ref(''); // 本地搜索文本
 const sortOption = ref('date'); // 排序选项
@@ -129,6 +137,9 @@ const sortOption = ref('date'); // 排序选项
 const dialogVisible = ref(false);
 const selectedNotification = ref(null);
 
+const drawerClose = () =>{
+  dialogVisible.value = false;
+}
 const init = async () => {
   try {
     let res = await notificationsGet({id: userId});
@@ -139,6 +150,7 @@ const init = async () => {
   }
 };
 
+//筛选部分
 const filteredNotifications = computed(() => {
   let notifications = notificationList.value;
 
@@ -147,11 +159,10 @@ const filteredNotifications = computed(() => {
     notifications = notifications.filter(notification => !notification.isRead);
   }
 
-  // 根据搜索文本过滤通知
+  // 使用正则表达式进行模糊搜索（不区分大小写，部分匹配）
   if (localSearchText.value) {
-    notifications = notifications.filter(notification =>
-        notification.content.includes(localSearchText.value)
-    );
+    const searchRegex = new RegExp(localSearchText.value, 'i');
+    notifications = notifications.filter(notification => searchRegex.test(notification.content));
   }
 
   // 根据排序选项排序通知
@@ -167,11 +178,6 @@ const filteredNotifications = computed(() => {
 // 更新筛选状态
 const updateFilterStatus = (status) => {
   filterStatus.value = status;
-};
-
-// 更新本地搜索文本
-const updateLocalSearchText = (value) => {
-  localSearchText.value = value;
 };
 
 // 提交搜索
@@ -230,6 +236,7 @@ const handleCurrentChange = (page) => {
 
 const showDetails = (notification) => {
   selectedNotification.value = notification;
+  console.log("连接抽屉")
   dialogVisible.value = true;
 };
 
@@ -269,14 +276,13 @@ init();
   display: flex;
   align-items: center;
   gap: 20px;
-}
-
-.search-input {
-  flex: 1;
-}
-
-.sort-select {
-  width: 150px;
+  width: 80%;
+  .search-input{
+    width: 80%;
+  }
+  .sort-select {
+    width: 200px;
+  }
 }
 
 .pagination {
@@ -302,4 +308,31 @@ init();
 .details-button:hover {
   background-color: #002244;
 }
+
+.drawer {
+  z-index: 2000 !important;
+}
+.notification-details {
+  padding: 20px;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.notification-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 15px;
+}
+
+.notification-details p {
+  margin: 10px 0;
+}
+
+.notification-details p strong {
+  color: #555;
+}
+
+
 </style>
