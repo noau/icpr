@@ -1,10 +1,30 @@
 <template>
   <div>
+    <!-- 状态选择与筛选 -->
+    <div class="filter-bar">
+      <div class="search-bar">
+        <el-input
+            placeholder="搜索"
+            v-model="localSearchText"
+            @keyup.enter="submitSearch"
+            class="search-input"
+        />
+        <el-select
+            :value="sortOption"
+            @change="updateSortOption"
+            placeholder="排序方式"
+            class="sort-select"
+        >
+          <el-option label="日期" value="date"></el-option>
+          <el-option label="标题" value="title"></el-option>
+        </el-select>
+      </div>
+    </div>
     <!-- 通知列表显示 -->
-    <el-table :data="notificationList" style="width: 100%">
-      <el-table-column prop="courseId" label="课程ID" width="180"/>
+    <el-table :data="filteredNotifications" style="width: 100%">
+      <el-table-column prop="courseId" label="课程ID" width="300"/>
       <el-table-column prop="userName" label="发送者" width="180"/>
-      <el-table-column prop="content" label="标题" width="200"/>
+      <el-table-column prop="content" label="标题" width="250"/>
       <el-table-column prop="createdAt" label="时间" width="200"/>
 
       <!-- 收藏标识 -->
@@ -52,21 +72,25 @@
 
     <el-drawer
         title="通知详情"
-        :visible.sync="drawerVisible"
+        class="drawer"
+        v-model="dialogVisible"
         direction="rtl"
-        :before-close="handleClose">
-      <div v-if="selectedNotification">
-        <p><strong>标题:</strong> {{ selectedNotification.content }}</p>
-        <p><strong>发送者:</strong> {{ selectedNotification.userName }}</p>
-        <p><strong>时间:</strong> {{ selectedNotification.createdAt }}</p>
-        <p><strong>通知类型:</strong> {{ selectedNotification.type }}</p>
+        size="30%"
+        :before-close="drawerClose"
+    >
+      <div v-if="selectedNotification" class="notification-details">
+        <h2 class="notification-title">{{ selectedNotification.content }}</h2>
+        <p><strong>发送人:</strong> {{ selectedNotification.userName }}</p>
         <p><strong>内容:</strong> {{ selectedNotification.content }}</p>
+        <p><strong>时间:</strong> {{ new Date(selectedNotification.createdAt).toLocaleString() }}</p>
+        <p><strong>通知类型:</strong> {{ selectedNotification.type }}</p>
       </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="drawerVisible = false">关闭</el-button>
-      </span>
+      <div v-else>
+        <p>未选择任何通知。</p>
+      </div>
     </el-drawer>
 
+    <!-- 分页 -->
     <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
@@ -87,11 +111,12 @@ import {
   updateReadNotification
 } from '@/api/notification.js';
 import {useUserStore} from '@/stores/user.js';
-import {ref} from 'vue';
+import {ref,computed} from 'vue';
 import {CircleCheck, CircleCheckFilled, Star, StarFilled} from "@element-plus/icons-vue";
 
 const userId = useUserStore()?.id;
-const notificationType = "作业通知";
+const notificationType = "讨论区通知";
+
 
 const notificationList = ref([]);
 const currentPage = ref(1);
@@ -106,15 +131,48 @@ const init = async () => {
     console.error("获取通知列表时出错:", error);
   }
 };
+//筛选部分
+const localSearchText = ref(''); // 本地搜索文本
+const sortOption = ref('date'); // 排序选项
 
+const filteredNotifications = computed(() => {
+  let notifications = notificationList.value;
+
+  // 使用正则表达式进行模糊搜索（不区分大小写，部分匹配）
+  if (localSearchText.value) {
+    const searchRegex = new RegExp(localSearchText.value, 'i');
+    notifications = notifications.filter(notification => searchRegex.test(notification.content));
+  }
+
+  // 根据排序选项排序通知
+  if (sortOption.value === 'date') {
+    notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } else if (sortOption.value === 'title') {
+    notifications.sort((a, b) => a.content.localeCompare(b.content));
+  }
+
+  return notifications;
+});
+// 提交搜索
+const submitSearch = () => {
+  // 同步搜索文本到父组件
+};
+
+// 更新排序选项
+const updateSortOption = (value) => {
+  sortOption.value = value;
+};
 // 详情页面
-const drawerVisible = ref(false);
+const dialogVisible = ref(false);
 const selectedNotification = ref(null);
 
 const showDetails = (notification) => {
   selectedNotification.value = notification;
-  drawerVisible.value = true;
+  dialogVisible.value = true;
 };
+const drawerClose = () =>{
+  dialogVisible.value = false;
+}
 
 // 切换收藏状态
 const toggleStar = async (notification) => {
@@ -170,6 +228,20 @@ init();
 </script>
 
 <style scoped>
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  .sort-select{
+    max-width: 200px;
+  }
+}
 .notification-time {
   display: flex;
   align-items: center;
@@ -210,5 +282,30 @@ init();
 
 .el-icon[style*="color: green"] {
   color: green !important; /* 确保已读状态的颜色为绿色 */
+}
+
+.drawer {
+  z-index: 2000 !important;
+}
+.notification-details {
+  padding: 20px;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.notification-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 15px;
+}
+
+.notification-details p {
+  margin: 10px 0;
+}
+
+.notification-details p strong {
+  color: #555;
 }
 </style>

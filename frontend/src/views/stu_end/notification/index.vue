@@ -54,6 +54,7 @@ export default {
   z-index: 10;
   position: relative;
   padding-left: 0;
+  padding-right: 0;
 }
 .main-content {
   padding: 20px;
