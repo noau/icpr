@@ -223,7 +223,8 @@ public class AssignmentController {
             return new AssignmentSubmissionDetail(submission, attachments);
         }).collect(Collectors.toList());
         Collections.shuffle(details);
-        return ResponseEntity.ok(details.subList(0, count));
+        var review_count = Math.min(count, details.size());
+        return ResponseEntity.ok(details.subList(0, review_count));
     }
 
     @Data
