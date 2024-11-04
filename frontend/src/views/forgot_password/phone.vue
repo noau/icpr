@@ -73,8 +73,7 @@
       "phoneNumber": formModel.value.phoneNumber,
       "idCardNumber": formModel.value.idNumber
     })   
-
-    ElMessage.success('已发送找回密码验证码') 
+    alert('已发送找回密码验证码')
 
 
   }

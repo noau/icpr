@@ -75,7 +75,7 @@
       "idCardNumber": formModel.value.idNumber
     })  
     // console.log(`发送找回密码邮件到 ${targetEmail}`)
-    ElMessage.success(`已发送找回密码邮件到 ${formModel.email}`)
+    alert('已发送找回密码邮件')
   }
 
   const goBack = () => {

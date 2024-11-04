@@ -1,13 +1,14 @@
 <template>
   <div class="course-header">
-      <div class="course-name">课程简介</div>
+    <div class="course-name">课程简介</div>
     <div class="button-container">
-      <el-button round type="text" @click="isEditing = !isEditing">{{ isEditing ? '保存' : '编辑' }}</el-button>
+      <el-button round type="text" @click="isEditing ? saveCourseIntroduction() : isEditing = true">
+        {{ isEditing ? '保存' : '编辑' }}
+      </el-button>
     </div>
   </div>
-  
+
   <el-card class="course-card">
-    
     <div class="course-info">
       <el-input
         v-if="isEditing"
@@ -21,16 +22,37 @@
   </el-card>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
+import { uploadCourseInfo } from '@/api/course'; // 引入上传课程简介的API
 
 const isEditing = ref(false);
 const courseIntroduction = ref('请输入课程简介');
 
-// function saveCourseIntroduction() {
-//   console.log('课程介绍已保存:', courseIntroduction.value);
-//   isEditing.value = false;
-// }
+// 定义课程简介上传的处理函数
+const saveCourseIntroduction = () => {
+  const token = localStorage.getItem('token'); // 获取用户的授权令牌
+  if (!token) {
+    console.error("Token 不存在，请登录");
+    return;
+  }
+
+  // 构建FormData对象，用于文件上传
+  const formData = new FormData();
+  formData.append('file', new Blob([courseIntroduction.value], { type: 'text/plain' }), 'course-introduction.txt');
+
+  // 调用上传课程简介的API
+  uploadCourseInfo(formData, token)
+    .then(response => {
+      console.log("课程简介上传成功:", response);
+      isEditing.value = false; // 保存成功后关闭编辑模式
+    })
+    .catch(error => {
+      console.error("课程简介上传失败:", error);
+    });
+};
+
 </script>
 
 <style scoped>

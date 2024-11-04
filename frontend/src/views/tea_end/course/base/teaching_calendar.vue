@@ -3,9 +3,9 @@
     <div class="course-name">教学日历</div>
     <!-- 下载按钮，右对齐 -->
     <div class="actions-section" style="margin-bottom: 8px; margin-left: 1px;">
-      <div class="template-download-section" style="margin-right: 20px;">
+      <!-- <div class="template-download-section" style="margin-right: 20px;">
         <el-button round @click="downloadTemplate" type="text">下载模板</el-button>
-      </div>
+      </div> -->
       <div class="download-section">
         <el-button round @click="downloadFile" type="text">下载教学日历</el-button>
       </div>

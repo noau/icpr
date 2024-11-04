@@ -2,9 +2,9 @@
   <div class="course-header">
     <div class="course-name">教学大纲</div>
     <div class="actions-section" style="margin-bottom: 8px; margin-left: 1px;">
-      <div class="template-download-section" style="margin-right: 20px;">
+      <!-- <div class="template-download-section" style="margin-right: 20px;">
         <el-button round @click="downloadTemplate" type="text">下载模板</el-button>
-      </div>
+      </div> -->
       <div class="download-section">
         <el-button round @click="downloadFile" type="text">下载教学大纲</el-button>
       </div>
@@ -33,26 +33,33 @@
       </div>
 
       <div class="dialog-upload-section">
-        <el-upload class="upload-demo" :limit="1" :on-exceed="handleExceed" :file-list="fileList"
-          :on-success="handleUploadSuccess" :accept="acceptedFileTypes" ref="uploadRef"
-          action="http://localhost:8080/attachment/upload" :headers="headers">
+        <el-upload
+          class="upload-demo"
+          :limit="1"
+          :on-exceed="handleExceed"
+          :file-list="fileList"
+          :before-upload="beforeUpload"
+          :on-success="handleUploadSuccess"
+          :on-error="handleUploadError"
+          :accept="acceptedFileTypes"
+          ref="uploadRef"
+          action="http://localhost:8080/attachment/upload"
+          :headers="headers"
+        >
           <el-button type="text" style="margin-right: 30px">点击选择文件</el-button>
         </el-upload>
       </div>
 
-      <!-- 提示信息 -->
       <div class="file-type-warning">
-        允许上传的文件类型：doc、pdf、ppt、xls、docx、pptx、xlsx、mp4、
-        mp3、avi、wmv、3gp、mov、rmvb、flv、f4v、rm、asf、
-        asx、jpg、gif、jpeg、png、bmp，文件不能超过2G
+        允许上传的文件类型：doc、pdf、ppt、xls、docx、pptx、xlsx、mp4、mp3、avi、wmv、3gp、mov、rmvb、flv、f4v、rm、asf、asx、jpg、gif、jpeg、png、bmp，文件不能超过2G
       </div>
     </div>
 
-    <br>
+    <br />
 
     <template v-slot:footer>
       <span class="dialog-footer">
-        <el-button round type="primary" @click="submitUpload" style="padding: 10px">确认</el-button>
+        <el-button round type="primary" @click="confirmUpload" style="padding: 10px">确认</el-button>
         <el-button round @click="dialogVisible = false" style="padding: 10px">取消</el-button>
       </span>
     </template>
@@ -62,18 +69,19 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
+import { resourcesyllabus, getsyllabus } from '@/api/course'
 
 const fileList = ref([])
-const fileContent = ref('')
 const uploadRef = ref(null)
 const acceptedFileTypes = ".doc,.docx"  // 仅支持 .doc 和 .docx 格式
 const selectedPermission = ref('course')
 const dialogVisible = ref(false)
-const courseId = "16" // 假设课程ID为16，实际可以根据需求传递
-const uploaderId = 10018 // 上传者ID
-const uploaderName = "陈旭东" // 上传者姓名
-import { resourcesyllabus,getsyllabus } from '@/api/course'
+const attachmentIdList = ref([])
+const headers = {
+  Authorization: localStorage.getItem('token')
+}
 
+// 上传文件前的检查
 const beforeUpload = (file) => {
   const isAllowedSize = file.size / 1024 / 1024 < 2048  // 文件大小限制为 2G
   if (!isAllowedSize) {
@@ -82,102 +90,61 @@ const beforeUpload = (file) => {
   }
   return true
 }
-const headers = {
-  Authorization: localStorage.getItem('token')
-}
 
-const uploadFile = async (options) => {
-  const { file } = options
-  const formData = new FormData()
-  formData.append('file', file)
-
-  try {
-    // 使用 FormData 上传文件，获取文件URL
-    const response = await axios.post('https://jsonplaceholder.typicode.com/posts/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
-
-    if (response.status === 201) {
-      // 获取上传的文件的URL
-      const fileUrl = response.data.url || 'http://example.com/your-uploaded-file-url'
-
-      // 构造请求体数据
-      const requestBody = {
-        id: uploaderId,
-        name: uploaderName,
-        course_id: courseId,
-        files: [
-          {
-            file_url: fileUrl
-          }
-        ]
-      }
-
-      // 发送POST请求，将文件信息上传到后端
-      await axios.post('/courses/resourses', requestBody, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-
-      options.onSuccess(response.data, file)
-    } else {
-      options.onError(new Error('文件上传失败'))
-    }
-  } catch (error) {
-    options.onError(error)
-  }
-}
-
-const submitUpload = () => {
-  // uploadRef.value.submit()
-  resourcesyllabus({
-    attachmentIdList: attachmentIdList.value
-  }).then(res => {
-    console.log(res);
-
-  })
-
-}
-const attachmentIdList = ref([])
+// 上传文件成功后的处理
 const handleUploadSuccess = (response, file) => {
-  attachmentIdList.value.push(response.id)
-
-  // alert(`${file.name} 上传成功`)
+  alert(`${file.name} 上传成功`)
+  attachmentIdList.value.push(response.id) // 假设 response 中包含文件的 ID
 }
 
+// 上传文件失败后的处理
 const handleUploadError = () => {
   alert('上传失败')
 }
 
+// 提交上传操作
+const confirmUpload = () => {
+  if (attachmentIdList.value.length === 0) {
+    alert('请先选择文件上传')
+    return
+  }
+
+  // 将附件信息保存到课程大纲
+  resourcesyllabus({
+    attachmentIdList: attachmentIdList.value
+  }).then(res => {
+    alert('文件信息保存成功')
+    dialogVisible.value = false // 关闭对话框
+  }).catch(error => {
+    alert('文件信息保存失败，请稍后再试')
+    console.error(error)
+  })
+}
+
+// 处理上传文件超过限制
 const handleExceed = () => {
   alert('一次只能上传一个文件')
 }
 
+// 下载教学大纲文件
 const downloadFile = () => {
   let id = localStorage.getItem('kcid')
-
-
-  window.location.href = 'http://localhost:8080/courses/get-syllabus?id=' + id  // 更新下载链接
+  window.location.href = 'http://localhost:8080/courses/get-syllabus?id=' + id
 }
 
-const downloadTemplate = () => {
-  window.location.href = '/path-to-your-template-file'
-}
+// 下载模板
+// const downloadTemplate = () => {
+//   window.location.href = '/path-to-your-template-file'
+// }
 
-const handleClose = () => {
-  dialogVisible.value = false
-}
-const getSyllabus = (params) => {
-  let id=localStorage.getItem('kcid')
-  getsyllabus(id).then(res=>{
+// 获取课程大纲信息
+const getSyllabus = () => {
+  let id = localStorage.getItem('kcid')
+  getsyllabus(id).then(res => {
     console.log(res)
   })
-};
+}
 getSyllabus()
-
 </script>
 
 <style scoped>
@@ -224,9 +191,7 @@ getSyllabus()
 .upload-permission-section {
   display: flex;
   flex-direction: column;
-  /* 垂直排列 */
   align-items: flex-start;
-  /* 左对齐 */
   gap: 20px;
   margin-top: 20px;
 }

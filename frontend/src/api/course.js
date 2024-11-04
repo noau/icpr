@@ -1,13 +1,16 @@
 import httpInstance from '@/utils/http.js';
 
 //courses/all
-export const userCourses = (id, token) =>
-  httpInstance.get('/courses/all?id=' + id, {
+// 获取课程信息
+export const userCourses = (userId, token) =>
+  httpInstance.get(`/courses/all?id=${userId}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token,
     },
   });
+  
+
   
 //courses/all-teach
   export const teacherCourses = (id, token) =>
@@ -103,11 +106,21 @@ export const getcalendar = (id) =>
       id: id,
     },
   });
-// /courses/export-student-list
-export const exportstudentlist = (id) =>
-  httpInstance.get('/courses/export-student-list', {
-    params: {
-      id: id,
+export const exportstudentlist = (id, token) =>
+  httpInstance.post(`/courses/export-student-list?id=${id}`, {}, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token,
     },
   });
-  
+
+// 上传课程简介
+export const uploadCourseInfo = (file, token) =>
+  httpInstance.post('/uploading/courses', file, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Authorization: token,
+    },
+  });
+
+
