@@ -17,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Validated
@@ -197,11 +199,32 @@ public class AssignmentController {
     public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsSubmissions(@RequestParam Integer id) {
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
         var details = submissions.stream().map(submission -> {
-           var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
-                   .stream().map(Attachment::getId).toList();
-           return new AssignmentSubmissionDetail(submission, attachments);
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
+                    .stream().map(Attachment::getId).toList();
+            return new AssignmentSubmissionDetail(submission, attachments);
         });
         return ResponseEntity.ok(details.collect(Collectors.toList()));
+    }
+
+    /**
+     * 作业的所有提交
+     *
+     * @param assignmentId 作业ID
+     * @param userId 评分人的ID
+     * @param count 需要评分的作业个数
+     * @return 获得作业提交列表
+     */
+    @GetMapping("/peer-review-list")
+    public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsPeerReviewList(@RequestParam Integer assignmentId, @RequestParam Integer userId, @RequestParam Integer count) {
+        var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentId));
+        var details = submissions.stream().filter(submission -> !Objects.equals(submission.getStudentId(), userId)).map(submission -> {
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
+                    .stream().map(Attachment::getId).toList();
+            return new AssignmentSubmissionDetail(submission, attachments);
+        }).collect(Collectors.toList());
+        Collections.shuffle(details);
+        var review_count = Math.min(count, details.size());
+        return ResponseEntity.ok(details.subList(0, review_count));
     }
 
     @Data
