@@ -30,6 +30,25 @@
                 <el-button @click='pwdVisible = true'>更换密码</el-button>
               </div>
             </div>
+            <div class="perInfoTop2 flex flex">
+               <div class="fl tabTop">
+                 <label v-for="(item,index) in tab" :key="index" :class="active==index?'cur':''" @click="tabList(item,index)">{{ item }}</label>  
+               </div>
+               <div class="flex perInfoTop2-fr flex-align-center">
+                  <div class="itemBlock" @click="fansVisible=true">
+                    <label>粉丝</label>
+                    <p>{{ userInfo?.fansNumber || 0  }}</p> 
+                  </div>
+                  <div class="itemBlock" @click="careVisible=true">
+                    <label>关注</label>
+                    <p>{{ userInfo?.subscriptionsNumber || 0  }}</p> 
+                  </div>
+                  <div class="itemBlock">
+                    <label>发帖数</label>
+                    <p>{{ userInfo?.threadNumber || 0 }}</p> 
+                  </div>
+               </div>
+            </div> 
 
             <div class="bottomCon">
               <div class="blockBt">
