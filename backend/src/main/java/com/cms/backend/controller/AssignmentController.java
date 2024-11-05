@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cms.backend.pojo.Assignments.*;
 import com.cms.backend.pojo.Attachment;
-import com.cms.backend.pojo.DTO.Assignment.DescriptionDTO;
 import com.cms.backend.service.assignment.AssignmentReviewService;
 import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
@@ -174,9 +173,42 @@ public class AssignmentController {
      */
     @GetMapping("/get-info")
     public ResponseEntity<DescriptionDTO> getAssignmentDescription(@RequestParam Integer id) {
-        String description = assignmentService.getAssignmentDescription(id);
-        return ResponseEntity.ok(new DescriptionDTO(description));
+        Assignment assignment = assignmentService.getById(id);
+        if (assignment == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        DescriptionDTO descriptionDTO = new DescriptionDTO();
+        descriptionDTO.setId(assignment.getId());
+        descriptionDTO.setCourseId(assignment.getCourseId());
+        descriptionDTO.setTitle(assignment.getTitle());
+        descriptionDTO.setDescription(assignment.getDescription());
+        descriptionDTO.setStart(assignment.getStart());
+        descriptionDTO.setEnd(assignment.getEnd());
+        descriptionDTO.setIsPrivate(assignment.getIsPrivate());
+        descriptionDTO.setGrade(assignment.getFullGrade().intValue());
+        descriptionDTO.setDelayedGrade(assignment.getDelayedGrade().intValue());
+        descriptionDTO.setLatestEnd(assignment.getLatestEnd());
+        descriptionDTO.setMultipleSubmission(assignment.getMultipleSubmission());
+        descriptionDTO.setPublishGrade(assignment.getPublishGrade());
+        descriptionDTO.setRequirePeerReview(assignment.getRequirePeerReview());
+        descriptionDTO.setPeerReviewStart(assignment.getPeerReviewStart());
+        descriptionDTO.setPeerReviewEnd(assignment.getPeerReviewEnd());
+        descriptionDTO.setMinPeerReview(assignment.getMinPeerReview());
+
+        // 查询附件
+        List<Attachment> attachments = attachmentService.findByAssignmentId(assignment.getId());
+        if (attachments != null && !attachments.isEmpty()) {
+            List<Integer> attachmentIds = attachments.stream()
+                    .map(Attachment::getId)
+                    .collect(Collectors.toList());
+            descriptionDTO.setAttachments(attachmentIds);
+        }
+
+        return ResponseEntity.ok(descriptionDTO);
     }
+
+
 
     /**
      * 课程下的所有作业
@@ -263,6 +295,27 @@ public class AssignmentController {
         private Integer minPeerReview;
         private List<Integer> attachments;
         private String answer;
+    }
+
+    @Data
+    public static class DescriptionDTO {
+        private Integer id;
+        private String courseId;
+        private String title;
+        private String description;
+        private String start;
+        private String end;
+        private Integer isPrivate;
+        private Integer grade;
+        private Integer delayedGrade;
+        private String latestEnd;
+        private Integer multipleSubmission;
+        private Integer publishGrade;
+        private Integer requirePeerReview;
+        private String peerReviewStart;
+        private String peerReviewEnd;
+        private Integer minPeerReview;
+        private List<Integer> attachments;
     }
 
     @Data
