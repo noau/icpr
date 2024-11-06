@@ -10,45 +10,64 @@
       <el-main>
         <div class="perInfo">
           <div>
-            <div class="perInfoTop flex  flex-align-center">
-              <div class="flex  flex-align-center">
+            <div class="perInfoTop flex flex-align-center">
+              <div class="flex flex-align-center">
                 <div class="photos">
-                  <el-avatar :size="60" style="margin-right: 20px;"
-                    :src="userInfo?.avatar ? userInfo?.avatar : 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
-                  <label class="uploadImg" @click="photoVisible = true">上传头像</label>
+                  <el-avatar
+                    :size="60"
+                    style="margin-right: 20px"
+                    :src="
+                      userInfo?.avatar
+                        ? userInfo?.avatar
+                        : 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
+                    "
+                  />
+                  <label class="uploadImg" @click="photoVisible = true"
+                    >上传头像</label
+                  >
                 </div>
                 <div>
                   <h2>姓名:{{ userInfo?.name }}</h2>
                   <div>
-                    <label class="mg10">学号:{{ userInfo?.id || '-' }}</label>
-                    <label class="mg10">学院:{{ userInfo?.academy || '-' }}</label>
-                    <label class="mg10">班级:{{ userInfo?.userClass || '-' }}</label>
+                    <label class="mg10">学号:{{ userInfo?.id || "-" }}</label>
+                    <label class="mg10"
+                      >学院:{{ userInfo?.academy || "-" }}</label
+                    >
+                    <label class="mg10"
+                      >班级:{{ userInfo?.userClass || "-" }}</label
+                    >
                   </div>
                 </div>
               </div>
-              <div style="margin-top:20px">
-                <el-button @click='pwdVisible = true'>更换密码</el-button>
-              </div>
-            </div>
-            <div class="perInfoTop2 flex flex">
-               <div class="fl tabTop">
-                 <label v-for="(item,index) in tab" :key="index" :class="active==index?'cur':''" @click="tabList(item,index)">{{ item }}</label>  
-               </div>
-               <div class="flex perInfoTop2-fr flex-align-center">
-                  <div class="itemBlock" @click="fansVisible=true">
+              <div style="margin-top: 20px" class="flex">
+                <div class="flex perInfoTop2-fr flex-align-center">
+                  <div class="itemBlock" @click="fansVisible = true">
                     <label>粉丝</label>
-                    <p>{{ userInfo?.fansNumber || 0  }}</p> 
+                    <p>{{ userInfo?.fansNumber || 0 }}</p>
                   </div>
-                  <div class="itemBlock" @click="careVisible=true">
+                  <div class="itemBlock" @click="careVisible = true">
                     <label>关注</label>
-                    <p>{{ userInfo?.subscriptionsNumber || 0  }}</p> 
+                    <p>{{ userInfo?.subscriptionsNumber || 0 }}</p>
                   </div>
                   <div class="itemBlock">
                     <label>发帖数</label>
-                    <p>{{ userInfo?.threadNumber || 0 }}</p> 
+                    <p>{{ userInfo?.threadNumber || 0 }}</p>
                   </div>
-               </div>
-            </div> 
+                </div>
+                <el-button @click="pwdVisible = true">更换密码</el-button>
+              </div>
+            </div>
+            <div class="perInfoTop2 flex flex">
+              <div class="fl tabTop">
+                <label
+                  v-for="(item, index) in tab"
+                  :key="index"
+                  :class="active == index ? 'cur' : ''"
+                  @click="tabList(item, index)"
+                  >{{ item }}</label
+                >
+              </div>
+            </div>
 
             <div class="bottomCon">
               <div class="blockBt">
@@ -56,8 +75,13 @@
                 <div>
                   <!-- collectList -->
                   <div v-for="item in collectList" class="blocktag">
-                    <el-button @click="getFList(item)" type="warning">{{ item.name }}</el-button>
-                    <el-icon @click="deletFloder(item)" style="margin-right: 10px;">
+                    <el-button @click="getFList(item)" type="warning">{{
+                      item.name
+                    }}</el-button>
+                    <el-icon
+                      @click="deletFloder(item)"
+                      style="margin-right: 10px"
+                    >
                       <delete />
                     </el-icon>
                     <el-icon>
@@ -66,9 +90,7 @@
                   </div>
                   <span class="blocktag">
                     <el-button @click="fileVisible = true">
-                      <el-icon>
-                        <Plus />
-                      </el-icon>添加收藏夹
+                      <el-icon> <Plus /> </el-icon>添加收藏夹
                     </el-button>
                   </span>
                 </div>
@@ -76,37 +98,63 @@
 
               <div class="blockBt">
                 <div class="title">我的帖子</div>
-                <div class="lineItem" v-for="i in collectFlist">
-                  <div class="til1">{{ i?.name }}</div>
-                  <div class="til2">我的收藏我的收藏我的收藏我的收藏{{ i?.name }}</div>
+                <div class="lineItem" v-for="i in userInfo?.threadList" :key="i.id" @click="openThread(i)">
+                  <div class="til1">{{ i?.title }}</div>
+                  <div class="til2">{{ i?.userName }}</div>
                   <div class="flex">
                     <div class="fl_til3 flex flex-align-center">
-                      <span><el-icon>
-                          <Star />
-                        </el-icon>4444{{ i?.name }}</span>
-                      <span>最近更新：2024 10-1{{ i?.name }}</span>
+                      <span class=" flex flex-align-center"
+                        ><el-icon> <Star /> </el-icon> {{ i?.favorites }}</span
+                      >
+                      <span class=" flex flex-align-center">
+                        <Like
+                        :theme="'filled'"
+                        size="15"
+                        fill="#333"
+                        style="margin-right: 0px; margin-bottom: -4px;"
+                      />
+                      {{ i.likes }}
+                      </span>
+
+
+                      <span>最近更新：{{ i?.updatedAt }}</span>
                     </div>
                     <div></div>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </el-main>
     </el-container>
-    <changePwd :dialogVisible='pwdVisible' @cancel="pwdVisible = false" />
-    <fans :dialogVisible='fansVisible' />
-    <care :dialogVisible='careVisible' />
-    <uploadPhoto :dialogVisible='photoVisible' />
-    <addFile :dialogVisible='fileVisible' @cancel="fileVisible = false; getUserFolders()" />
-    <addFileEdit :folder="folder" :dialogVisible='fileEditVisible' @cancel="fileEditVisible = false" />
+    <changePwd :dialogVisible="pwdVisible" @cancel="pwdVisible = false" />
+    <fans :dialogVisible="fansVisible" @cancel="fansVisible = false" />
+    <care :dialogVisible="careVisible" @cancel="careVisible = false" />
+    <uploadPhoto :dialogVisible="photoVisible" />
+    <addFile
+      :dialogVisible="fileVisible"
+      @cancel="
+        fileVisible = false;
+        getUserFolders();
+      "
+    />
+    <addFileEdit
+      :folder="folder"
+      :dialogVisible="fileEditVisible"
+      @cancel="fileEditVisible = false"
+    />
     <el-drawer title="我是标题" v-model="drawer" :with-header="false">
       <div>
-        <el-card shadow="always" :body-style="{ padding: '20px' }">
+        <el-card
+          shadow="always"
+          :body-style="{ padding: '20px' }"
+          v-for="(item, index) in collectMy"
+          :key="index"
+          style="margin-bottom: 10px"
+        >
           <div slot="header">
-            <span>帖子1</span>
+            <span>帖子{{ index }}</span>
           </div>
           <el-icon @click="deletTie" style="float: right">
             <delete />
@@ -118,16 +166,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import changePwd from './components/changePwd.vue'
-import fans from './components/fans.vue'
-import care from './components/care.vue'
-import uploadPhoto from './components/uploadPhoto.vue'
-import addFile from './components/addFile.vue'
-import addFileEdit from './components/addFileEdit.vue'
-import { userFolders, userUserInfo, userCreate_favorite, userFavorites, userDelete_favorite, userDelete_folder } from '@/api/user.js'
-import { useUserStore } from '@/stores/user.js'
+import { ref } from "vue";
+import changePwd from "./components/changePwd.vue";
+import fans from "./components/fans.vue";
+import care from "./components/care.vue";
+import uploadPhoto from "./components/uploadPhoto.vue";
+import addFile from "./components/addFile.vue";
+import addFileEdit from "./components/addFileEdit.vue";
+import { Like } from "@icon-park/vue-next";
 
+import {
+  userFolders,
+  userUserInfo,
+  userCreate_favorite,
+  userFavorites,
+  userDelete_favorite,
+  userDelete_folder,
+} from "@/api/user.js";
+import { useUserStore } from "@/stores/user.js";
+import {useRouter} from 'vue-router';
+
+const router = useRouter();
 const pwdVisible = ref(false);
 const fansVisible = ref(false);
 const careVisible = ref(false);
@@ -135,40 +194,46 @@ const photoVisible = ref(false);
 const fileVisible = ref(false);
 const fileEditVisible = ref(false);
 const drawer = ref(false);
-const folder= ref();
+const folder = ref();
+
+
+const openThread = (post) => {
+  router.push(`/stu-end/course/discussion/post/${post.id}`);
+};
 
 //个人信息
-const userId = localStorage.getItem('userId');
+const userId = localStorage.getItem("userId");
 const userInfo = ref();
 const getInfo = async () => {
-  const res = await userUserInfo({ id: userId })
-  userInfo.value = res
-}
+  const res = await userUserInfo({ id: userId });
+  userInfo.value = res;
+};
 getInfo();
 function deletFloder(item) {
   console.log(item.id);
-  
-  userDelete_folder({ id: item.id }).then(res => {
-    console.log(res);
-    getUserFolders();
 
-  }).catch(err => {
+  userDelete_folder({ id: item.id })
+    .then((res) => {
+      console.log(res);
       getUserFolders();
     })
+    .catch((err) => {
+      getUserFolders();
+    });
 }
-function editFile(item){
+function editFile(item) {
   // console.log(item);
   folder.value = item;
-  localStorage.setItem('folder',JSON.stringify(item))
-  
+  localStorage.setItem("folder", JSON.stringify(item));
+
   fileEditVisible.value = true;
 }
 // 获取收藏夹
 const collectList = ref();
 const getUserFolders = async () => {
-  const res = await userFolders({ id: userId })
+  const res = await userFolders({ id: userId });
   collectList.value = res.folders;
-}
+};
 setTimeout(() => {
   getUserFolders();
 }, 300);
@@ -178,20 +243,22 @@ const collectMy = ref();
 
 // 收藏夹功能
 const getuserFavorites = async (id) => {
-  const res = await userFavorites({ id })
+  const res = await userFavorites({ id });
+  console.log(res, "resres");
+
   collectMy.value = res?.favorites;
-}
+};
 
 function getFList(item) {
   drawer.value = true;
-  getuserFavorites(item.id)
+  getuserFavorites(item.id);
 }
 
 function deletTie() {
-  userDelete_favorite({ id: 1 }).then(res => {
+  userDelete_favorite({ id: 1 }).then((res) => {
     console.log(res);
-  })
-  console.log('删除帖子');
+  });
+  console.log("删除帖子");
 }
 </script>
 
@@ -211,7 +278,7 @@ function deletTie() {
   margin: 0 auto;
 
   .perInfoTop {
-    background: url('@/assets/img/personBg.png') center no-repeat;
+    background: url("@/assets/img/personBg.png") center no-repeat;
     height: 200px;
     color: #fff;
     padding: 120px 20px 0 20px;
@@ -238,7 +305,6 @@ function deletTie() {
       .uploadImg {
         display: block;
       }
-
     }
   }
 
@@ -252,7 +318,7 @@ function deletTie() {
       cursor: pointer;
 
       label {
-        color: #99a2aa;
+        color: #222;
       }
     }
   }
@@ -279,12 +345,12 @@ function deletTie() {
       display: inline-block;
 
       .editPen {
-        display: none
+        display: none;
       }
     }
 
     .blocktag:hover .editPen {
-      display: block
+      display: block;
     }
   }
 
@@ -292,6 +358,7 @@ function deletTie() {
     padding: 10px 0px;
     margin: 0 10px;
     border-bottom: 1px solid #eee;
+    cursor: pointer;
 
     .til1 {
       font-size: 16px;
