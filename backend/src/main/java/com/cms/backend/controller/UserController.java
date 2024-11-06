@@ -208,7 +208,7 @@ public class UserController {
 
     @GetMapping(value = "/favorites")
     public ResponseEntity<FavoriteDTO> getFavorite(@RequestParam Integer id) {
-        List<Favorite> favorites = userService.getUserFavorites(id);
+        List<FavoriteGet> favorites = userService.getUserFavorites(id);
         FavoriteDTO favoritesDTO = new FavoriteDTO(favorites);
 
         return ResponseEntity.ok(favoritesDTO);
@@ -510,6 +510,24 @@ public class UserController {
         private String userName;
 
         private String userAvatar;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class FavoriteGet {
+
+        private Integer id;
+
+        private Integer userId;
+
+        private Integer threadId;
+
+        private Integer folderId;
+
+        private String createdAt;
+
+        private String title;
 
     }
 
