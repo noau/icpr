@@ -4,7 +4,7 @@
     <div class="title-and-button">
       <!-- 标题输入组件 -->
       <TitleInput v-model="title" class="title-input" />
-      <input v-model="top" type="checkbox" > 置顶
+      <!-- <input v-model="top" type="checkbox" > 置顶 -->
       <!-- 发布按钮 -->
       <SubmitButton @submit="submitPost" class="submit-button" />
     </div>
@@ -50,7 +50,7 @@ const submitPost = () => {
   console.log('摘要：', summary.value);
   console.log('标签：', tags.value);
   console.log('可见范围：', visibility.value);
-  console.log('匿名：', isAnonymous.value);
+  console.log('匿名1111：', isAnonymous.value);
   let obj = {
     courseId: localStorage.getItem('kcid'),
     authorId: localStorage.getItem('id'),
@@ -58,6 +58,7 @@ const submitPost = () => {
     content: content.value,
     top: top.value,
     tag: tags.value,
+    isAnonymous: isAnonymous.value ? 1 : 0
   }
   getthread(obj).then(res => {
     console.log(res);

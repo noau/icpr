@@ -153,8 +153,9 @@
           :key="index"
           style="margin-bottom: 10px"
         >
-          <div slot="header">
-            <span>帖子{{ index }}</span>
+          <div slot="header" style="display: flex; flex-direction: column">
+            <span style="font-weight: bold">{{ item.title }}</span>
+            <span>{{ item.createdAt }}</span>
           </div>
           <el-icon @click="deletTie" style="float: right">
             <delete />

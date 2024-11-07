@@ -1,8 +1,8 @@
 <template>
     <div class="post-header">
       <div class="author-info">
-        <el-avatar :src="post.author.avatar" />
-        <span class="author-name">{{ post.author.name }}</span>
+        <el-avatar :src="post.avatar" />
+        <span class="author-name">{{ post.name }}</span>
       </div>
       <h1 class="post-title">{{ post.title }}</h1>
     </div>

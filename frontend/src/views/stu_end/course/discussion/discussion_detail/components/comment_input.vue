@@ -1,8 +1,19 @@
 <template>
   <div class="comment-input">
-    <el-input type="textarea" v-model="content" placeholder="写下你的评论..." rows="3" class="comment-textarea" />
+    <el-input
+      type="textarea"
+      v-model="content"
+      placeholder="写下你的评论..."
+      rows="3"
+      class="comment-textarea"
+    />
     <div class="button-container">
-      <el-button type="primary" @click="submitComment" :disabled="!content" class="submit-button">
+      <el-button
+        type="primary"
+        @click="submitComment"
+        :disabled="!content"
+        class="submit-button"
+      >
         发布评论
       </el-button>
     </div>
@@ -10,37 +21,52 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { getReplies, getget_thread } from '@/api/discussion';
-import { useRoute } from 'vue-router'
+import { ref, watch } from "vue";
+import { getReplies, getget_thread } from "@/api/discussion";
+import { useRoute } from "vue-router";
 const route = useRoute();
 console.log(route.params);
 const threadId = route.params.id;
 
+const props = defineProps({
+  isFlag: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-const emits = defineEmits(['submitComment']);
+watch(
+  () => props.isFlag,
+  () => {
+    if (props.isFlag) {
+      content.value = "";
+    }
+  }
+);
 
-const content = ref('');
+const emits = defineEmits(["submitComment"]);
+
+const content = ref("");
 
 const submitComment = () => {
-  var date = new Date();
-  getReplies({
-    content: content.value,
-    threadId,
-    replyId: 1,
-    userId: localStorage.getItem('userId'),
-    // TODO: Replace with current date
-    createdAt: "" + date.getFullYear() + "-" + date.getMonth() + "-" + date.getDay() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() // "2024-06-24 21:35:47"
-  })
-  // emits('submitComment', content.value);
-  content.value = '';
+  // var date = new Date();
+  // getReplies({
+  //   content: content.value,
+  //   threadId,
+  //   replyId: 1,
+  //   userId: localStorage.getItem('userId'),
+  //   // TODO: Replace with current date
+  //   createdAt: "" + date.getFullYear() + "-" + date.getMonth() + "-" + date.getDay() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() // "2024-06-24 21:35:47"
+  // })
+  emits("submitComment", content.value);
+  // content.value = '';
 };
 function getget_threadList() {
   getget_thread({
-    id: threadId
-  }).then(res=>{
+    id: threadId,
+  }).then((res) => {
     // console.log(res);
-  })
+  });
 }
 getget_threadList();
 </script>
