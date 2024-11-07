@@ -39,34 +39,13 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { allstudents,exportstudentlist } from '@/api/course.js'
-
+import { allstudents, exportstudentlist } from '@/api/course';
 
 const form = ref({
   query: ''
 });
 
-const studentList = ref([
-  { index: 1, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 2, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 3, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 4, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 5, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 6, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 7, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 8, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 1, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 2, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 1, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 2, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 1, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 2, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 1, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 2, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-  { index: 1, studentId: '20230001', name: '张三', class: '软件2201', email: 'zhangsan@example.com', phone: '12345678901' },
-  { index: 2, studentId: '20230002', name: '李四', class: '软件2202', email: 'lisi@example.com', phone: '12345678902' },
-]);
-
+const studentList = ref([]);
 const pageSize = ref(10);
 const currentPage = ref(1);
 
@@ -89,25 +68,39 @@ const search = () => {
 };
 
 const exportStudentList = () => {
-  console.log('导出学生名单');
-  let id=localStorage.getItem('kcid')
-  exportstudentlist(id).then(res => {
-    console.log(res)
-  })
-  // 这里可以添加导出学生名单的逻辑，例如生成 CSV 文件并下载
+  const id = localStorage.getItem('kcid');
+  if (!id) {
+    console.error("课程 ID 不存在，请检查 'kcid' 的存储情况。");
+    return;
+  }
+  exportstudentlist(id)
+    .then(res => {
+      console.log(res);
+    })
+    .catch(error => {
+      console.error("导出失败:", error);
+    });
 };
+
 
 function handleCurrentChange(page) {
   currentPage.value = page;
 }
+
 function getallstudents() {
-  let id = localStorage.getItem('kcid')
-  allstudents(id).then(res => {
-    console.log(res.students)
-  })
+  const id = localStorage.getItem('kcid');
+  const token = localStorage.getItem('token');
+  allstudents(id, token).then(res => {
+    console.log('学生列表:', res.data.students);
+    studentList.value = res.data.students; // 假设返回的学生列表存储在 res.data.students
+  }).catch(error => {
+    console.error('获取学生列表失败:', error);
+  });
 }
-getallstudents()
+
+getallstudents();
 </script>
+
 
 <style scoped>
 .box-card {

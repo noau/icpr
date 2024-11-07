@@ -20,7 +20,6 @@
 
 import axios from 'axios'
 import { useUserStore } from '@/stores/user.js'
-import { ElMessage } from 'element-plus'
 import router from '@/router'
 
 // const baseURL = 'http://big-event-vue-api-t.itheima.net'
@@ -53,7 +52,7 @@ instance.interceptors.response.use(
       return res.data
     }
     // 处理业务失败，给错误提示，抛出错误
-    ElMessage.error(res.data.message || '服务异常')
+    alert(res.data.message || '服务异常')
     return Promise.reject(res.data)
   },
   (err) => {
@@ -63,7 +62,7 @@ instance.interceptors.response.use(
       // router.push('/login')
     }
     // 错误的默认情况 => 只要给提示
-    ElMessage.error(err.response.data.message || '服务异常')
+    alert(err.response.data.message || '服务异常')
     return Promise.reject(err)
   }
 )

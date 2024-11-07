@@ -1,16 +1,193 @@
+<template>
+  <el-row class="login-page" justify="center" align="middle">
+    <el-col :span="6" class="form">
+      <el-tabs v-model="selectedRole" type="border-card" class="role-tabs">
+        <!-- 学生端 -->
+        <el-tab-pane label="学生" name="student">
+          <el-form
+              :model="formModel"
+              :rules="rules"
+              ref="form"
+              size="large"
+              autocomplete="off"
+          >
+            <el-form-item>
+              <h1>学生登录</h1>
+            </el-form-item>
+            <el-form-item prop="username">
+              <el-input
+                  v-model="formModel.username"
+                  :prefix-icon="User"
+                  placeholder="请输入学号"
+              ></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                  v-model="formModel.password"
+                  name="password"
+                  :prefix-icon="Lock"
+                  type="password"
+                  placeholder="请输入密码"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label-width="65px" style="margin-bottom: 5px;">
+              <div class="code-row">
+                <el-input
+                    placeholder="请输入验证码"
+                    v-model="sidentifyMode"
+                    clearable
+                    style="margin-top: -15px; margin-left: -64px;"
+                ></el-input>
+                <div class="code" @click="refreshCode">
+                  <SIdentify :identifyCode="identifyCode"></SIdentify>
+                </div>
+              </div>
+            </el-form-item>
+            <el-form-item>
+              <el-button round @click="login" class="button" type="primary">
+                登录
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-link type="primary" :underline="false" class="forgot-password-link" @click="forgotPasswordModal = true">
+                找回密码
+              </el-link>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
+
+        <!-- 教师端 -->
+        <el-tab-pane label="老师" name="teacher">
+          <el-form
+              :model="formModel"
+              :rules="rules"
+              ref="form"
+              size="large"
+              autocomplete="off"
+          >
+            <el-form-item>
+              <h1>教师登录</h1>
+            </el-form-item>
+            <el-form-item prop="username">
+              <el-input
+                  v-model="formModel.username"
+                  :prefix-icon="User"
+                  placeholder="请输入工号"
+              ></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                  v-model="formModel.password"
+                  name="password"
+                  :prefix-icon="Lock"
+                  type="password"
+                  placeholder="请输入密码"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label-width="65px" style="margin-bottom: 5px;">
+              <div class="code-row">
+                <el-input
+                    placeholder="请输入验证码"
+                    v-model="sidentifyMode"
+                    clearable
+                    style="margin-top: -15px; margin-left: -64px;"
+                ></el-input>
+                <div class="code" @click="refreshCode">
+                  <SIdentify :identifyCode="identifyCode"></SIdentify>
+                </div>
+              </div>
+            </el-form-item>
+            <el-form-item>
+              <el-button round @click="login" class="button" type="primary">
+                登录
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-link type="primary" :underline="false" class="forgot-password-link" @click="forgotPasswordModal = true">
+                找回密码
+              </el-link>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
+
+        <!-- 管理员端 -->
+        <el-tab-pane label="管理员" name="administrator">
+          <el-form
+              :model="formModel"
+              :rules="rules"
+              ref="form"
+              size="large"
+              autocomplete="off"
+          >
+            <el-form-item>
+              <h1>管理员登录</h1>
+            </el-form-item>
+            <el-form-item prop="username">
+              <el-input
+                  v-model="formModel.username"
+                  :prefix-icon="User"
+                  placeholder="请输入管理员账号"
+              ></el-input>
+            </el-form-item>
+            <el-form-item prop="password">
+              <el-input
+                  v-model="formModel.password"
+                  name="password"
+                  :prefix-icon="Lock"
+                  type="password"
+                  placeholder="请输入密码"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label-width="65px" style="margin-bottom: 5px;">
+              <div class="code-row">
+                <el-input
+                    placeholder="请输入验证码"
+                    v-model="sidentifyMode"
+                    clearable
+                    style="margin-top: -15px; margin-left: -64px;"
+                ></el-input>
+                <div class="code" @click="refreshCode">
+                  <SIdentify :identifyCode="identifyCode"></SIdentify>
+                </div>
+              </div>
+            </el-form-item>
+            <el-form-item>
+              <el-button round @click="login" class="button" type="primary">
+                登录
+              </el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-link type="primary" :underline="false" class="forgot-password-link" @click="forgotPasswordModal = true">
+                找回密码
+              </el-link>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
+
+      <!-- 找回密码对话框 -->
+      <el-dialog title="找回密码" align-center v-model="forgotPasswordModal" append-to-body width="350px" :modal-append-to-body="false" center custom-class="forgot-password-dialog">
+        <div class="forgot-password-options">
+          <el-button round @click="forgotPassword('email')">通过邮箱找回</el-button>
+          <el-button round style="margin-left: 0;" @click="forgotPassword('phone')">通过手机找回</el-button>
+        </div>
+      </el-dialog>
+    </el-col>
+  </el-row>
+</template>
+
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref, onMounted } from 'vue'
 import { userLoginService } from '@/api/user.js'
 import { useUserStore } from '@/stores/user.js'
 import { useRouter } from 'vue-router'
-import SIdentify from '@/components/SIdentify.vue'
-import { ElMessage } from 'element-plus' 
+import SIdentify from '@/components/Sidentify.vue'
+import { ElMessage } from 'element-plus'
 
 const form = ref()
-const selectedRole = ref("student"); // Default role set to "student"
+const selectedRole = ref("student")
 
-// Form data for submission
 const formModel = ref({
   username: '',
   password: ''
@@ -18,27 +195,29 @@ const formModel = ref({
 const sidentifyMode = ref('')
 const identifyCode = ref('')
 const identifyCodes = ref('1234567890abcdefjhijklinopqrsduvwxyz')
+const forgotPasswordModal = ref(false) // 新增找回密码对话框的状态
 
-// Component mounted function
 onMounted(() => {
   identifyCode.value = ''
   makeCode(identifyCodes.value, 4)
 })
 
-// Generate random numbers
-const randomNum = (min, max) => {
-  max = max + 1
-  return Math.floor(Math.random() * (max - min) + min)
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' }
+  ]
 }
 
-// Generate verification code string
+const randomNum = (min, max) => Math.floor(Math.random() * (max + 1 - min) + min)
 const makeCode = (o, l) => {
+  identifyCode.value = ''
   for (let i = 0; i < l; i++) {
     identifyCode.value += o[randomNum(0, o.length)]
   }
 }
-
-// Refresh verification code
 const refreshCode = () => {
   identifyCode.value = ''
   makeCode(identifyCodes.value, 4)
@@ -47,7 +226,6 @@ const refreshCode = () => {
 const userStore = useUserStore()
 const router = useRouter()
 
-// Login function
 const login = async () => {
   if (!sidentifyMode.value) {
     ElMessage({ type: 'error', message: '验证码不能为空！' })
@@ -58,28 +236,15 @@ const login = async () => {
     refreshCode()
     return
   }
-  
-  // Set API endpoint based on selected role
-  let loginEndpoint;
-  if (selectedRole.value === 'student') {
-    loginEndpoint = 'student';
-  } else if (selectedRole.value === 'teacher') {
-    loginEndpoint = 'teacher';
-  } else if (selectedRole.value === 'administrator') {
-    loginEndpoint = 'administrator';
-  }
 
+  formModel.value.role = selectedRole.value
   await form.value.validate()
-  console.log(loginEndpoint)
-
-  let loginFM = formModel.value
-  loginFM.role = loginEndpoint
-  const res = await userLoginService(formModel.value) // Pass the endpoint as a parameter
-  userStore.setToken(res);
-  localStorage.setItem('token', res);  
-  userStore.setId(formModel.value.username);
-  localStorage.setItem('userId', formModel.value.username);  
-
+  const res = await userLoginService(formModel.value)
+  userStore.setToken(res)
+  localStorage.setItem('token', res)
+  userStore.setId(formModel.value.username)
+  localStorage.setItem('userId', formModel.value.username)
+  console.log(selectedRole.value)
   if (selectedRole.value === 'student') {
     await router.push('/stu-end')
   } else if (selectedRole.value === 'teacher') {
@@ -87,98 +252,17 @@ const login = async () => {
   } else if (selectedRole.value === 'administrator') {
     await router.push('/adm-end')
   }
-  
 }
 
-// Forgot password functions
+// 找回密码函数
 const forgotPassword = (method) => {
   if (method === 'email') {
-    router.push('/forgot-password/email')
+    router.push('/forgot-password/email') // 跳转到邮箱找回页面
   } else if (method === 'phone') {
-    router.push('/forgot-password/phone')
+    router.push('/forgot-password/phone') // 跳转到手机找回页面
   }
 }
-
-const forgotPasswordModal = ref(false)
 </script>
-
-<template>
-  <el-row class="login-page" justify="center" align="middle">
-    <el-col :span="6" class="form">
-      <el-form
-        :model="formModel"
-        :rules="rules"
-        ref="form"
-        size="large"
-        autocomplete="off"
-      >
-        <!-- Role Selection Dropdown -->
-        <el-form-item>
-          <el-select v-model="selectedRole" placeholder="选择身份">
-            <el-option label="学生" value="student"></el-option>
-            <el-option label="老师" value="teacher"></el-option>
-            <el-option label="管理员" value="administrator"></el-option>
-          </el-select>
-        </el-form-item>
-
-        <el-form-item>
-          <h1>登录</h1>
-        </el-form-item>
-        
-        <el-form-item prop="username">
-          <el-input
-            v-model="formModel.username"
-            :prefix-icon="User"
-            placeholder="请输入学/工号"
-          ></el-input>
-        </el-form-item>
-        
-        <el-form-item prop="password">
-          <el-input
-            v-model="formModel.password"
-            name="password"
-            :prefix-icon="Lock"
-            type="password"
-            placeholder="请输入密码"
-          ></el-input>
-        </el-form-item>
-        
-        <el-form-item label-width="65px" style="margin-bottom: 5px;">
-          <div class="code-row">
-            <el-input placeholder="请输入验证码" v-model="sidentifyMode" clearable style="margin-top: -15px; margin-left: -64px;"></el-input>
-            <div class="code" @click="refreshCode">
-              <SIdentify :identifyCode="identifyCode"></SIdentify>
-            </div>
-          </div>
-        </el-form-item>
-        
-        <el-form-item class="flex">
-          <el-link type="primary" :underline="false" class="forgot-password-link" @click="forgotPasswordModal = true">
-            找回密码
-          </el-link>
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button round
-            @click="login"
-            class="button"
-            type="primary"
-            auto-insert-space
-          >登录</el-button>
-        </el-form-item>
-      </el-form>
-    </el-col>
-  </el-row>
-
-  <!-- Forgot Password Dialog -->
-  <el-dialog title="找回密码" align-center v-model="forgotPasswordModal" append-to-body width="350px" :modal-append-to-body="false" center custom-class="forgot-password-dialog" style="height: 200px;">
-    <div class="forgot-password-options">
-      <el-button round @click="forgotPassword('email')">通过邮箱找回</el-button>
-      <el-button round style="margin-left: 0px;" @click="forgotPassword('phone')">通过手机找回</el-button>
-    </div>
-  </el-dialog>
-</template>
-
 
 <style lang="scss" scoped>
 .login-page {
@@ -187,22 +271,25 @@ const forgotPasswordModal = ref(false)
   left: 0;
   right: 0;
   bottom: 0;
-  height: 100vh;
+  height: 100%;
+  width: 100%;
   background: url('@/assets/img/bjtu.jpg') no-repeat center / cover;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .form {
-  height: 450px;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 2rem;
-  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.0);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
   max-width: 400px;
   .title {
     margin: 0 auto;
+  }
+  .role-tabs {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
   }
   .button {
     width: 100%;
@@ -235,7 +322,6 @@ const forgotPasswordModal = ref(false)
   justify-content: center;
 }
 .code-row {
-  // 水平对齐
   display: flex;
   align-items: center;
   gap: 10px;
@@ -243,5 +329,4 @@ const forgotPasswordModal = ref(false)
 .code {
   cursor: pointer;
 }
-</style> 
-
+</style>

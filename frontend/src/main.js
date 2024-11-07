@@ -9,6 +9,7 @@ import router from './router'
 // 引入初始化样式文件
 import '@/styles/normalize.scss'
 import 'element-plus/dist/index.css';
+
 import ElementPlus from 'element-plus'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue' //导入 ElementPlus 组件库中的所有图标
 

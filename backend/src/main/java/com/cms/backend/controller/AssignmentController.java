@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cms.backend.pojo.Assignments.*;
 import com.cms.backend.pojo.Attachment;
-import com.cms.backend.pojo.DTO.Assignment.DescriptionDTO;
 import com.cms.backend.service.assignment.AssignmentReviewService;
 import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
@@ -17,7 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Validated
@@ -172,9 +173,42 @@ public class AssignmentController {
      */
     @GetMapping("/get-info")
     public ResponseEntity<DescriptionDTO> getAssignmentDescription(@RequestParam Integer id) {
-        String description = assignmentService.getAssignmentDescription(id);
-        return ResponseEntity.ok(new DescriptionDTO(description));
+        Assignment assignment = assignmentService.getById(id);
+        if (assignment == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        DescriptionDTO descriptionDTO = new DescriptionDTO();
+        descriptionDTO.setId(assignment.getId());
+        descriptionDTO.setCourseId(assignment.getCourseId());
+        descriptionDTO.setTitle(assignment.getTitle());
+        descriptionDTO.setDescription(assignment.getDescription());
+        descriptionDTO.setStart(assignment.getStart());
+        descriptionDTO.setEnd(assignment.getEnd());
+        descriptionDTO.setIsPrivate(assignment.getIsPrivate());
+        descriptionDTO.setGrade(assignment.getFullGrade().intValue());
+        descriptionDTO.setDelayedGrade(assignment.getDelayedGrade().intValue());
+        descriptionDTO.setLatestEnd(assignment.getLatestEnd());
+        descriptionDTO.setMultipleSubmission(assignment.getMultipleSubmission());
+        descriptionDTO.setPublishGrade(assignment.getPublishGrade());
+        descriptionDTO.setRequirePeerReview(assignment.getRequirePeerReview());
+        descriptionDTO.setPeerReviewStart(assignment.getPeerReviewStart());
+        descriptionDTO.setPeerReviewEnd(assignment.getPeerReviewEnd());
+        descriptionDTO.setMinPeerReview(assignment.getMinPeerReview());
+
+        // 查询附件
+        List<Attachment> attachments = attachmentService.findByAssignmentId(assignment.getId());
+        if (attachments != null && !attachments.isEmpty()) {
+            List<Integer> attachmentIds = attachments.stream()
+                    .map(Attachment::getId)
+                    .collect(Collectors.toList());
+            descriptionDTO.setAttachments(attachmentIds);
+        }
+
+        return ResponseEntity.ok(descriptionDTO);
     }
+
+
 
     /**
      * 课程下的所有作业
@@ -197,11 +231,32 @@ public class AssignmentController {
     public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsSubmissions(@RequestParam Integer id) {
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
         var details = submissions.stream().map(submission -> {
-           var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
-                   .stream().map(Attachment::getId).toList();
-           return new AssignmentSubmissionDetail(submission, attachments);
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
+                    .stream().map(Attachment::getId).toList();
+            return new AssignmentSubmissionDetail(submission, attachments);
         });
         return ResponseEntity.ok(details.collect(Collectors.toList()));
+    }
+
+    /**
+     * 作业的所有提交
+     *
+     * @param assignmentId 作业ID
+     * @param userId 评分人的ID
+     * @param count 需要评分的作业个数
+     * @return 获得作业提交列表
+     */
+    @GetMapping("/peer-review-list")
+    public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsPeerReviewList(@RequestParam Integer assignmentId, @RequestParam Integer userId, @RequestParam Integer count) {
+        var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentId));
+        var details = submissions.stream().filter(submission -> !Objects.equals(submission.getStudentId(), userId)).map(submission -> {
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
+                    .stream().map(Attachment::getId).toList();
+            return new AssignmentSubmissionDetail(submission, attachments);
+        }).collect(Collectors.toList());
+        Collections.shuffle(details);
+        var review_count = Math.min(count, details.size());
+        return ResponseEntity.ok(details.subList(0, review_count));
     }
 
     @Data
@@ -240,6 +295,27 @@ public class AssignmentController {
         private Integer minPeerReview;
         private List<Integer> attachments;
         private String answer;
+    }
+
+    @Data
+    public static class DescriptionDTO {
+        private Integer id;
+        private String courseId;
+        private String title;
+        private String description;
+        private String start;
+        private String end;
+        private Integer isPrivate;
+        private Integer grade;
+        private Integer delayedGrade;
+        private String latestEnd;
+        private Integer multipleSubmission;
+        private Integer publishGrade;
+        private Integer requirePeerReview;
+        private String peerReviewStart;
+        private String peerReviewEnd;
+        private Integer minPeerReview;
+        private List<Integer> attachments;
     }
 
     @Data

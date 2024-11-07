@@ -86,8 +86,8 @@ export const discussionlike = ({ id }) =>
   httpInstance.post('/user/discussion/like', { id });
 
 // Unsubscribe a user
-export const getDeleteSubscription = ({ id }) =>
-  httpInstance.post('/user/delete-subscription', { id });
+export const getDeleteSubscription = (data) =>
+  httpInstance.delete('/user/delete-subscription', data);
 
 // Subscribe a user
 export const getdDiscussionlike = ({ id }) =>
