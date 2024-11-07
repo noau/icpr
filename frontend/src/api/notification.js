@@ -5,6 +5,7 @@ import httpInstance from "@/utils/http.js"
 export const notificationsGet = ({ id  }) =>
     httpInstance.get('/notifications/get?id=' + id)
 
+// 更新通知
 export const updateCollectionNotification = (notificationData) =>
     httpInstance.post('/notifications/star', notificationData);
 
@@ -24,29 +25,6 @@ export const collectionNotificationsGet = ({ id  }) =>
 export const typeNotificationsByTypeGet = ({ id, type }) =>
     httpInstance.get(`/notifications/get-notification-by-type?id=${id}&type=${type}`);
 
-//发布通知
-export const notificationsPublish = ({
-                                         userId,
-                                         type,
-                                         content,
-                                         isRead,
-                                         createdAt,
-                                         relatedId,
-                                         triggeredBy,
-                                         courseId,
-                                         isStar
-                                     }) => {
-    return httpInstance.post('/notifications/publish', {
-        userId,
-        type,
-        content,
-        isRead,
-        createdAt,
-        relatedId,
-        triggeredBy,
-        courseId,
-        isStar
-    });
-};
-
- 
+// 发布通知
+export const publishNotification = (notificationData) =>
+    httpInstance.post('/notifications/publish', notificationData);
