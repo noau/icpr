@@ -229,6 +229,7 @@ public class AssignmentController {
      */
     @GetMapping("/review-list")
     public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsSubmissions(@RequestParam Integer id) {
+        System.out.println(id);
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
         var details = submissions.stream().map(submission -> {
             var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
