@@ -23,8 +23,8 @@ import { useUserStore } from '@/stores/user.js'
 import router from '@/router'
 
 // const baseURL = 'http://big-event-vue-api-t.itheima.net'
-// const baseURL = 'http://localhost:8080/'
-const baseURL = 'https://apifoxmock.com/m1/5410209-5084126-default'
+const baseURL = 'http://localhost:8080/'
+// const baseURL = 'https://apifoxmock.com/m1/5410209-5084126-default'
 
 const instance = axios.create({
   // TODO 1. 基础地址，超时时间
