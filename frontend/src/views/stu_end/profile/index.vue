@@ -151,13 +151,14 @@
           :body-style="{ padding: '20px' }"
           v-for="(item, index) in collectMy"
           :key="index"
-          style="margin-bottom: 10px"
+          style="margin-bottom: 10px; cursor: pointer;"
+          @click="toThread(item)"
         >
           <div slot="header" style="display: flex; flex-direction: column">
             <span style="font-weight: bold">{{ item.title }}</span>
             <span>{{ item.createdAt }}</span>
           </div>
-          <el-icon @click="deletTie" style="float: right">
+          <el-icon @click.stop="deletTie" style="float: right">
             <delete />
           </el-icon>
         </el-card>
@@ -228,6 +229,10 @@ function editFile(item) {
   localStorage.setItem("folder", JSON.stringify(item));
 
   fileEditVisible.value = true;
+}
+
+const toThread = (item) => {
+  router.push(`/stu-end/course/discussion/post/${item.id}`);
 }
 // 获取收藏夹
 const collectList = ref();
