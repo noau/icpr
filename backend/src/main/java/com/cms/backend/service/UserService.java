@@ -1,8 +1,8 @@
 package com.cms.backend.service;
 
+import com.cms.backend.controller.UserController;
 import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
-import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
 import com.cms.backend.pojo.User;
 
@@ -19,7 +19,7 @@ public interface UserService {
 
     List<Folder> getUserFolders(Integer id);
 
-    List<Favorite> getUserFavorites(Integer id);
+    List<UserController.FavoriteGet> getUserFavorites(Integer id);
 
     void changeInfo(Integer id, String email, String phoneNumber);
 
@@ -64,5 +64,9 @@ public interface UserService {
     void deleteLikeReply(Integer id);
 
     void addUserTeacher(Integer id, String address, String title, String brief);
+
+    void addThreadNumber(Integer id);
+
+    void deleteThreadNumber(Integer id);
 
 }

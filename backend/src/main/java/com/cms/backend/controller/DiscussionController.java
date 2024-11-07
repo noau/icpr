@@ -35,6 +35,7 @@ public class DiscussionController {
     @PostMapping(value = "/thread")
     public ResponseEntity<String> createThread(@RequestBody DiscussionThread discussionThread) {
         discussionThreadService.save(discussionThread);
+        userService.addThreadNumber(discussionThread.getUserId());
 
         return ResponseEntity.ok("");
     }
@@ -62,14 +63,19 @@ public class DiscussionController {
     public ResponseEntity<DiscussionReplyList> getThread(@RequestParam Integer id) {
         DiscussionThread discussionThread = discussionThreadService.getById(id);
         User user = userService.findByUserName(discussionThread.getUserId());
-        List<DiscussionReply> replyList = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId, id));
-        List<DiscussionReply> replyReplyList = new ArrayList<>();
-        for (DiscussionReply discussionReply : replyList) {
+        List<DiscussionReply> replyLists = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId, id));
+        List<DiscussionReplyDTO> replyList = new ArrayList<>();
+        for (DiscussionReply discussionReply : replyLists) {
+            DiscussionReplyDTO discussionReplyDTO = new DiscussionReplyDTO(discussionReply.getId(), discussionReply.getThreadId(), discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getLikes(), discussionReply.getCreatedAt(), userService.findByUserName(discussionReply.getUserId()).getName(), userService.findByUserName(discussionReply.getUserId()).getAvatar());
+            replyList.add(discussionReplyDTO);
             List<DiscussionReply> replyReplies = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getReplyId, discussionReply.getId()));
-            replyReplyList.addAll(replyReplies);
+            for (DiscussionReply discussionReplyReply : replyReplies) {
+                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(), discussionReplyReply.getThreadId(), discussionReplyReply.getReplyId(), discussionReplyReply.getUserId(), discussionReplyReply.getContent(), discussionReplyReply.getLikes(), discussionReplyReply.getCreatedAt(), userService.findByUserName(discussionReplyReply.getUserId()).getName(), userService.findByUserName(discussionReplyReply.getUserId()).getAvatar());
+                replyList.add(discussionReplyDTODTO);
+            }
+
         }
 
-        replyList.addAll(replyReplyList);
         DiscussionReplyList discussionReplyList = new DiscussionReplyList(discussionThread.getCourseId(), discussionThread.getUserId(), discussionThread.getTitle(), discussionThread.getContent(), discussionThread.getLikes(), discussionThread.getFavorites(), discussionThread.getClosed(), discussionThread.getTop(), discussionThread.getCreatedAt(), discussionThread.getTag(), discussionThread.getUpdatedAt(), replyList, user.getName(), user.getAvatar());
 
         return ResponseEntity.ok(discussionReplyList);
@@ -86,6 +92,7 @@ public class DiscussionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> threadDelete(@RequestParam Integer id) {
         discussionThreadService.removeById(id);
+        userService.deleteThreadNumber(id);
 
         return ResponseEntity.noContent().build();
     }
@@ -132,7 +139,31 @@ public class DiscussionController {
 
         private String updatedAt;
 
-        private List<DiscussionReply> replyList;
+        private List<DiscussionReplyDTO> replyList;
+
+        private String name;
+
+        private String avatar;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class DiscussionReplyDTO {
+
+        private Integer id;
+
+        private Integer threadId;
+
+        private Integer replyId;
+
+        private Integer userId;
+
+        private String content;
+
+        private Integer likes;
+
+        private String createdAt;
 
         private String name;
 
