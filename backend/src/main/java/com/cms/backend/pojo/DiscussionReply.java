@@ -23,4 +23,6 @@ public class DiscussionReply {
 
     private String createdAt;
 
+    private Integer repliedId;
+
 }

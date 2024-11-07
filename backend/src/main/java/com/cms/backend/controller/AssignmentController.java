@@ -1,6 +1,7 @@
 package com.cms.backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cms.backend.pojo.Assignments.*;
 import com.cms.backend.pojo.Attachment;
@@ -9,13 +10,16 @@ import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
 import com.cms.backend.service.assignment.AssignmentPeerReviewService;
 import com.cms.backend.service.AttachmentService;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -259,6 +263,96 @@ public class AssignmentController {
         return ResponseEntity.ok(details.subList(0, review_count));
     }
 
+    @GetMapping("/course-assignments/student")
+    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(@RequestBody AssignmentsStudentBody assignmentsStudentBody) {
+        String id = assignmentsStudentBody.id;
+        Integer userId = assignmentsStudentBody.userId;
+        List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));
+        List<AssignmentStudent> assignmentStudentList = new ArrayList<>();
+        for (Assignment assignment : assignmentList) {
+            List<AssignmentSubmission> assignmentSubmissionList = assignmentSubmissionService.list(new QueryWrapper<AssignmentSubmission>().eq("assignment_id", assignment.getId()).eq("student_id", userId));
+            Float grade = null;
+            for (AssignmentSubmission assignmentSubmission : assignmentSubmissionList) {
+                AssignmentReview assignmentReview = assignmentReviewService.getOne(new LambdaQueryWrapper<AssignmentReview>().eq(AssignmentReview::getSubmissionId, assignmentSubmission.getId()));
+                if (assignmentReview != null) {
+                    grade = assignmentReview.getGrade();
+                    break;
+                }
+            }
+
+            AssignmentStudent assignmentStudent = getAssignmentStudent(assignment, grade);
+
+            assignmentStudentList.add(assignmentStudent);
+        }
+
+        return ResponseEntity.ok(assignmentStudentList);
+    }
+
+    @NotNull
+    private static AssignmentStudent getAssignmentStudent(Assignment assignment, Float grade) {
+        AssignmentStudent assignmentStudent;
+        if (grade != null) {
+            assignmentStudent = new AssignmentStudent(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer(), 1, grade);
+        } else {
+            assignmentStudent = new AssignmentStudent(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer(), 0, null);
+        }
+        return assignmentStudent;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AssignmentsStudentBody {
+
+        private String id;
+
+        private Integer userId;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AssignmentStudent {
+
+        private Integer id;
+
+        private String courseId;
+
+        private String title;
+
+        private String description;
+
+        private String start;
+
+        private String end;
+
+        private Integer isPrivate;
+
+        private Float fullGrade;
+
+        private Float delayedGrade;
+
+        private String latestEnd;
+
+        private Integer multipleSubmission;
+
+        private Integer publishGrade;
+
+        private Integer requirePeerReview;
+
+        private String peerReviewStart;
+
+        private String peerReviewEnd;
+
+        private Integer minPeerReview;
+
+        private String answer;
+
+        private Integer isGrade;
+
+        private Float grade;
+
+    }
+
     @Data
     public static class IssueAnswer {
         private Integer assignmentId;
@@ -296,7 +390,6 @@ public class AssignmentController {
         private List<Integer> attachments;
         private String answer;
     }
-
     @Data
     public static class DescriptionDTO {
         private Integer id;
@@ -330,15 +423,10 @@ public class AssignmentController {
         }
 
         private Integer id;
-
         private Integer assignmentId;
-
         private Integer studentId;
-
         private String submittedAt;
-
         private String content;
-
         private List<Integer> attachments;
     }
 }
