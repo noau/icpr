@@ -28,7 +28,7 @@ export default {
   },
   methods: {
     openCourse(course) {
-      localStorage.setItem("kcid", course.id)
+      localStorage.setItem("courseId", course.id)
 
       // 跳转到课程主页
       this.$router.push({ path: '/stu-end/course', query: { courseId: course.id } });

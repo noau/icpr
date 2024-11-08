@@ -16,7 +16,7 @@ import { useRouter } from 'vue-router';
 import {ArrowLeftBold} from "@element-plus/icons-vue";
 const router = useRouter();
 const return_back = () => {
-  router.push('/stu-end');
+  router.push('/tea-end');
 };
 </script>
 

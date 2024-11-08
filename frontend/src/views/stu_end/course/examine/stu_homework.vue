@@ -14,25 +14,18 @@
         <el-table :data="paginatedData" style="width: 100%">
           <!-- 作业标题 -->
           <el-table-column prop="title" label="作业标题" width="200"></el-table-column>
-
           <!-- 作业开始 -->
           <el-table-column prop="start" label="作业开始" width="180"></el-table-column>
-
           <!-- 作业截止 -->
           <el-table-column prop="end" label="作业截止" width="180"></el-table-column>
-
           <!-- 提交人数 -->
           <el-table-column prop="submitted" label="提交人数" width="100"></el-table-column>
-
           <!-- 提交时间 -->
           <el-table-column prop="submitTime" label="提交时间" width="150"></el-table-column>
-
           <!-- 得分 -->
           <el-table-column prop="score" label="得分" width="100"></el-table-column>
-
           <!-- 批改状态 -->
           <el-table-column prop="reviewStatus" label="批改状态" width="100"></el-table-column>
-
           <!-- 操作 -->
           <el-table-column label="操作" width="200">
             <template #default="scope">
@@ -54,7 +47,6 @@
         <el-form-item label="作业内容">
           <el-input type="textarea" v-model="formData.content" placeholder="请输入3000字以内的作业内容！" rows="5"></el-input>
         </el-form-item>
-
         <el-form-item label="上传文件">
           <el-upload class="upload-demo" action="http://localhost:8080/attachment/upload"
             :on-success="handleUploadSuccess" :headers="headers" :on-preview="handlePreview" :on-remove="handleRemove"
@@ -70,8 +62,6 @@
           </el-upload>
         </el-form-item>
       </el-form>
-
-      <!-- 按钮 -->
       <template v-slot:footer>
         <span class="dialog-footer">
           <el-button round style="padding: 10px;" type="primary" @click="submitAssignment">确定</el-button>
@@ -83,63 +73,73 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router'; // Import Vue Router
-import { getcourseAssignments } from '@/api/assignments.js'
-import { useUserStore } from '@/stores/user.js'
-import { getSubmissions, getCourseAssignment } from '@/api/homework.js'
-const router = useRouter(); // Use the router instance
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getcourseAssignments, getSubmissions } from '@/api/assignments.js';
 
-const tableData = ref([
-  { id: '1', title: '班级', start: '2024-01-13', end: '2024-02-06', submitted: '0/27', submitTime: '未提交', score: '未公布成绩', reviewStatus: '未批改' },
-  { id: '2', title: '00', start: '2024-01-03', end: '2024-02-23', submitted: '0/27', submitTime: '未提交', score: '未公布成绩', reviewStatus: '未批改' },
-  // More data...
-]);
+const router = useRouter();
+const tableData = ref([]);
 const headers = {
   Authorization: localStorage.getItem('token')
-}
-
-// 列表请求 
-const init = async () => {
-  const res = await getcourseAssignments({ id: localStorage.getItem('userId') })
-  tableData.value = res?.userAssignmentList;
-}
-init();
+};
 
 const dialogVisible = ref(false);
 const formData = ref({
   content: '',
-  file: null
+  attachments: []
 });
 const fileList = ref([]);
 const searchQuery = ref('');
 const currentPage = ref(1);
 const pageSize = ref(8);
-const searchResult = ref([]); // 用于存储搜索结果
+const searchResult = ref([]);
+const assignmentId = ref('');
 
-const filteredData = computed(() => {
-  return searchResult.value;
-});
-
+// Computed properties for filtered and paginated data
+const filteredData = computed(() => searchResult.value);
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   return filteredData.value.slice(start, start + pageSize.value);
 });
-const assignmentId = ref('')
+
+// Fetch assignment list on component mount
+onMounted(async () => {
+  await getCourseAssignmentsList();
+});
+
+async function getCourseAssignmentsList() {
+  try {
+    const courseId = localStorage.getItem('courseId');
+    if (!courseId) {
+      console.error('Course ID is missing!');
+      return;
+    }
+    console.log('Course ID:', courseId);
+    
+    const response = await getcourseAssignments({ id: courseId });
+    console.log('Full API Response:', response);
+
+    if (Array.isArray(response)) {
+      tableData.value = response;
+      searchResult.value = tableData.value;
+    } else {
+      console.error('Invalid response structure:', response);
+      tableData.value = [];
+      searchResult.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching assignments:', error);
+  }
+}
 
 function handleSubmit(row) {
-  console.log('Submit clicked for:', row);
-  assignmentId.value = row.id
+  assignmentId.value = row.id;
   dialogVisible.value = true;
 }
 
 function viewDetails(row) {
-  console.log('Viewing details for:', row);
-  // 假设 row 中有一个 id 或 title，作为作业的唯一标识
-  const assignmentId = row.id; // 或者用 row.title 作为标识
-  // 跳转到作业详情页面，传递作业 ID 作为路由参数
   router.push({
-    path: `/stu-end/course/examine/homework-details/${assignmentId}`
+    path: `/stu-end/course/examine/homework-details/${row.id}`
   });
 }
 
@@ -150,8 +150,6 @@ function handlePreview(file) {
 function handleRemove(file) {
   console.log('Removing file:', file);
 }
-
-
 
 function handleCurrentChange(page) {
   currentPage.value = page;
@@ -168,72 +166,54 @@ function handleSearch() {
   }
 }
 
-// 初始化时显示所有数据
-searchResult.value = tableData.value;
-const attachments = ref([])
 function handleUploadSuccess(res) {
-  console.log(res);
-  attachments.value.push(res.id)
-
-
+  console.log('Upload success:', res);
+  formData.value.attachments = formData.value.attachments || [];
+  formData.value.attachments.push(res.id); // 假设 res.id 是文件 ID
 }
-// 提交作业
-function submitAssignment() {
-  console.log('Submitting assignment:', formData.value);
-  let obj = {
-    content: formData.value.content,
-    attachments: attachments.value,
-    studentId: localStorage.getItem('userId'),
-    assignmentId: assignmentId.value
+function formatDateToMysql(date) {
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+async function submitAssignment() {
+  try {
+    const obj = {
+      assignmentId: assignmentId.value,
+      studentId: localStorage.getItem('userId'),
+      submittedAt: formatDateToMysql(new Date()), // 转换为 MySQL 格式
+      content: formData.value.content,
+      attachments: formData.value.attachments || [],
+    };
+    const response = await getSubmissions(obj);
+    console.log('Submission response:', response);
+    dialogVisible.value = false;
+  } catch (error) {
+    console.error('Error submitting assignment:', error);
   }
-  getSubmissions(obj).then(Res => {
-    console.log(Res);
-  })
-  dialogVisible.value = false;
 }
 
-// 作业列表
-function getCourseAssignmentsList() {
-  let id = localStorage.getItem('kcid')
-  getCourseAssignment(id).then(res => {
-    console.log(res);
-  })
-}
-getCourseAssignmentsList()
 </script>
 
 <style scoped>
-.el-table th {
-  font-weight: bold;
+.el-table th, .el-table td {
   text-align: center;
 }
-
-.el-table td {
-  text-align: center;
-}
-
-.el-button {
-  padding: 0;
-}
-
 .dialog-footer {
   text-align: right;
 }
-
 .box-card {
   margin: 20px;
   margin-top: 10px;
 }
-
 .search-input {
   flex: 1;
   width: 300px;
   margin-left: 20px;
 }
-
 .pagination-container {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
 </style>
+

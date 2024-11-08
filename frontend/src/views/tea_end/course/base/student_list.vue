@@ -68,9 +68,9 @@ const search = () => {
 };
 
 const exportStudentList = () => {
-  const id = localStorage.getItem('kcid');
+  const id = localStorage.getItem('courseId');
   if (!id) {
-    console.error("课程 ID 不存在，请检查 'kcid' 的存储情况。");
+    console.error("课程 ID 不存在，请检查 'courseId' 的存储情况。");
     return;
   }
   exportstudentlist(id)
@@ -88,7 +88,7 @@ function handleCurrentChange(page) {
 }
 
 function getallstudents() {
-  const id = localStorage.getItem('kcid');
+  const id = localStorage.getItem('courseId');
   const token = localStorage.getItem('token');
   allstudents(id, token).then(res => {
     console.log('学生列表:', res.data.students);

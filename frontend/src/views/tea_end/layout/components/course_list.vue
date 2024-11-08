@@ -6,8 +6,8 @@
           <el-icon><Notebook /></el-icon>
           <div class="course-name">{{ course.name }}</div>
         </div>
-        <div class="course-info">课程号: {{ course.courseId }}</div>
-        <div class="course-info">班级号: {{ course.classId }}</div>
+        <div class="course-info">课程号: {{ course.id }}</div>
+        <div class="course-info">班级号: {{ course.classNumber }}</div>
       </el-card>
     </el-col>
   </el-row>
@@ -28,9 +28,13 @@ export default {
   },
   methods: {
     openCourse(course) {
-      localStorage.setItem("kcid", course.courseId)
+      // localStorage.setItem("courseId", course.courseId)
+      // // 跳转到课程主页
+      // this.$router.push({ path: '/tea-end/course', query: { courseId: course.courseId } });
+      localStorage.setItem("courseId", course.id)
+
       // 跳转到课程主页
-      this.$router.push({ path: '/tea-end/course', query: { courseId: course.courseId } });
+      this.$router.push({ path: '/tea-end/course', query: { courseId: course.id } });
     },
   },
 };

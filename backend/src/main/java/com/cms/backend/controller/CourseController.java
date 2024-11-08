@@ -2,18 +2,19 @@ package com.cms.backend.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cms.backend.mapper.FolderMapper;
+import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.Assignments.AssignmentReview;
-import com.cms.backend.pojo.Attachment;
-import com.cms.backend.pojo.Course;
 import com.cms.backend.pojo.DTO.TeachingDTO;
-import com.cms.backend.pojo.TeacherInfo;
-import com.cms.backend.pojo.User;
 import com.cms.backend.service.AttachmentService;
 import com.cms.backend.service.CourseService;
+import com.cms.backend.service.FolderService;
 import com.cms.backend.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -32,12 +33,15 @@ public class CourseController {
 
     private final AttachmentService attachmentService;
 
+    private final FolderService folderService;
+
     private final UserService userService;
 
-    public CourseController(CourseService courseService, AttachmentService attachmentService, UserService userService) {
+    public CourseController(FolderService folderService, CourseService courseService, AttachmentService attachmentService, UserService userService) {
         this.courseService = courseService;
         this.attachmentService = attachmentService;
         this.userService = userService;
+        this.folderService = folderService;
     }
 
     @GetMapping(value = "/all")
@@ -175,19 +179,29 @@ public class CourseController {
     }
 
     @GetMapping(value = "/get-exam")
-    public ResponseEntity<AttachmentListDTO> getExam(@RequestParam String id) {
-        List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id));
-        List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
-        for (var attachment : attachmentList) {
-            AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
-            AttachmentDTO attachmentDTO = getAttachmentDTO(attachment, attachmentFolder);
+    public ResponseEntity<List<FolderAttachmentListDTO>> getExam(@RequestParam String id) {
+        List<AttachmentFolder> folders = folderService.getFolderlist(id);
+        List<FolderAttachmentListDTO> dtos = new ArrayList<>();
+        for (AttachmentFolder folder : folders) {
+            FolderAttachmentListDTO dto = new FolderAttachmentListDTO();
+            BeanUtils.copyProperties(folder,dto);
+            dto.setName(folder.getFolderName());
 
-            attachmentDTOList.add(attachmentDTO);
+            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id).eq(Attachment::getAttachmentFolderId,dto.getId()));
+            List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
+            for (Attachment attachment : attachmentList) {
+                AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
+                AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
+                attachmentDTOList.add(attachmentDTO);
+            }
+
+            dto.setFiles(attachmentDTOList);
+//            if (attachmentList.size() > 0){
+                dtos.add(dto);
+//            }
         }
 
-        AttachmentListDTO attachmentIdList = new AttachmentListDTO(attachmentDTOList);
-
-        return ResponseEntity.ok(attachmentIdList);
+        return ResponseEntity.ok(dtos);
     }
 
     @NotNull
@@ -346,6 +360,16 @@ public class CourseController {
 
     }
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class FolderAttachmentListDTO {
+        private Integer id;
+        private String name;
+
+        private List<AttachmentDTO> files;
+
+    }
     @Data
     @AllArgsConstructor
     public static class AttachmentListDTO {
