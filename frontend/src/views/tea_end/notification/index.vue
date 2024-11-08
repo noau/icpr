@@ -57,11 +57,7 @@ export default {
   padding-right: 0;
 }
 .main-content {
-  display: flex;
-  justify-content: center; /* 水平居中 */
-  align-items: center;     /* 垂直居中 */
   padding: 20px;
-  height: 80vh;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);

@@ -246,10 +246,13 @@ const login = async () => {
   localStorage.setItem('userId', formModel.value.username)
   console.log(selectedRole.value)
   if (selectedRole.value === 'student') {
+    userStore.setType('student')
     await router.push('/stu-end')
   } else if (selectedRole.value === 'teacher') {
+    userStore.setType('teacher')
     await router.push('/tea-end')
   } else if (selectedRole.value === 'administrator') {
+    userStore.setType('administrator')
     await router.push('/adm-end')
   }
 }

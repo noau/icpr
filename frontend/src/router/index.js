@@ -172,10 +172,6 @@ const router = createRouter({
           component: () => import('@/views/tea_end/notification/components/notification_collection.vue')
         },
         {
-          path: '/tea-end/notification/type/assignment',
-          component:()=>import('@/views/tea_end/notification/components/type/notification_assignment.vue')
-        },
-        {
           path: '/tea-end/notification/type/comment',
           component:()=>import('@/views/tea_end/notification/components/type/notification_discussion.vue')
         },
