@@ -53,7 +53,7 @@ const submitPost = () => {
   console.log('匿名1111：', isAnonymous.value);
   let obj = {
     courseId: localStorage.getItem('kcid'),
-    authorId: localStorage.getItem('id'),
+    userId: localStorage.getItem('id'),
     title: title.value,
     content: content.value,
     top: top.value ? 1 : 0,
