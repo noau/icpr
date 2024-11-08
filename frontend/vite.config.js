@@ -31,6 +31,13 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/apis': { // 匹配所有以 '/api' 开头的请求路径
+        target: 'http://localhost:65', // 目标服务器地址
+        changeOrigin: true, // 是否改变请求头中的Origin字段
+        pathRewrite: {
+          '/apis': '' // 重写路径：去掉路径中的 '/api'
+        }
       }
     }
   },

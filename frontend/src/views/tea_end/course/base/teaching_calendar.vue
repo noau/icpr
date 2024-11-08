@@ -1,201 +1,171 @@
 <template>
   <div class="course-header">
+    <!-- 教学日历标题 -->
     <div class="course-name">教学日历</div>
-    <!-- 下载按钮，右对齐 -->
-    <div class="actions-section" style="margin-bottom: 8px; margin-left: 1px;">
-      <!-- <div class="template-download-section" style="margin-right: 20px;">
-        <el-button round @click="downloadTemplate" type="text">下载模板</el-button>
-      </div> -->
-      <div class="download-section">
-        <el-button round @click="downloadFile" type="text">下载教学日历</el-button>
-      </div>
+
+    <!-- 上传按钮，右对齐 -->
+    <div class="upload-section">
+      <el-button round type="primary" @click="dialogVisible = true" style="padding: 8px">上传</el-button>
     </div>
+
+    <!-- PDF 预览区域，放置在标题和上传按钮的正下方，并占满空白区域 -->
+    <div v-if="pdfUrl" class="pdf-preview-section">
+      <iframe :src="pdfUrl" style="width: 100%; height: 100%;" frameborder="0"></iframe>
+    </div>
+
+    <!-- 上传对话框 -->
+    <el-dialog title="上传教学日历" v-model="dialogVisible" width="40%" @close="handleClose">
+      <!-- 上传文件和权限设置 -->
+      <div class="upload-permission-section">
+        <div class="dialog-permission-section">
+          <div>权限设置：</div>
+          <el-select v-model="selectedPermission" placeholder="选择权限" style="width: 150px;">
+            <el-option label="本课程师生" value="course"></el-option>
+            <el-option label="全校师生" value="school"></el-option>
+            <el-option label="私有" value="private"></el-option>
+          </el-select>
+        </div>
+
+        <div class="dialog-upload-section">
+          <el-upload
+            class="upload-demo"
+            :limit="1"
+            :on-exceed="handleExceed"
+            :file-list="fileList"
+            :before-upload="beforeUpload"
+            :on-success="handleUploadSuccess"
+            :on-error="handleUploadError"
+            :accept="acceptedFileTypes"
+            ref="uploadRef"
+            action="http://localhost:8080/attachment/upload"
+            :headers="headers"
+          >
+            <el-button type="text" style="margin-right: 30px">点击选择文件</el-button>
+          </el-upload>
+        </div>
+      </div>
+
+      <div class="file-type-warning">
+        允许上传的文件类型：doc、pdf、docx、jpg、png，文件不能超过2G
+      </div>
+      <br />
+
+      <!-- 对话框底部按钮 -->
+      <template v-slot:footer>
+        <span class="dialog-footer">
+          <el-button round type="primary" @click="confirmUpload" style="padding: 10px">确认</el-button>
+          <el-button round @click="dialogVisible = false" style="padding: 10px">取消</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
-
-  <!-- 课程信息 -->
-  <el-card class="course-card">
-    <div class="course-info">
-      <p>教学日历的详细内容</p>
-    </div>
-  </el-card>
-
-  <!-- 上传按钮，卡片下方，右对齐 -->
-  <div class="upload-section-bottom">
-    <el-button round type="primary" @click="dialogVisible = true" style="padding: 8px">上传</el-button>
-  </div>
-
-  <!-- 上传对话框 -->
-  <el-dialog title="上传教学日历" v-model="dialogVisible" width="40%" @close="handleClose">
-    <!-- 上传文件和权限设置 -->
-    <div class="upload-permission-section">
-      <div class="dialog-permission-section">
-        <div>权限设置：</div>
-        <el-select v-model="selectedPermission" placeholder="选择权限" style="width: 150px;">
-          <el-option label="本课程师生" value="course"></el-option>
-          <el-option label="全校师生" value="school"></el-option>
-          <el-option label="私有" value="private"></el-option>
-        </el-select>
-      </div>
-
-      <div class="dialog-upload-section">
-        <el-upload class="upload-demo" action="http://localhost:8080/courses/resource-calendar" :limit="1"
-          :on-exceed="handleExceed" :file-list="fileList" :before-upload="beforeUpload" :http-request="uploadFile"
-          :on-success="handleUploadSuccess" :on-error="handleUploadError" :auto-upload="false"
-          :accept="acceptedFileTypes" ref="uploadRef" :headers="headers">
-          <el-button type="text" style="margin-right: 30px">点击选择文件</el-button>
-        </el-upload>
-      </div>
-    </div>
-
-    <!-- 提示信息 -->
-    <div class="file-type-warning">
-      允许上传的文件类型：doc、docx，文件不能超过2G
-    </div>
-
-    <br>
-
-    <!-- 对话框底部按钮 -->
-    <template v-slot:footer>
-      <span class="dialog-footer">
-        <el-button round type="primary" @click="submitUpload" style="padding: 10px">确认</el-button>
-        <el-button round @click="dialogVisible = false" style="padding: 10px">取消</el-button>
-      </span>
-    </template>
-  </el-dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { getcalendar } from '@/api/course'
+import { ref } from 'vue';
+import { resourcecalendar } from '@/api/course'
 
-const fileList = ref([])
-const fileContent = ref('')
-const uploadRef = ref(null)
-const acceptedFileTypes = ".doc,.docx"  // 更新为仅支持 .doc 和 .docx 格式
-const selectedPermission = ref('course')
-const dialogVisible = ref(false)
+const fileList = ref([]);
+const uploadRef = ref(null);
+const acceptedFileTypes = ".doc,.docx,.pdf,.jpg,.png"; // 支持格式
+const selectedPermission = ref('course');
+const dialogVisible = ref(false);
+const attachmentIdList = ref([]);
+const pdfUrl = ref(null); // 存储预览文件的 URL
 const headers = {
-  'Authorization': localStorage.getItem('token')
-}
+  Authorization: localStorage.getItem('token'),
+};
 
 const beforeUpload = (file) => {
-  const isAllowedSize = file.size / 1024 / 1024 < 2048  // 文件大小限制为 2G
+  const isAllowedSize = file.size / 1024 / 1024 < 2048; // 文件大小限制为 2G
   if (!isAllowedSize) {
-    alert('文件大小不能超过2G！')
-    return false
+    alert('文件大小不能超过2G！');
+    return false;
   }
-  return true
-}
-
-const uploadFile = (options) => {
-  const { file } = options
-  const reader = new FileReader()
-
-  reader.onload = (e) => {
-    fileContent.value = e.target.result
-  }
-}
-
-const submitUpload = () => {
-  uploadRef.value.submit()
-}
-
-const handleUploadSuccess = (response, file) => {
-  alert(`${file.name} 上传成功`)
-}
-
-const handleUploadError = () => {
-  alert('上传失败')
-}
-
-const handleExceed = () => {
-  alert('一次只能上传一个文件')
-}
-
-const downloadFile = () => {
-  let id = localStorage.getItem('kcid')
-
-
-  window.location.href = 'http://localhost:8080/courses/get-calendar?id=' + id  // 更新下载链接
-}
-
-const downloadTemplate = () => {
-  window.location.href = '/path-to-your-template-file'
-}
-
-const handleClose = () => {
-  dialogVisible.value = false
-}
-
-const getCalendar = (params) => {
-  let id = localStorage.getItem('kcid')
-  getcalendar(id).then(res => {
-    console.log(res)
-  })
-
+  return true;
 };
-getCalendar()
 
+// 上传文件成功后的处理
+const handleUploadSuccess = (response, file) => {
+  // 对 URL 进行编码以避免中文或特殊字符问题
+  pdfUrl.value = encodeURI(response.url); // 假设服务器返回的 URL 位于 response.url
+  dialogVisible.value = false; // 关闭上传对话框
+};
+
+// 上传文件失败后的处理
+const handleUploadError = () => {
+  alert('上传失败');
+};
+
+// 提交上传操作
+const confirmUpload = () => {
+  if (attachmentIdList.value.length === 0) {
+    alert('请先选择文件上传');
+    return;
+  }
+
+  // 将附件信息保存到教学日历
+  resourcecalendar({
+    attachmentIdList: attachmentIdList.value,
+  })
+    .then((res) => {
+      console.log(res);
+      alert('文件信息保存成功');
+      dialogVisible.value = false; // 关闭对话框
+    })
+    .catch((error) => {
+      alert('文件信息保存失败，请稍后再试');
+      console.error(error);
+    });
+};
+
+// 处理上传文件超过限制
+const handleExceed = () => {
+  alert('一次只能上传一个文件');
+};
 </script>
 
 <style scoped>
-.actions-section {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-}
-
-.course-card {
-  width: 100%;
-  padding: 10px;
-}
-
-.course-info {
-  font-size: 14px;
-  color: gray;
-}
-
 .course-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: 10px;
 }
-
 .course-name {
   font-size: 16px;
   font-weight: bold;
+  margin-bottom: 10px;
 }
-
-/* 上传按钮区域，右对齐 */
-.upload-section-bottom {
+.upload-section {
   text-align: right;
-  margin-top: 20px;
+  width: 100%;
+  margin-bottom: 20px;
 }
-
+.pdf-preview-section {
+  width: 100%;
+  height: calc(100vh - 200px); /* 动态高度，确保占满页面空白区域 */
+  overflow: auto;
+  border: 1px solid #e0e0e0;
+}
 .dialog-permission-section {
   margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .upload-permission-section {
   display: flex;
   flex-direction: column;
-  /* 垂直排列 */
   align-items: flex-start;
-  /* 左对齐 */
   gap: 20px;
   margin-top: 20px;
 }
-
 .file-type-warning {
   margin-top: -5px;
   font-size: 12px;
   color: gray;
 }
-
 .dialog-footer {
   text-align: right;
 }

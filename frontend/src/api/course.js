@@ -44,13 +44,15 @@ export const deleteFile = (id, token) =>
     },
   });
 
-export const getppt = (id, token) =>
-  httpInstance.get('/courses/get-ppt?id=' + id, {
+// 确保在course.js中定义的getppt函数可以接收id参数并使用Authorization头
+export const getppt = (id) =>
+  httpInstance.get(`/courses/get-ppt?id=${id}`, {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: token,
+      Authorization: localStorage.getItem('token'),
     },
   });
+
 
 export const getexam = (id, token) =>
   httpInstance.get('/courses/get-exam', {
@@ -59,7 +61,7 @@ export const getexam = (id, token) =>
       Authorization: token,
     },
     params: {
-      id: id,
+      id
     },
   });
 export const getexercise = (id, token) =>
@@ -92,13 +94,43 @@ export const createattachmentfolder = (data) =>
 export const resourcesyllabus = (data) =>
   httpInstance.post('/courses/resource-syllabus', data);
 
+// /courses/resource-calendar
+export const resourcecalendar = (data) =>
+  httpInstance.post('/courses/resource-calendar', data);
+
 // /courses/get-syllabus
+// export const getsyllabus = (id) =>
+//   httpInstance.get('/courses/get-syllabus', {
+//     params: {
+//       id: id,
+//     },
+//   });
 export const getsyllabus = (id) =>
   httpInstance.get('/courses/get-syllabus', {
     params: {
       id: id,
     },
+    headers: {
+      Authorization: localStorage.getItem('token') // 设置请求头的 Authorization
+    }
   });
+
+  export const getAttachmentUrl = (attachmentId) =>
+    httpInstance.get(`/attachment/get?id=${attachmentId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: localStorage.getItem('token') // 设置请求头的 Authorization
+      },
+      data: { // 使用 params 传递 ID
+        id: attachmentId
+      },
+      body: { // 使用 params 传递 ID
+        id: attachmentId
+      },
+    });
+  
+
+
 // /courses/get-calendar
 export const getcalendar = (id) =>
   httpInstance.get('/courses/get-calendar', {
