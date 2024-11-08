@@ -52,8 +52,9 @@ const submitPost = () => {
   console.log('可见范围：', visibility.value);
   console.log('匿名1111：', isAnonymous.value);
   let obj = {
-    courseId: localStorage.getItem('courseId'),
-    authorId: localStorage.getItem('id'),
+
+    courseId: localStorage.getItem('kcid'),
+    userId: localStorage.getItem('id'),
     title: title.value,
     content: content.value,
     top: top.value ? 1 : 0,
