@@ -154,5 +154,31 @@ export const uploadCourseInfo = (file, token) =>
       Authorization: token,
     },
   });
+// 上传选课信息
+ export const uploadselection= (file, token) =>
+    httpInstance.post('/uploading/course-selection', file, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: token,
+      },
+    }); 
+
+  // 上传学生账号密码
+  export const uploadstudent= (file, token) =>
+    httpInstance.post('/uploading/users/student', file, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: token,
+      },
+    });
+  // 上传老师账号密码
+  export const uploadteacher = (file, token) =>
+    httpInstance.post('/uploading/users/teacher', file, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: token,
+      },
+    });
+
 
 
