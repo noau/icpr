@@ -56,7 +56,7 @@ const submitPost = () => {
     authorId: localStorage.getItem('id'),
     title: title.value,
     content: content.value,
-    top: top.value,
+    top: top.value ? 1 : 0,
     tag: tags.value,
     isAnonymous: isAnonymous.value ? 1 : 0
   }
