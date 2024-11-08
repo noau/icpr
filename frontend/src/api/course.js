@@ -124,3 +124,32 @@ export const uploadCourseInfo = (file, token) =>
   });
 
 
+
+  // 上传课程简介
+export const uploadteacher = (file, token) =>
+  httpInstance.post('/uploading/users/teacher', file, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      Authorization: token,
+    },
+  });
+
+  // 上传课程简介
+  export const uploadstudent= (file, token) =>
+    httpInstance.post('/uploading/users/student', file, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: token,
+      },
+    });
+  
+    export const uploadselection= (file, token) =>
+      httpInstance.post('/uploading/course-selection', file, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: token,
+        },
+      });
+
+
+

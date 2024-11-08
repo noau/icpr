@@ -1,9 +1,9 @@
 <template>
   <div class="student-info">
     <!-- 上传按钮和操作按钮的容器 -->
-    <div class="action-container">
+    <!-- <div class="action-container"> -->
       <!-- 文件上传 -->
-      <el-upload
+      <!-- <el-upload
         class="upload"
         accept=".csv, .xlsx, .xls"
         action=""
@@ -14,7 +14,7 @@
         ref="uploadRef"
       >
         <el-button type="primary" @click="handleUpload">上传文件</el-button>
-      </el-upload>
+      </el-upload> -->
       <!-- 操作按钮组 -->
       <!-- <div class="button-group">
         <el-button
@@ -42,7 +42,9 @@
           导出
         </el-button>
       </div> -->
-    </div>
+    <!-- </div> -->
+
+    <UploadFile :uploadPost="uploadstudent"></UploadFile>
 
     <!-- 预览表格 -->
     <!-- <div class="table-container">
@@ -111,7 +113,8 @@ import { ref } from 'vue';
 import { ElUpload, ElButton, ElTable, ElTableColumn, ElMessage } from 'element-plus';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import {uploadCourseInfo} from '@/api/course';
+import UploadFile from './UploadFile.vue';
+import {uploadstudent} from '@/api/course';
 
 const fileList = ref([]);
 const students = ref([]);
