@@ -19,6 +19,12 @@ export const useUserStore = defineStore(
             token.value = ''
         }
 
+        const type = ref({})
+        const setType = (newType) => {
+            type.value = newType
+        }
+        const getType = async ()=> type.value
+
         const user = ref({})
         const getUser = async () => {
             const res = await userGetInfoService()
@@ -27,7 +33,7 @@ export const useUserStore = defineStore(
         const setUser = (obj) => {
             user.value = obj
         }
-        return {token, id, setToken, removeToken, setId, getId, user, getUser, setUser}
+        return {token, id,type,setType,getType, setToken, removeToken, setId, getId, user, getUser, setUser}
     },
     {
         persist: true

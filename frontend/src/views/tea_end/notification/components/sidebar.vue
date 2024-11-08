@@ -14,14 +14,10 @@
         筛选条件
       </template>
       <el-menu-item index="3-1">
-        <el-icon><Bell /></el-icon>
-        作业通知
-      </el-menu-item>
-      <el-menu-item index="3-2">
         <el-icon><ChatDotRound /></el-icon>
         讨论区通知
       </el-menu-item>
-      <el-menu-item index="3-3">
+      <el-menu-item index="3-2">
         <el-icon><DataBoard /></el-icon>
         系统通知
       </el-menu-item>
@@ -39,9 +35,8 @@ export default {
       const menuMap = {
         '1': { route: '/tea-end/notification/list', filterStatus: 'all' },
         '2': { route: '/tea-end/notification/collection', filterStatus: 'starred' },
-        '3-1': { route: '/tea-end/notification/type/assignment', filterStatus: 'homework' },
-        '3-2': { route: '/tea-end/notification/type/comment', filterStatus: 'comment' },
-        '3-3': { route: '/tea-end/notification/type/system', filterStatus: 'system' }
+        '3-1': { route: '/tea-end/notification/type/comment', filterStatus: 'comment' },
+        '3-2': { route: '/tea-end/notification/type/system', filterStatus: 'system' }
       };
 
       const selectedMenu = menuMap[index];
