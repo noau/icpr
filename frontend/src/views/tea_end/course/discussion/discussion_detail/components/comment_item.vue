@@ -1,8 +1,8 @@
 <template>
   <div class="comment-item">
-    <el-avatar :src="comment.author.avatar" />
+    <el-avatar :src="comment.avatar" />
     <div class="comment-content">
-      <div class="comment-author">{{ comment.author.name }}</div>
+      <div class="comment-author">{{ comment.name }}</div>
       <div class="comment-text">{{ comment.content }}</div>
       <div class="comment-actions">
         <!-- 喜欢按钮 -->
