@@ -10,7 +10,7 @@
 <script>
 //引入VueOfficePdf组件
 import VueOfficePdf from '@vue-office/pdf'
-import { getcalendar } from '@/api/course'
+import { getcalendar } from '@/api/course.js'
 
 export default {
   components: {

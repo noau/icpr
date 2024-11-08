@@ -31,6 +31,50 @@ export const allstudents = (id, token) =>
     },
   });
 
+  // 获取教师详细信息
+  export const getTeacherInfo = (id, token) =>
+    httpInstance.get('/courses/get-teacher?id=' + id, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token,
+      },
+    });
+// export const getTeacherInfo = (id, token) =>
+//   httpInstance.get('/courses/get-teacher', {
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: token,
+//     },
+//     params: {
+//       id: id,
+//     },
+//   });
+
+  export const getppt = (id, token) =>
+    httpInstance.get('/courses/get-ppt?id=' + id, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token,
+      },
+    });  
+
+  export const getexam = (id, token) =>
+      httpInstance.get('/courses/get-exam?id=' + id, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+  });
+    
+  export const getexercise = (id, token) =>
+      httpInstance.get('/courses/get-exercise?id=' + id, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token,
+        },
+  });
+
+
 // /attachment/delete
 
 export const deleteFile = (id, token) =>
@@ -44,35 +88,7 @@ export const deleteFile = (id, token) =>
     },
   });
 
-export const getppt = (id, token) =>
-  httpInstance.get('/courses/get-ppt?id=' + id, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token,
-    },
-  });
-
-export const getexam = (id, token) =>
-  httpInstance.get('/courses/get-exam', {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token,
-    },
-    params: {
-      id: id,
-    },
-  });
-export const getexercise = (id, token) =>
-  httpInstance.get('/courses/get-exercise', {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token,
-    },
-    params: {
-      id: id,
-    },
-  });
-
+  
 //   /courses/resource-ppt
 export const resourceppt = (data) =>
   httpInstance.post('/courses/resource-ppt', data);

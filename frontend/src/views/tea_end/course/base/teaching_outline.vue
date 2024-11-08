@@ -76,6 +76,7 @@ const uploadRef = ref(null)
 const acceptedFileTypes = ".doc,.docx"  // 仅支持 .doc 和 .docx 格式
 const selectedPermission = ref('course')
 const dialogVisible = ref(false)
+
 const attachmentIdList = ref([])
 const headers = {
   Authorization: localStorage.getItem('token')

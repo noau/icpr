@@ -39,37 +39,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import {getexam} from '@/api/course'
+import { ref, computed, onMounted } from 'vue';
+import { getexam } from '@/api/course.js';
+import { ElMessage } from 'element-plus';
 
-const tableData = ref([
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  { name: '历年试题11.pdf', url: 'https://example.com/file1.pdf' },
-  { name: '历年试题12.pdf', url: 'https://example.com/file2.pdf' },
-  
-]);
-
+const tableData = ref([]);
 const pageSize = ref(8);
 const currentPage = ref(1);
 const searchQuery = ref('');
 const filteredData = ref([]);
 
-// Filtered and paginated data
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   return filteredData.value.slice(start, start + pageSize.value);
@@ -103,18 +82,28 @@ function handleSearch() {
   }
 }
 
-filteredData.value = tableData.value;
 function getexamList() {
-  let id=localStorage.getItem('kcid')
-  getexam(id).then(res => {
-    console.log(res.attachmentIdList);
-    
-  }).catch(err => {
-    console.log(err);
-  });
+  const id = localStorage.getItem('kcid');
+  const token = localStorage.getItem('token');
+  getexam(id, token)
+    .then(res => {
+      if (res && res.data) {
+        tableData.value = res.data.map(item => ({
+          name: item.name,
+          url: item.url,
+        }));
+        filteredData.value = tableData.value;
+      }
+    })
+    .catch(error => {
+      ElMessage.error('获取历年试卷列表失败，请检查网络或联系管理员');
+      console.error(error);
+    });
 }
 
-getexamList();
+onMounted(() => {
+  getexamList();
+});
 </script>
 
 <style scoped>

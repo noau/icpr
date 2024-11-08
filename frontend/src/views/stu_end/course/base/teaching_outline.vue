@@ -5,7 +5,7 @@
 <script>
 //引入VueOfficePdf组件
 import VueOfficePdf from '@vue-office/pdf'
-import { getsyllabus } from '@/api/course'
+import { getsyllabus } from '@/api/course.js'
 
 export default {
     components: {
