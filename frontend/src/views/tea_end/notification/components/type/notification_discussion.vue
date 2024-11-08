@@ -2,16 +2,6 @@
   <div>
     <!-- 状态选择与筛选 -->
     <div class="filter-bar">
-      <div class="status_select">
-        <button
-            :class="['status_btn', { active: filterStatus === 'all' }]"
-            @click="updateFilterStatus('all')"
-        >所有</button>
-        <button
-            :class="['status_btn', { active: filterStatus === 'unread' }]"
-            @click="updateFilterStatus('unread')"
-        >未读</button>
-      </div>
       <div class="search-bar">
         <el-input
             placeholder="搜索"
@@ -30,14 +20,14 @@
         </el-select>
       </div>
     </div>
-
     <!-- 通知列表显示 -->
     <el-table :data="filteredNotifications" style="width: 100%">
       <el-table-column prop="courseId" label="课程ID" width="300"/>
       <el-table-column prop="userName" label="发送者" width="150"/>
       <el-table-column prop="title" label="标题" width="300"/>
       <el-table-column prop="createdAt" label="时间" width="200"/>
-      <el-table-column prop="type" label="通知类型" width="150"/>
+
+      <!-- 收藏标识 -->
       <el-table-column label="收藏" width="100">
         <template #default="scope">
           <el-icon
@@ -52,6 +42,8 @@
           </el-icon>
         </template>
       </el-table-column>
+
+      <!-- 已读/未读标识 -->
       <el-table-column label="已读" width="100">
         <template #default="scope">
           <el-icon
@@ -67,6 +59,7 @@
           </el-icon>
         </template>
       </el-table-column>
+
       <el-table-column label="操作" width="200">
         <template #default="scope">
           <div style="display: flex; gap: 10px;">
@@ -97,7 +90,6 @@
       </div>
     </el-drawer>
 
-
     <!-- 分页 -->
     <el-pagination
         @size-change="handleSizeChange"
@@ -105,59 +97,46 @@
         :current-page="currentPage"
         :page-size="pageSize"
         layout="prev, pager, next"
-        :total="notificationsLength"
+        :total="notificationList.length"
         class="pagination"
     />
   </div>
 </template>
 
-
 <script lang="ts" setup>
 import {
   updateCollectionNotification,
-  notificationsGet,
-  updateReadNotification,
-  deleteSignalNotification
+  typeNotificationsByTypeGet,
+  deleteSignalNotification,
+  updateReadNotification
 } from '@/api/notification.js';
 import {useUserStore} from '@/stores/user.js';
-import {ref, computed} from 'vue';
+import {ref,computed} from 'vue';
 import {CircleCheck, CircleCheckFilled, Star, StarFilled} from "@element-plus/icons-vue";
 
 const userId = useUserStore()?.id;
+const notificationType = "讨论区通知";
+
 
 const notificationList = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(10);
-const notificationsLength = ref(0);
 
-const filterStatus = ref('all'); // 状态选择
-const localSearchText = ref(''); // 本地搜索文本
-const sortOption = ref('date'); // 排序选项
-
-const dialogVisible = ref(false);
-const selectedNotification = ref(null);
-
-const drawerClose = () =>{
-  dialogVisible.value = false;
-}
 const init = async () => {
   try {
-    let res = await notificationsGet({id: userId});
+    let res = await typeNotificationsByTypeGet({id: userId, type: notificationType});
+    console.log(res);
     notificationList.value = res.notifications;
-    notificationsLength.value = res.notifications.length;
   } catch (error) {
     console.error("获取通知列表时出错:", error);
   }
 };
-
 //筛选部分
+const localSearchText = ref(''); // 本地搜索文本
+const sortOption = ref('date'); // 排序选项
+
 const filteredNotifications = computed(() => {
   let notifications = notificationList.value;
-
-  // 根据筛选状态过滤通知
-  if (filterStatus.value === 'unread') {
-    notifications = notifications.filter(notification => !notification.isRead);
-  }
 
   // 使用正则表达式进行模糊搜索（不区分大小写，部分匹配）
   if (localSearchText.value) {
@@ -174,12 +153,6 @@ const filteredNotifications = computed(() => {
 
   return notifications;
 });
-
-// 更新筛选状态
-const updateFilterStatus = (status) => {
-  filterStatus.value = status;
-};
-
 // 提交搜索
 const submitSearch = () => {
   // 同步搜索文本到父组件
@@ -189,13 +162,27 @@ const submitSearch = () => {
 const updateSortOption = (value) => {
   sortOption.value = value;
 };
+// 详情页面
+const dialogVisible = ref(false);
+const selectedNotification = ref(null);
+
+const showDetails = (notification) => {
+  selectedNotification.value = notification;
+  dialogVisible.value = true;
+};
+const drawerClose = () =>{
+  dialogVisible.value = false;
+}
 
 // 切换收藏状态
 const toggleStar = async (notification) => {
   notification.isStar = !notification.isStar;
-  notification.isStar = notification.isStar ? 1 : 0;
+  notification.isStar = notification.isStar ? 1 : 0; // 转换为 1 和 0
   try {
     await updateCollectionNotification({...notification});
+    if (!notification.isStar) {
+      notificationList.value = notificationList.value.filter(n => n.id !== notification.id);
+    }
   } catch (error) {
     console.error("更新收藏状态时出错:", error);
   }
@@ -212,32 +199,29 @@ const toggleCompleted = async (notification) => {
   }
 };
 
-// 删除通知
+// 删除通知函数
 const deleteNotification = async (notificationId) => {
   try {
     await deleteSignalNotification(notificationId);
     notificationList.value = notificationList.value.filter(notification => notification.id !== notificationId);
-    notificationsLength.value -= 1;
   } catch (error) {
     console.error("删除通知时出错:", error);
   }
 };
 
-// 分页处理
+// 分页处理函数
 const handleSizeChange = (size) => {
   pageSize.value = size;
-  init(); // 重新加载通知列表
+  init();
 };
 
 const handleCurrentChange = (page) => {
   currentPage.value = page;
-  init(); // 重新加载通知列表
+  init();
 };
 
-const showDetails = (notification) => {
-  selectedNotification.value = notification;
-  console.log("连接抽屉")
-  dialogVisible.value = true;
+const handleClose = (done) => {
+  done();
 };
 
 init();
@@ -249,56 +233,39 @@ init();
   justify-content: space-between;
   margin-bottom: 10px;
 }
-
-.status_select {
-  display: flex;
-}
-
-.status_btn {
-  padding: 8px 20px;
-  cursor: pointer;
-  background-color: #f5f7fa;
-  color: #909399;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  border: none;
-}
-
-.status_btn:hover {
-  background-color: #e0e6ed;
-}
-
-.status_btn.active {
-  background-color: #07395f;
-  color: white;
-}
-
 .search-bar {
   display: flex;
   align-items: center;
   gap: 20px;
-  width: 80%;
-  .search-input{
-    width: 80%;
+  width: 100%;
+  .sort-select{
+    max-width: 200px;
   }
-  .sort-select {
-    width: 200px;
-  }
+}
+.notification-time {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+}
+
+.icons el-icon {
+  margin-right: 10px;
+}
+
+.el-icon.active {
+  color: #de8f0f !important;
 }
 
 .pagination {
   margin-top: 10px;
   text-align: center;
 }
-.el-icon.active {
-  color: #de8f0f !important;
-}
-.el-icon {
-  color: inherit; /* 继承父元素颜色，防止被覆盖 */
-}
 
-.el-icon[style*="color: green"] {
-  color: green !important; /* 确保已读状态的颜色为绿色 */
-}
 .details-button {
   background-color: #003366;
   color: white;
@@ -307,6 +274,14 @@ init();
 
 .details-button:hover {
   background-color: #002244;
+}
+
+.el-icon {
+  color: inherit; /* 继承父元素颜色，防止被覆盖 */
+}
+
+.el-icon[style*="color: green"] {
+  color: green !important; /* 确保已读状态的颜色为绿色 */
 }
 
 .drawer {
@@ -333,6 +308,4 @@ init();
 .notification-details p strong {
   color: #555;
 }
-
-
 </style>

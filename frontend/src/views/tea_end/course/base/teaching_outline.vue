@@ -69,6 +69,7 @@ const uploadRef = ref(null)
 const acceptedFileTypes = ".doc,.docx,.pdf,.jpg,.png" // 支持格式
 const selectedPermission = ref('course')
 const dialogVisible = ref(false)
+
 const attachmentIdList = ref([])
 const pdfUrl = ref(null) // 存储预览文件的 URL
 const headers = {

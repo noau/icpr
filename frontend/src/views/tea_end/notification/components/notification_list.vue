@@ -1,185 +1,338 @@
 <template>
-    <div>
- <!-- 通知列表显示 -->
- <el-table :data="paginatedNotifications" style="width: 100%">
-      <el-table-column prop="course" label="课程" width="180" />
-      <el-table-column prop="sender" label="发送者" width="180" />
-      <el-table-column prop="title" label="标题" width="200" />
+  <div>
+    <!-- 状态选择与筛选 -->
+    <div class="filter-bar">
+      <div class="status_select">
+        <button
+            :class="['status_btn', { active: filterStatus === 'all' }]"
+            @click="updateFilterStatus('all')"
+        >所有</button>
+        <button
+            :class="['status_btn', { active: filterStatus === 'unread' }]"
+            @click="updateFilterStatus('unread')"
+        >未读</button>
+      </div>
+      <div class="search-bar">
+        <el-input
+            placeholder="搜索"
+            v-model="localSearchText"
+            @keyup.enter="submitSearch"
+            class="search-input"
+        />
+        <el-select
+            :value="sortOption"
+            @change="updateSortOption"
+            placeholder="排序方式"
+            class="sort-select"
+        >
+          <el-option label="日期" value="date"></el-option>
+          <el-option label="标题" value="title"></el-option>
+        </el-select>
+      </div>
+    </div>
+
+    <!-- 通知列表显示 -->
+    <el-table :data="filteredNotifications" style="width: 100%">
+      <el-table-column prop="courseId" label="课程ID" width="300"/>
+      <el-table-column prop="userName" label="发送者" width="150"/>
+      <el-table-column prop="title" label="标题" width="300"/>
+      <el-table-column prop="createdAt" label="时间" width="200"/>
+      <el-table-column prop="type" label="通知类型" width="150"/>
       <el-table-column label="收藏" width="100">
         <template #default="scope">
-            <el-icon 
-            :class="{ 'active': scope.row.star }" 
-            @click="toggleStar(scope.row)">
-            <template v-if="scope.row.star">
-                <StarFilled />
+          <el-icon
+              :class="{ 'active': scope.row.isStar }"
+              @click="toggleStar(scope.row)">
+            <template v-if="scope.row.isStar">
+              <StarFilled/>
             </template>
             <template v-else>
-                <Star />
+              <Star/>
             </template>
-            </el-icon>
-        </template>
-        </el-table-column>
-      <el-table-column label="已完成" width="100">
-        <template #default="scope">
-          <el-icon 
-            :class="{ 'active': scope.row.completed }" 
-            @click="toggleCompleted(scope.row)">
-            <CircleCheck />
           </el-icon>
         </template>
       </el-table-column>
-      <el-table-column prop="time" label="时间" width="180" />
+      <el-table-column label="已读" width="100">
+        <template #default="scope">
+          <el-icon
+              :class="{ 'active': scope.row.isRead }"
+              :style="{ color: scope.row.isRead ? 'green' : 'inherit' }"
+              @click="toggleCompleted(scope.row)">
+            <template v-if="scope.row.isRead">
+              <CircleCheckFilled/>
+            </template>
+            <template v-else>
+              <CircleCheck/>
+            </template>
+          </el-icon>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="200">
+        <template #default="scope">
+          <div style="display: flex; gap: 10px;">
+            <el-button class="details-button" type="info" @click="showDetails(scope.row)">详情</el-button>
+            <el-button type="danger" @click="deleteNotification(scope.row.id)">删除</el-button>
+          </div>
+        </template>
+      </el-table-column>
     </el-table>
-  
-      <!-- 分页 -->
-      <el-pagination 
-        @size-change="handleSizeChange" 
+
+    <el-drawer
+        title="通知详情"
+        class="drawer"
+        v-model="dialogVisible"
+        direction="rtl"
+        size="30%"
+        :before-close="drawerClose"
+    >
+      <div v-if="selectedNotification" class="notification-details">
+        <h2 class="notification-title">{{ selectedNotification.title }}</h2>
+        <p><strong>发送人:</strong> {{ selectedNotification.userName }}</p>
+        <p><strong>时间:</strong> {{ new Date(selectedNotification.createdAt).toLocaleString() }}</p>
+        <p><strong>通知类型:</strong> {{ selectedNotification.type }}</p>
+        <p><strong>内容:</strong> {{ selectedNotification.content }}</p>
+      </div>
+      <div v-else>
+        <p>未选择任何通知。</p>
+      </div>
+    </el-drawer>
+
+
+    <!-- 分页 -->
+    <el-pagination
+        @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
         :page-size="pageSize"
         layout="prev, pager, next"
-        :total="totalNotifications"
+        :total="notificationsLength"
         class="pagination"
-      />
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    props: {
-    filterStatus: {
-      type: String,
-      required: true
-    },
-    searchText: {
-      type: String,
-      default: ''
-    },
-    sortOption: {
-      type: String,
-      default: 'date'
-    }
-  },
-    data() {
-      return {
-        currentPage: 1,  // 当前页码
-        pageSize: 10,    // 每页显示的记录数
-        notifications: [
-          { course: '操作系统', sender: '王建国', title: '期末考试安排', time: '2024-09-22 15:00', read: false, star: false, completed: false },
-          { course: '计算机网络', sender: '陈芳', title: '作业提交截止提醒', time: '2024-09-22 16:30', read: true, star: true, completed: true },
-          { course: '人工智能基础', sender: '赵伟', title: '实验报告提交通知', time: '2024-09-23 09:00', read: false, star: true, completed: false },
-          { course: '数据挖掘', sender: '刘小东', title: '课程内容更新', time: '2024-09-23 11:00', read: true, star: false, completed: true },
-          { course: '云计算与大数据', sender: '张翠兰', title: '课后练习发布', time: '2024-09-23 14:00', read: false, star: false, completed: false },
-          { course: '编译原理', sender: '赵强', title: '实验课注意事项', time: '2024-09-24 08:00', read: true, star: false, completed: true },
-          { course: '数据库系统概论', sender: '王晓梅', title: '课件更新提醒', time: '2024-09-24 10:30', read: false, star: true, completed: false },
-          { course: '软件工程', sender: '吴峰', title: '团队作业提交通知', time: '2024-09-24 13:00', read: true, star: true, completed: true },
-          { course: '计算机组成原理', sender: '孙悦', title: '期中考试复习范围', time: '2024-09-25 09:30', read: false, star: false, completed: false },
-          { course: '操作系统', sender: '李云', title: '项目报告说明', time: '2024-09-25 10:00', read: true, star: true, completed: true },
-          { course: '数据结构', sender: '陈丽', title: '第三次作业发布', time: '2024-09-25 11:30', read: false, star: false, completed: false },
-          { course: '面向对象程序设计', sender: '张明', title: '实验课材料准备', time: '2024-09-26 08:30', read: true, star: true, completed: true },
-          { course: '离散数学', sender: '周杰', title: '课程项目提交提醒', time: '2024-09-26 09:00', read: false, star: true, completed: false },
-          { course: '概率论与数理统计', sender: '宋华', title: '期末复习资料上传', time: '2024-09-26 10:30', read: true, star: false, completed: true },
-          { course: '信息安全', sender: '刘颖', title: '期末考试形式说明', time: '2024-09-27 08:00', read: false, star: false, completed: false },
-          { course: '高等数学', sender: '马亮', title: '补课通知', time: '2024-09-27 14:00', read: true, star: true, completed: true },
-          { course: '计算机图形学', sender: '王海', title: '实验课准备材料', time: '2024-09-28 09:00', read: false, star: true, completed: false },
-          { course: '机器学习', sender: '孙宏', title: '课程问卷调查', time: '2024-09-28 13:30', read: true, star: false, completed: true },
-          { course: '信息检索', sender: '杨军', title: '课后作业说明', time: '2024-09-28 16:00', read: false, star: false, completed: false },
-          { course: '人机交互', sender: '陈超', title: '项目演示安排', time: '2024-09-29 10:00', read: true, star: true, completed: true },
-        ]
-      };
-    },
-    computed: {
-
-    filteredNotifications() {
-      let notifications = this.notifications;
-
-      console.log('Current filterStatus:', this.filterStatus);
-      console.log('Notifications before filtering:', notifications);
+    />
+  </div>
+</template>
 
 
-      // 筛选已读、未读、收藏或已完成
-    if (this.filterStatus === 'unread') {
-      notifications = notifications.filter(notification => !notification.read);
-    } else if (this.filterStatus === 'starred') {
-      notifications = notifications.filter(notification => notification.star);
-    } else if (this.filterStatus === 'completed') {
-      notifications = notifications.filter(notification => notification.completed);
-    }else if (this.filterStatus === 'all') {
-      // 显示所有通知，实际上可以不做任何处理
-    }
+<script lang="ts" setup>
+import {
+  updateCollectionNotification,
+  notificationsGet,
+  updateReadNotification,
+  deleteSignalNotification
+} from '@/api/notification.js';
+import {useUserStore} from '@/stores/user.js';
+import {ref, computed} from 'vue';
+import {CircleCheck, CircleCheckFilled, Star, StarFilled} from "@element-plus/icons-vue";
 
-       // 模糊搜索
-       if (this.searchText) {
-        notifications = notifications.filter(notification => 
-          notification.title.includes(this.searchText) || 
-          notification.course.includes(this.searchText)
-        );
-      }
+const userId = useUserStore()?.id;
 
-      // 根据选定的排序选项排序
-      if (this.sortOption === 'date') {
-        notifications.sort((a, b) => new Date(b.time) - new Date(a.time));
-      } else if (this.sortOption === 'title') {
-        notifications.sort((a, b) => a.title.localeCompare(b.title));
-      }
+const notificationList = ref([]);
+const currentPage = ref(1);
+const pageSize = ref(10);
+const notificationsLength = ref(0);
 
-      return notifications;
-    },
-    paginatedNotifications() {
-      const start = (this.currentPage - 1) * this.pageSize;
-      return this.filteredNotifications.slice(start, start + this.pageSize);
-    },
-    totalNotifications() {
-      return this.filteredNotifications.length; // 返回筛选后的总数
-    }
-      
-    },
-    methods: {
-      toggleStar(notification) {
-        console.log('Star toggled for:', notification);
-        notification.star = !notification.star;
-    },
-      toggleCompleted(notification) {
-        console.log('Completed toggled for:', notification);
-        notification.completed = !notification.completed;
-    },
-      handleSizeChange(size) {
-        this.pageSize = size;
-      },
-      handleCurrentChange(page) {
-        this.currentPage = page;
-      }
-    }
-  };
-  </script>
-  
- <style scoped>
-.notification-time {
+const filterStatus = ref('all'); // 状态选择
+const localSearchText = ref(''); // 本地搜索文本
+const sortOption = ref('date'); // 排序选项
+
+const dialogVisible = ref(false);
+const selectedNotification = ref(null);
+
+const drawerClose = () =>{
+  dialogVisible.value = false;
+}
+const init = async () => {
+  try {
+    let res = await notificationsGet({id: userId});
+    notificationList.value = res.notifications;
+    notificationsLength.value = res.notifications.length;
+  } catch (error) {
+    console.error("获取通知列表时出错:", error);
+  }
+};
+
+//筛选部分
+const filteredNotifications = computed(() => {
+  let notifications = notificationList.value;
+
+  // 根据筛选状态过滤通知
+  if (filterStatus.value === 'unread') {
+    notifications = notifications.filter(notification => !notification.isRead);
+  }
+
+  // 使用正则表达式进行模糊搜索（不区分大小写，部分匹配）
+  if (localSearchText.value) {
+    const searchRegex = new RegExp(localSearchText.value, 'i');
+    notifications = notifications.filter(notification => searchRegex.test(notification.title));
+  }
+
+  // 根据排序选项排序通知
+  if (sortOption.value === 'date') {
+    notifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  } else if (sortOption.value === 'title') {
+    notifications.sort((a, b) => a.title.localeCompare(b.title));
+  }
+
+  return notifications;
+});
+
+// 更新筛选状态
+const updateFilterStatus = (status) => {
+  filterStatus.value = status;
+};
+
+// 提交搜索
+const submitSearch = () => {
+  // 同步搜索文本到父组件
+};
+
+// 更新排序选项
+const updateSortOption = (value) => {
+  sortOption.value = value;
+};
+
+// 切换收藏状态
+const toggleStar = async (notification) => {
+  notification.isStar = !notification.isStar;
+  notification.isStar = notification.isStar ? 1 : 0;
+  try {
+    await updateCollectionNotification({...notification});
+  } catch (error) {
+    console.error("更新收藏状态时出错:", error);
+  }
+};
+
+// 切换已读状态
+const toggleCompleted = async (notification) => {
+  notification.isRead = !notification.isRead;
+  notification.isRead = notification.isRead ? 1 : 0;
+  try {
+    await updateReadNotification({...notification});
+  } catch (error) {
+    console.error("更新已读状态时出错:", error);
+  }
+};
+
+// 删除通知
+const deleteNotification = async (notificationId) => {
+  try {
+    await deleteSignalNotification(notificationId);
+    notificationList.value = notificationList.value.filter(notification => notification.id !== notificationId);
+    notificationsLength.value -= 1;
+  } catch (error) {
+    console.error("删除通知时出错:", error);
+  }
+};
+
+// 分页处理
+const handleSizeChange = (size) => {
+  pageSize.value = size;
+  init(); // 重新加载通知列表
+};
+
+const handleCurrentChange = (page) => {
+  currentPage.value = page;
+  init(); // 重新加载通知列表
+};
+
+const showDetails = (notification) => {
+  selectedNotification.value = notification;
+  console.log("连接抽屉")
+  dialogVisible.value = true;
+};
+
+init();
+</script>
+
+<style scoped>
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.status_select {
+  display: flex;
+}
+
+.status_btn {
+  padding: 8px 20px;
+  cursor: pointer;
+  background-color: #f5f7fa;
+  color: #909399;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border: none;
+}
+
+.status_btn:hover {
+  background-color: #e0e6ed;
+}
+
+.status_btn.active {
+  background-color: #07395f;
+  color: white;
+}
+
+.search-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-}
-
-.icons {
-  display: flex;
-  align-items: center;
-}
-
-.icons el-icon {
-  margin-right: 10px; /* 图标之间的间距 */
-}
-
-
-.el-icon.active {
-  color:#de8f0f!important;
-}
-
-.el-icon.active i.el-icon-check-circle-outline {
-  color: green; /* 圆圈完成状态的颜色 */
+  gap: 20px;
+  width: 80%;
+  .search-input{
+    width: 80%;
+  }
+  .sort-select {
+    width: 200px;
+  }
 }
 
 .pagination {
   margin-top: 10px;
   text-align: center;
-} 
+}
+.el-icon.active {
+  color: #de8f0f !important;
+}
+.el-icon {
+  color: inherit; /* 继承父元素颜色，防止被覆盖 */
+}
+
+.el-icon[style*="color: green"] {
+  color: green !important; /* 确保已读状态的颜色为绿色 */
+}
+.details-button {
+  background-color: #003366;
+  color: white;
+  border-color: #003366;
+}
+
+.details-button:hover {
+  background-color: #002244;
+}
+
+.drawer {
+  z-index: 2000 !important;
+}
+.notification-details {
+  padding: 20px;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.notification-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 15px;
+}
+
+.notification-details p {
+  margin: 10px 0;
+}
+
+.notification-details p strong {
+  color: #555;
+}
+
+
 </style>

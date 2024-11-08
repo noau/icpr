@@ -49,7 +49,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push('/tea-end/'); // 返回首页
+      this.$router.push('/tea-end'); // 返回首页
     },
     goToNotifications() {
       this.$router.push('/notification'); // 跳转到通知页面

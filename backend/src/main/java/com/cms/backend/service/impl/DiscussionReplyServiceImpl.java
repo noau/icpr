@@ -16,7 +16,7 @@ public class DiscussionReplyServiceImpl extends ServiceImpl<DiscussionReplyMappe
     }
 
     @Override
-    public void createReply(Integer replyId, Integer userId, String content, String createdAt) {
-        discussionReplyMapper.createReply(replyId, userId, content, createdAt);
+    public void createReply(Integer replyId, Integer userId, String content, String createdAt, Integer repliedId) {
+        discussionReplyMapper.createReply(replyId, userId, content, createdAt, repliedId);
     }
 }

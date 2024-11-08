@@ -1,7 +1,7 @@
 <template>
     <div class="post-detail-page">
       <!-- 帖子头部 -->
-      <PostHeader :post="post" />
+      <PostHeader :post="post" v-if="post" />
   
       <!-- 帖子内容 -->
       <PostContent :content="post.content" />
@@ -33,16 +33,16 @@
   // 模拟帖子数据，可以通过 API 获取
   const post = ref({
     id: postId,
-    title: '帖子标题',
-    author: {
-      name: '帖主姓名',
-      avatar: 'https://via.placeholder.com/50',
-    },
-    content: '这是帖子的完整内容...',
-    likes: 10,
-    favorites: 5,
-    liked: false,
-    favorited: false,
+    // title: '帖子标题',
+    // author: {
+    //   name: '帖主姓名',
+    //   avatar: 'https://via.placeholder.com/50',
+    // },
+    // content: '这是帖子的完整内容...',
+    // likes: 10,
+    // favorites: 5,
+    // liked: false,
+    // favorited: false,
   });
   
   // 模拟评论数据，可以通过 API 获取
@@ -69,8 +69,8 @@
     comments.value.push({
       id: Date.now(),
       author: {
-        name: '当前用户',
-        avatar: 'https://via.placeholder.com/50',
+        name: comments.name,
+        avatar: comments.avatar || 'https://via.placeholder.com/50',
       },
       content: content,
       likes: 0,
@@ -97,6 +97,7 @@
       likes: 0,
       liked: false,
     });
+
   };
   </script>
   

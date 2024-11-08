@@ -22,28 +22,43 @@ const router = createRouter({
       path: '/forgot-password/phone',
       component: () => import('@/views/forgot_password/phone.vue')
     },
-    {
-      path: '/stu-end/notification',
-      component: () => import('@/views/stu_end/notification/index.vue')
-    },
     // 学生端路由
     {
       path: '/stu-end',
       component: () => import('@/views/stu_end/layout/index.vue'),
     },
-    // {
-    //   path: '/stu-end/login',
-    //   component: () => import('@/views/stu_end/login/index.vue')
-    // },
-
+      // 通知信箱
     {
       path: '/stu-end/notification',
-      component: () => import('@/views/stu_end/notification/index.vue')
+      component: () => import('@/views/stu_end/notification/index.vue'),
+      children:[
+        {
+          path: '', // 重定向
+          redirect: '/stu-end/notification/list' // 重定向到 list
+        },
+        {
+          path: '/stu-end/notification/list',
+          component: () => import('@/views/stu_end/notification/components/notification_list.vue')
+        },
+        {
+          path: '/stu-end/notification/collection',
+          component: () => import('@/views/stu_end/notification/components/notification_collection.vue')
+        },
+        {
+          path: '/stu-end/notification/type/assignment',
+          component:()=>import('@/views/stu_end/notification/components/type/notification_assignment.vue')
+        },
+        {
+          path: '/stu-end/notification/type/comment',
+          component:()=>import('@/views/stu_end/notification/components/type/notification_discussion.vue')
+        },
+        {
+          path: '/stu-end/notification/type/system',
+          component:()=>import('@/views/stu_end/notification/components/type/notification_system.vue')
+        }
+      ]
     },
-    {
-      path: '/notification',
-      component: () => import('@/views/stu_end/notification/index.vue')
-    },
+      //个人界面
     {
       path: '/profile',
       component: () => import('@/views/stu_end/profile/index.vue')
@@ -139,13 +154,32 @@ const router = createRouter({
       path: '/tea-end',
       component: () => import('@/views/tea_end/layout/index.vue'),
     },
-    // {
-    //   path: '/tea-end/login',
-    //   component: () => import('@/views/tea_end/login/index.vue')
-    // },
+// 通知信箱
     {
       path: '/tea-end/notification',
-      component: () => import('@/views/tea_end/notification/index.vue')
+      component: () => import('@/views/tea_end/notification/index.vue'),
+      children:[
+        {
+          path: '', // 重定向
+          redirect: '/tea-end/notification/list' // 重定向到 list
+        },
+        {
+          path: '/tea-end/notification/list',
+          component: () => import('@/views/tea_end/notification/components/notification_list.vue')
+        },
+        {
+          path: '/tea-end/notification/collection',
+          component: () => import('@/views/tea_end/notification/components/notification_collection.vue')
+        },
+        {
+          path: '/tea-end/notification/type/comment',
+          component:()=>import('@/views/tea_end/notification/components/type/notification_discussion.vue')
+        },
+        {
+          path: '/tea-end/notification/type/system',
+          component:()=>import('@/views/tea_end/notification/components/type/notification_system.vue')
+        }
+      ]
     },
     {
       path: '/tea-end/course', // 课程主页面，默认展示课程介绍

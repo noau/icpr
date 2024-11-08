@@ -11,9 +11,18 @@ public class FollowDTO {
 
     private String followingName;
 
-    public FollowDTO(Integer followingId, String followingName) {
+    private String userClass;
+
+    private String academy;
+
+    private String avatar;
+
+    public FollowDTO(Integer followingId, String followingName, String userClass, String academy, String avatar) {
         this.followingId = followingId;
         this.followingName = followingName;
+        this.userClass = userClass;
+        this.academy = academy;
+        this.avatar = avatar;
     }
 
 }

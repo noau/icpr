@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface DiscussionReplyMapper extends BaseMapper<DiscussionReply> {
 
-    @Insert("insert into discussion_reply (reply_id, user_id, content, created_at) values (#{replyId}, #{userId}, #{content}, #{createdAt})")
-    void createReply(Integer replyId, Integer userId, String content, String createdAt);
+    @Insert("insert into discussion_reply (reply_id, user_id, content, created_at, replied_id) values (#{replyId}, #{userId}, #{content}, #{createdAt}, #{repliedId})")
+    void createReply(Integer replyId, Integer userId, String content, String createdAt, Integer repliedId);
 
 }

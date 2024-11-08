@@ -1,18 +1,18 @@
 <template>
   <div class="posts-list">
-    <el-card v-for="post in posts" :key="post.id" class="post-card">
-      <h3>{{ post.title }}</h3>
+    <el-card v-for="post in posts" :key="post.id" class="post-card" @click="goToPost(post)" >
+      <h3 class="post-title">{{ post.title }}</h3>
       <div v-html="post.content"></div>
       <div class="post-actions">
 
-        <Like :theme="post.liked ? 'filled' : 'outline'" size="15" fill="#333" @click="toggleLike(post)"/>
+        <Like :theme="post.liked ? 'filled' : 'outline'" size="15" fill="#333" @click.stop="toggleLike(post)"/>
         <span>{{ post.likes }}</span>
 
-        <el-icon :size="15" @click="toggleFavorite(post)">
+        <el-icon :size="15" @click.stop="toggleFavorite(post)">
           <CollectionTag :theme="post.favorited ? 'filled' : 'outline'"/>
         </el-icon>
         <span>{{ post.favorites }}</span>
-        <el-icon :size="15" @click="goToPost(post)">
+        <el-icon :size="15">
           <ChatDotRound/>
         </el-icon>
         评论
@@ -21,7 +21,7 @@
 
     <el-drawer title="选择收藏夹" v-model="drawer">
       <div v-for="item in collectList" class="blocktag" style="margin-top: 10px;">
-        <el-button @click="collect(item)" type="warning">{{ item.name }}</el-button>
+        <el-button @click.stop="collect(item)" type="warning">{{ item.name }}</el-button>
       </div>
     </el-drawer>
   </div>
@@ -132,6 +132,12 @@ const goToPost = post => {
   position: relative;
   margin-bottom: 20px;
   padding-bottom: 40px;
+  cursor: pointer;
+}
+.post-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 .post-actions {

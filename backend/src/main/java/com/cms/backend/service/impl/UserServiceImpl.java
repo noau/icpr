@@ -1,9 +1,9 @@
 package com.cms.backend.service.impl;
 
+import com.cms.backend.controller.UserController;
 import com.cms.backend.mapper.UserMapper;
 import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
-import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.UserService;
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Favorite> getUserFavorites(Integer id) {
+    public List<UserController.FavoriteGet> getUserFavorites(Integer id) {
         return userMapper.getUserFavorites(id);
     }
 
@@ -158,6 +158,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public void addUserTeacher(Integer id, String address, String title, String brief) {
         userMapper.addUserTeacher(id, address, title, brief);
+    }
+
+    @Override
+    public void addThreadNumber(Integer id) {
+        userMapper.addThreadNumber(id);
+    }
+
+    @Override
+    public void deleteThreadNumber(Integer id) {
+        userMapper.deleteThreadNumber(id);
     }
 
 }

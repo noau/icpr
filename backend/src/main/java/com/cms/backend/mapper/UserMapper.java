@@ -1,8 +1,8 @@
 package com.cms.backend.mapper;
 
+import com.cms.backend.controller.UserController;
 import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
-import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
 import com.cms.backend.pojo.User;
 import org.apache.ibatis.annotations.*;
@@ -26,9 +26,10 @@ public interface UserMapper {
     @Results({
             @Result(property = "subscriptionId", column = "subscription_id"),
             @Result(property = "followingId", column = "following_id"),
-            @Result(property = "followingName", column = "following_name")
+            @Result(property = "followingName", column = "following_name"),
+            @Result(property = "userClass", column = "class")
     })
-    @Select("select following_id, following_name from follow where subscription_id = #{id}")
+    @Select("select following_id, following_name, u.class, u.academy, u.avatar from follow join icpr.user u on u.id = follow.following_id where subscription_id = #{id}")
     List<FollowDTO> getUserFollowers(Integer id);
 
     @Update("update user set password = #{newPassword} where id = #{id}")
@@ -37,9 +38,10 @@ public interface UserMapper {
     @Results({
             @Result(property = "subscriptionId", column = "subscription_id"),
             @Result(property = "subscriptionName", column = "subscription_name"),
-            @Result(property = "followingId", column = "following_id")
+            @Result(property = "followingId", column = "following_id"),
+            @Result(property = "userClass", column = "class")
     })
-    @Select("select subscription_id, subscription_name from follow where following_id = #{id}")
+    @Select("select subscription_id, subscription_name, u.class, u.academy, u.avatar from follow join icpr.user u on u.id = follow.subscription_id where following_id = #{id}")
     List<SubscriptionDTO> getUserSubscriptions(Integer id);
 
     @Results({
@@ -57,8 +59,8 @@ public interface UserMapper {
             @Result(property = "folderId", column = "folder_id"),
             @Result(property = "createdAt", column = "created_at")
     })
-    @Select("select * from favorite where folder_id = #{id}")
-    List<Favorite> getUserFavorites(Integer id);
+    @Select("select *, dt.title from favorite join icpr.discussion_thread dt on dt.id = favorite.thread_id where folder_id = #{id}")
+    List<UserController.FavoriteGet> getUserFavorites(Integer id);
 
     @Results({
             @Result(property = "phoneNumber", column = "phone_number"),
@@ -188,5 +190,11 @@ public interface UserMapper {
 
     @Insert("insert into teacher_info values (#{id}, #{address}, #{title}, #{brief})")
     void addUserTeacher(Integer id, String address, String title, String brief);
+
+    @Update("update user set thread_number = thread_number + 1 where id = #{id}")
+    void addThreadNumber(Integer id);
+
+    @Update("update user set thread_number = thread_number - 1 where id = #{id}")
+    void deleteThreadNumber(Integer id);
 
 }
