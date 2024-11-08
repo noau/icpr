@@ -32,8 +32,7 @@ public class AttachmentController {
     }
 
     @GetMapping(value = "/get")
-    public ResponseEntity<AttachmentDTO> getAttachment(@RequestBody Attachment attachment) {
-        var id = attachment.getId();
+    public ResponseEntity<AttachmentDTO> getAttachment(@RequestParam Integer id) {
         var getAttachment = attachmentService.getById(id);
         return ResponseEntity.ok(new AttachmentDTO(getAttachment.getName(), getAttachment.getUrl(), getAttachment.getAllowDownload(), getAttachment.getAttachmentFolderId()));
     }
