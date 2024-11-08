@@ -43,7 +43,7 @@ public class DiscussionController {
     @PostMapping(value = "/replies")
     public ResponseEntity<String> createReply(@RequestBody DiscussionReply discussionReply) {
         if (discussionReply.getThreadId() == 0) {
-            discussionReplyService.createReply(discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getCreatedAt());
+            discussionReplyService.createReply(discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getCreatedAt(), discussionReply.getRepliedId());
         } else {
             discussionReplyService.save(discussionReply);
         }
@@ -66,11 +66,11 @@ public class DiscussionController {
         List<DiscussionReply> replyLists = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId, id));
         List<DiscussionReplyDTO> replyList = new ArrayList<>();
         for (DiscussionReply discussionReply : replyLists) {
-            DiscussionReplyDTO discussionReplyDTO = new DiscussionReplyDTO(discussionReply.getId(), discussionReply.getThreadId(), discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getLikes(), discussionReply.getCreatedAt(), userService.findByUserName(discussionReply.getUserId()).getName(), userService.findByUserName(discussionReply.getUserId()).getAvatar());
+            DiscussionReplyDTO discussionReplyDTO = new DiscussionReplyDTO(discussionReply.getId(), discussionReply.getThreadId(), discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getLikes(), discussionReply.getCreatedAt(), discussionReply.getRepliedId(), userService.findByUserName(discussionReply.getUserId()).getName(), userService.findByUserName(discussionReply.getUserId()).getAvatar());
             replyList.add(discussionReplyDTO);
             List<DiscussionReply> replyReplies = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getReplyId, discussionReply.getId()));
             for (DiscussionReply discussionReplyReply : replyReplies) {
-                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(), discussionReplyReply.getThreadId(), discussionReplyReply.getReplyId(), discussionReplyReply.getUserId(), discussionReplyReply.getContent(), discussionReplyReply.getLikes(), discussionReplyReply.getCreatedAt(), userService.findByUserName(discussionReplyReply.getUserId()).getName(), userService.findByUserName(discussionReplyReply.getUserId()).getAvatar());
+                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(), discussionReplyReply.getThreadId(), discussionReplyReply.getReplyId(), discussionReplyReply.getUserId(), discussionReplyReply.getContent(), discussionReplyReply.getLikes(), discussionReplyReply.getCreatedAt(), discussionReplyReply.getRepliedId(),userService.findByUserName(discussionReplyReply.getUserId()).getName(), userService.findByUserName(discussionReplyReply.getUserId()).getAvatar());
                 replyList.add(discussionReplyDTODTO);
             }
 
@@ -164,6 +164,8 @@ public class DiscussionController {
         private Integer likes;
 
         private String createdAt;
+
+        private Integer repliedId;
 
         private String name;
 
