@@ -1,9 +1,11 @@
 <template>
   <div class="teacher-info">
     <!-- 上传按钮和操作按钮的容器 -->
+    <UploadFile :uploadPost="uploadteacher"></UploadFile>
+
     <div class="action-container">
       <!-- 文件上传 -->
-      <el-upload
+      <!-- <el-upload
         class="upload"
         action=""
         :before-upload="beforeUpload"
@@ -13,10 +15,10 @@
         :show-file-list="false"
       >
         <el-button type="primary">打开文件</el-button>
-      </el-upload>
+      </el-upload> -->
 
       <!-- 操作按钮组 -->
-      <div class="button-group">
+      <!-- <div class="button-group">
         <el-button
           class="action-button"
           type="primary"
@@ -41,7 +43,7 @@
         >
           导出
         </el-button>
-      </div>
+      </div> -->
     </div>
 
     <!-- 预览表格 -->
@@ -107,10 +109,12 @@
 </template>
 
 <script setup>
+import UploadFile from './UploadFile.vue';
 import { ref } from 'vue';
 import { ElUpload, ElButton, ElTable, ElTableColumn, ElMessage } from 'element-plus';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import {uploadteacher} from '@/api/course';
 
 const fileList = ref([]);
 const teachers = ref([]);

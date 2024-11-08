@@ -1,7 +1,8 @@
 <template>
     <div class="student-info">
+      <UploadFile :uploadPost="uploadselection"></UploadFile>
       <!-- 文件上传 -->
-      <el-upload
+      <!-- <el-upload
         class="upload"
         action=""
         :before-upload="beforeUpload"
@@ -10,10 +11,10 @@
         :auto-upload="false"
       >
         <el-button type="primary">上传文件</el-button>
-      </el-upload>
+      </el-upload> -->
   
       <!-- 按钮组 -->
-      <div class="button-group">
+      <!-- <div class="button-group">
         <el-button type="success" :disabled="!students.length" @click="generateAccounts">
           账号生成
         </el-button>
@@ -22,8 +23,8 @@
         </el-button>
         <el-button type="warning" :disabled="!accountsGenerated" @click="exportExcel">
           导出
-        </el-button>
-      </div>
+        </el-button> -->
+      <!-- </div> -->
   
       <!-- 预览表格 -->
       <el-table :data="students" v-if="students.length" style="margin-top: 20px">
@@ -46,6 +47,8 @@
   import * as XLSX from 'xlsx';
   import { saveAs } from 'file-saver';
   import { ElMessage } from 'element-plus';
+  import {uploadselection} from '@/api/course';
+  import UploadFile from './UploadFile.vue';
   
   const fileList = ref([]);
   const students = ref([]);

@@ -1,9 +1,10 @@
 <template>
   <div class="course-info">
     <!-- 上传按钮和操作按钮的容器 -->
+    <UploadFile :uploadPost="uploadCourseInfo"></UploadFile>
     <div class="action-container">
       <!-- 文件上传 -->
-      <el-upload
+      <!-- <el-upload
         class="upload"
         action=""
         :before-upload="beforeUpload"
@@ -13,10 +14,10 @@
         :show-file-list="false"
       >
         <el-button type="primary">打开文件</el-button>
-      </el-upload>
+      </el-upload> -->
 
       <!-- 操作按钮组 -->
-      <div class="button-group">
+      <!-- <div class="button-group">
         <el-button
           class="action-button"
           type="primary"
@@ -25,7 +26,7 @@
         >
           确认上传
         </el-button>
-      </div>
+      </div> -->
     </div>
 
     <!-- 预览表格 -->
@@ -36,7 +37,7 @@
         border
         stripe
         size="medium"
-        style="width: 100%;"
+        style="width: 100%"
         class="custom-table"
       >
         <el-table-column
@@ -94,9 +95,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { ElUpload, ElButton, ElTable, ElTableColumn, ElMessage } from 'element-plus';
-import * as XLSX from 'xlsx';
+import { ref } from "vue";
+import {
+  ElUpload,
+  ElButton,
+  ElTable,
+  ElTableColumn,
+  ElMessage,
+} from "element-plus";
+import * as XLSX from "xlsx";
+import { Up } from "@icon-park/vue-next";
+import { uploadCourseInfo } from "@/api/course";
+import UploadFile from "./UploadFile.vue";
 
 const fileList = ref([]);
 const courses = ref([]);
@@ -112,44 +122,52 @@ const handleFileChange = (file, fileList) => {
   reader.onload = (e) => {
     try {
       const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
+      const workbook = XLSX.read(data, { type: "array" });
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
       courses.value = jsonData
         .map((item) => {
-          if (!item['课程名称'] || !item['课程号'] || !item['所属学期'] || !item['上课周次'] || !item['上课时间'] || !item['上课地点'] || !item['任课教师']) {
-            console.warn('跳过不完整的数据:', item);
+          if (
+            !item["课程名称"] ||
+            !item["课程号"] ||
+            !item["所属学期"] ||
+            !item["上课周次"] ||
+            !item["上课时间"] ||
+            !item["上课地点"] ||
+            !item["任课教师"]
+          ) {
+            console.warn("跳过不完整的数据:", item);
             return null;
           }
           return {
-            courseName: item['课程名称'],
-            courseNumber: item['课程号'],
-            semester: item['所属学期'],
-            classWeek: item['上课周次'],
-            classTime: item['上课时间'],
-            location: item['上课地点'],
-            teacher: item['任课教师'],
+            courseName: item["课程名称"],
+            courseNumber: item["课程号"],
+            semester: item["所属学期"],
+            classWeek: item["上课周次"],
+            classTime: item["上课时间"],
+            location: item["上课地点"],
+            teacher: item["任课教师"],
           };
         })
         .filter((item) => item !== null);
 
-      ElMessage.success('文件读取成功');
+      ElMessage.success("文件读取成功");
     } catch (error) {
-      console.error('文件解析错误', error);
-      ElMessage.error('文件解析失败，请检查文件格式是否正确。');
+      console.error("文件解析错误", error);
+      ElMessage.error("文件解析失败，请检查文件格式是否正确。");
     }
   };
   reader.onerror = (e) => {
-    ElMessage.error('文件读取失败，请重试。');
+    ElMessage.error("文件读取失败，请重试。");
   };
   reader.readAsArrayBuffer(file.raw);
 };
 
 // 确认上传
 const confirmUpload = () => {
-  ElMessage.success('课程信息已确认上传');
+  ElMessage.success("课程信息已确认上传");
 };
 </script>
 
@@ -186,7 +204,8 @@ const confirmUpload = () => {
   border-radius: 5px;
 }
 
-.el-table th, .el-table td {
+.el-table th,
+.el-table td {
   text-align: left;
   vertical-align: left;
   padding: 12px;
