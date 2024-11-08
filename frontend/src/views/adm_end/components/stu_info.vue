@@ -5,18 +5,18 @@
       <!-- 文件上传 -->
       <el-upload
         class="upload"
+        accept=".csv, .xlsx, .xls"
         action=""
         :before-upload="beforeUpload"
-        :on-change="handleFileChange"
+        :http-request="uploadFile"
         :file-list="fileList"
-        :auto-upload="false"
-        :show-file-list="false"
+        :show-file-list="true"
+        ref="uploadRef"
       >
-        <el-button type="primary" >打开文件</el-button>
+        <el-button type="primary" @click="handleUpload">上传文件</el-button>
       </el-upload>
-
       <!-- 操作按钮组 -->
-      <div class="button-group">
+      <!-- <div class="button-group">
         <el-button
           class="action-button"
           type="primary"
@@ -41,11 +41,11 @@
         >
           导出
         </el-button>
-      </div>
+      </div> -->
     </div>
 
     <!-- 预览表格 -->
-    <div class="table-container">
+    <!-- <div class="table-container">
       <el-table
         :data="students"
         v-if="students.length"
@@ -102,7 +102,7 @@
           header-align="center"
         />
       </el-table>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -111,14 +111,41 @@ import { ref } from 'vue';
 import { ElUpload, ElButton, ElTable, ElTableColumn, ElMessage } from 'element-plus';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import {uploadCourseInfo} from '@/api/course';
 
 const fileList = ref([]);
 const students = ref([]);
+const uploadRef = ref(null);
 const accountsGenerated = ref(false);
 
 // 拦截上传，防止自动上传到服务器
 const beforeUpload = (file) => {
-  return false;
+  if (file.type !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+    ElMessage.error('请上传Excel文件');
+    return false;
+  }
+  return true;
+};
+
+const handleUpload = () => {
+  console.log(123, '123123');
+  
+  if (uploadRef.value) {
+    uploadRef.value.submit();
+  }
+};
+
+const uploadFile = async (options) => {
+  const { file, onSuccess, onError } = options;
+  
+  // 模拟上传逻辑（替换为你的实际上传逻辑）
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  // 使用 fetch 或 axios 发送请求
+ const data = await uploadCourseInfo(formData)
+ console.log(data, 'ddddddd');
+ 
 };
 
 // 处理文件变化
