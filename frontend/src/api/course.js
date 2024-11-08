@@ -31,50 +31,6 @@ export const allstudents = (id, token) =>
     },
   });
 
-  // 获取教师详细信息
-  export const getTeacherInfo = (id, token) =>
-    httpInstance.get('/courses/get-teacher?id=' + id, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token,
-      },
-    });
-// export const getTeacherInfo = (id, token) =>
-//   httpInstance.get('/courses/get-teacher', {
-//     headers: {
-//       'Content-Type': 'application/json',
-//       Authorization: token,
-//     },
-//     params: {
-//       id: id,
-//     },
-//   });
-
-  export const getppt = (id, token) =>
-    httpInstance.get('/courses/get-ppt?id=' + id, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token,
-      },
-    });  
-
-  export const getexam = (id, token) =>
-      httpInstance.get('/courses/get-exam?id=' + id, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token,
-        },
-  });
-    
-  export const getexercise = (id, token) =>
-      httpInstance.get('/courses/get-exercise?id=' + id, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token,
-        },
-  });
-
-
 // /attachment/delete
 
 export const deleteFile = (id, token) =>
@@ -88,7 +44,37 @@ export const deleteFile = (id, token) =>
     },
   });
 
-  
+// 确保在course.js中定义的getppt函数可以接收id参数并使用Authorization头
+export const getppt = (id) =>
+  httpInstance.get(`/courses/get-ppt?id=${id}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: localStorage.getItem('token'),
+    },
+  });
+
+
+export const getexam = (id, token) =>
+  httpInstance.get('/courses/get-exam', {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token,
+    },
+    params: {
+      id
+    },
+  });
+export const getexercise = (id, token) =>
+  httpInstance.get('/courses/get-exercise', {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token,
+    },
+    params: {
+      id: id,
+    },
+  });
+
 //   /courses/resource-ppt
 export const resourceppt = (data) =>
   httpInstance.post('/courses/resource-ppt', data);
@@ -108,13 +94,43 @@ export const createattachmentfolder = (data) =>
 export const resourcesyllabus = (data) =>
   httpInstance.post('/courses/resource-syllabus', data);
 
+// /courses/resource-calendar
+export const resourcecalendar = (data) =>
+  httpInstance.post('/courses/resource-calendar', data);
+
 // /courses/get-syllabus
+// export const getsyllabus = (id) =>
+//   httpInstance.get('/courses/get-syllabus', {
+//     params: {
+//       id: id,
+//     },
+//   });
 export const getsyllabus = (id) =>
   httpInstance.get('/courses/get-syllabus', {
     params: {
       id: id,
     },
+    headers: {
+      Authorization: localStorage.getItem('token') // 设置请求头的 Authorization
+    }
   });
+
+  export const getAttachmentUrl = (attachmentId) =>
+    httpInstance.get(`/attachment/get?id=${attachmentId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: localStorage.getItem('token') // 设置请求头的 Authorization
+      },
+      data: { // 使用 params 传递 ID
+        id: attachmentId
+      },
+      body: { // 使用 params 传递 ID
+        id: attachmentId
+      },
+    });
+  
+
+
 // /courses/get-calendar
 export const getcalendar = (id) =>
   httpInstance.get('/courses/get-calendar', {
@@ -138,34 +154,5 @@ export const uploadCourseInfo = (file, token) =>
       Authorization: token,
     },
   });
-
-
-
-  // 上传课程简介
-export const uploadteacher = (file, token) =>
-  httpInstance.post('/uploading/users/teacher', file, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      Authorization: token,
-    },
-  });
-
-  // 上传课程简介
-  export const uploadstudent= (file, token) =>
-    httpInstance.post('/uploading/users/student', file, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: token,
-      },
-    });
-  
-    export const uploadselection= (file, token) =>
-      httpInstance.post('/uploading/course-selection', file, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: token,
-        },
-      });
-
 
 

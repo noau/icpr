@@ -2,7 +2,7 @@
   <el-row :gutter="20" class="header" style="margin-top: 10px; margin-left: 10px; margin-right: 20px;">
     <el-col :span="12">
       <el-button round type="primary" @click="openUploadDialog" style="padding:10px;">上传文件</el-button>
-      <el-button round type="primary" @click="openCreateDialog" style="padding:10px;">新建目录</el-button>
+      <el-button round type="primary" @click="openCreateDialog" style="padding:10px;">新建文件夹</el-button>
     </el-col>
     <el-col :span="12" style="text-align: right;">
       <el-button circle type="primary" @click="batchDelete" style="padding:10px;">
@@ -24,11 +24,11 @@
               <span>{{ scope.row.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="description" label="目录描述" width="300" align="center" header-align="center">
+          <!-- <el-table-column prop="description" label="目录描述" width="300" align="center" header-align="center">
             <template #default="scope">
               <span>{{ scope.row.description }}</span>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column label="发布状态" width="150" align="center" header-align="center">
             <template #default="scope">
               <el-checkbox v-model="scope.row.published"></el-checkbox>
@@ -89,13 +89,13 @@
               <el-checkbox v-model="scope.row.allowDownload"></el-checkbox>
             </template>
           </el-table-column>
-          <el-table-column label="分享" width="150" align="center" header-align="center">
+          <!-- <el-table-column label="分享" width="150" align="center" header-align="center">
             <template #default="scope">
               <el-icon @click="handleShare(scope.row)">
                 <Share />
               </el-icon>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column label="操作" width="200" align="center" header-align="center">
             <template #default="scope">
               <!-- <el-button type="text" @click="openEditFileDialog(scope.row)">编辑</el-button> -->
@@ -112,8 +112,8 @@
     </el-card>
   </div>
 
-  <!-- 新建目录对话框 -->
-  <el-dialog title="新建目录" v-model="createDialogVisible">
+  <!-- 新建文件夹对话框 -->
+  <el-dialog title="新建文件夹" v-model="createDialogVisible">
     <el-form :model="newDirectory">
       <el-form-item label="目录名称" :label-width="formLabelWidth">
         <el-input v-model="newDirectory.name" maxlength="60"></el-input>
@@ -212,10 +212,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { deleteFile, getppt, resourceppt, createattachmentfolder, getexam, resourceexam } from '@/api/course.js'
+import {deleteFile, getppt, resourceppt, createattachmentfolder, getexam, resourceexam } from '@/api/course'
+import { Mounted } from '@icon-park/vue-next';
 const headers = {
   Authorization: localStorage.getItem('token')
 }
@@ -241,37 +242,7 @@ const handleShare = (file) => {
   }
 };
 
-const directoryData = ref([
-  {
-    name: '2023-2024第一学期',
-    published: true,
-    description: '这是2023-2024学年的第一学期',
-    files: [
-      { name: '文件2.pdf', url: 'https://example.com/file2.pdf', allowDownload: true, published: true, uploadTime: '2023-02-01' },
-      { name: '文件1.pdf', url: 'https://example.com/file1.pdf', allowDownload: true, published: true, uploadTime: '2023-01-01' },
-
-    ]
-  },
-  {
-    name: '2023-2023第二学期',
-    published: true,
-    description: '这是2023-2023学年的第二学期',
-    files: [
-      { name: '文件3.pdf', url: 'https://example.com/file3.pdf', allowDownload: true, published: true, uploadTime: '2023-03-01' },
-      { name: '文件4.pdf', url: 'https://example.com/file4.pdf', allowDownload: true, published: true, uploadTime: '2023-04-01' }
-    ]
-  },
-  {
-    name: '2022-2023第一学期',
-    published: true,
-    description: '这是2022-2023学年的第一学期',
-    files: [
-      { name: '文件5.pdf', url: 'https://example.com/file5.pdf', allowDownload: true, published: true, uploadTime: '2023-05-01' },
-      { name: '文件6.pdf', url: 'https://example.com/file6.pdf', allowDownload: true, published: true, uploadTime: '2023-06-01' }
-    ]
-  },
-  // ... 其他目录数据 ...
-]);
+const directoryData = ref([]);
 
 const pageSize = ref(8);
 const currentPage = ref(1);
@@ -287,7 +258,7 @@ const currentDirectory = ref({});
 const currentFile = ref({});
 const sortOrder = ref('name'); // 默认按文件名称排序
 
-// 新建目录对话框相关数据
+// 新建文件夹对话框相关数据
 const createDialogVisible = ref(false);
 const newDirectory = ref({
   name: '',
@@ -373,8 +344,9 @@ function createDirectory() {
   // }
   createattachmentfolder({
     folderName: newDirectory.value.name,
-    id: localStorage.getItem('kcid')
+    // id: localStorage.getItem('courseId')
   }).then(res => {
+    createDialogVisible.value = false;
     console.log(res);
   })
 }
@@ -399,7 +371,7 @@ function handleUploadSuccess(response, file, fileList) {
   newFile.value.url = file.url;
   console.log(response);
   uploadProps.value.attachmentIdList.push(response.id)
-  uploadProps.value.id = localStorage.getItem('kcid')
+  uploadProps.value.id = localStorage.getItem('courseId')
 
 }
 
@@ -521,6 +493,16 @@ function batchDelete() {
   selectedFiles.value = [];
 }
 
+  // 查询文件列表
+  async function getexamList() {
+    let id = localStorage.getItem('courseId')
+    await getexam(id).then(res => {
+      // directoryData.value = res.data
+      directoryData.value = res
+      console.log(res)
+    })
+  }
+
 function togglePublish(item) {
   item.published = !item.published;
 }
@@ -535,12 +517,15 @@ const sortedFiles = computed(() => {
   return files;
 });
 function getpptlist() {
-  let id = localStorage.getItem('kcid')
+  let id = localStorage.getItem('courseId')
   getexam(id).then(res => {
     console.log(res)
   })
 }
 getpptlist()
+onMounted(() => {
+  getexamList();
+});
 </script>
 
 <style scoped>

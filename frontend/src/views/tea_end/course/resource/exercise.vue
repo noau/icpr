@@ -2,7 +2,7 @@
   <el-row :gutter="20" class="header" style="margin-top: 10px; margin-left: 10px; margin-right: 20px;">
     <el-col :span="12">
       <el-button round type="primary" @click="openUploadDialog" style="padding:10px;">上传文件</el-button>
-      <el-button round type="primary" @click="openCreateDialog" style="padding:10px;">新建目录</el-button>
+      <el-button round type="primary" @click="openCreateDialog" style="padding:10px;">新建文件夹</el-button>
     </el-col>
     <el-col :span="12" style="text-align: right;">
       <el-button circle type="primary" @click="batchDelete" style="padding:10px;">
@@ -112,8 +112,8 @@
     </el-card>
   </div>
 
-  <!-- 新建目录对话框 -->
-  <el-dialog title="新建目录" v-model="createDialogVisible">
+  <!-- 新建文件夹对话框 -->
+  <el-dialog title="新建文件夹" v-model="createDialogVisible">
     <el-form :model="newDirectory">
       <el-form-item label="目录名称" :label-width="formLabelWidth">
         <el-input v-model="newDirectory.name" maxlength="60"></el-input>
@@ -287,7 +287,7 @@ const currentDirectory = ref({});
 const currentFile = ref({});
 const sortOrder = ref('name'); // 默认按文件名称排序
 
-// 新建目录对话框相关数据
+// 新建文件夹对话框相关数据
 const createDialogVisible = ref(false);
 const newDirectory = ref({
   name: '',
@@ -373,7 +373,7 @@ function createDirectory() {
   // }
   createattachmentfolder({
     folderName: newDirectory.value.name,
-    id: localStorage.getItem('kcid')
+    id: localStorage.getItem('courseId')
   }).then(res => {
     console.log(res);
   })
@@ -399,7 +399,7 @@ function handleUploadSuccess(response, file, fileList) {
   newFile.value.url = file.url;
   console.log(response);
   uploadProps.value.attachmentIdList.push(response.id)
-  uploadProps.value.id = localStorage.getItem('kcid')
+  uploadProps.value.id = localStorage.getItem('courseId')
 
 }
 
@@ -535,7 +535,7 @@ const sortedFiles = computed(() => {
   return files;
 });
 function getpptlist() {
-  let id = localStorage.getItem('kcid')
+  let id = localStorage.getItem('courseId')
   getexercise(id).then(res => {
     console.log(res)
   })

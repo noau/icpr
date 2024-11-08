@@ -105,7 +105,7 @@ function handleSearch() {
 
 filteredData.value = tableData.value;
 function getexerciseList() {
-  let id=localStorage.getItem('kcid')
+  let id=localStorage.getItem('courseId')
   getexercise(id).then(res => {
     console.log(res.attachmentIdList);
     

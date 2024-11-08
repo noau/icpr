@@ -1,6 +1,6 @@
 <template>
   <div class="homework-list">
-    <el-row :gutter="20" class="header" style="margin-top: -25px; margin-bottom: 2px;">
+    <el-row :gutter="20" class="header" style="margin-top: -25px; margin-bottom: 2px">
       <el-col :span="8">
         <el-form :inline="true" :model="form">
           <el-form-item label="">
@@ -9,31 +9,28 @@
         </el-form>
       </el-col>
       <el-col :span="4">
-        <el-button round type="primary" style="margin-right: 100px; margin-left: -80px; padding: 10px;"
-          @click="search">搜索</el-button>
+        <el-button round type="primary" style="margin-right: 100px; margin-left: -80px; padding: 10px" @click="search">
+          搜索
+        </el-button>
       </el-col>
       <el-col :span="4">
-        <el-button round type="primary" style="margin-left: 495px;" @click="goToAssignHomework">布置作业</el-button>
+        <el-button round type="primary" @click="goToAssignHomework">布置作业</el-button>
       </el-col>
     </el-row>
+
     <div class="box-card">
       <el-card>
-        <div class="forum-list" id="data" style="max-height: 500px; overflow-y: auto;">
-          <el-table :data="paginatedData" style="width: 100%;" class="homework-table">
-            <!-- 删除这一行：复选框列 -->
-            <!-- <el-table-column type="selection" width="70"></el-table-column> -->
-
+        <div class="forum-list" id="data" style="max-height: 500px; overflow-y: auto">
+          <el-table :data="paginatedData" style="width: 100%" class="homework-table">
             <el-table-column prop="title" label="作业标题" width="350" align="center" header-align="center">
               <template #default="scope">
                 <div>{{ scope.row.title }}</div>
-                <div class="gray-text">提交起止时间：{{ scope.row.startTime }} - {{ scope.row.endTime }}</div>
+                <div class="gray-text">提交起止时间：{{ scope.row.start }} - {{ scope.row.end }}</div>
               </template>
             </el-table-column>
 
             <el-table-column label="提交人数" width="150" align="center" header-align="center">
-              <template #default="scope">
-                {{ scope.row.submitted }}/27
-              </template>
+              <template #default="scope">{{ scope.row.submitted }}/27</template>
             </el-table-column>
 
             <el-table-column label="批阅作业" width="150" align="center" header-align="center">
@@ -65,8 +62,7 @@
         </div>
 
         <div class="pagination-container">
-          <el-pagination layout="prev, pager, next" :total="filteredHomeworkList.length" :page-size="pageSize"
-            :current-page="currentPage" @current-change="handleCurrentChange" />
+          <el-pagination layout="prev, pager, next" :total="filteredHomeworkList.length" :page-size="pageSize" :current-page="currentPage" @current-change="handleCurrentChange" />
         </div>
       </el-card>
     </div>
@@ -74,35 +70,25 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { getassignmentsTeacher, getcourseAssignments, getissueAnswer,getDelete } from '@/api/assignments.js'
-const router = useRouter();
-import { ElMessage } from 'element-plus'
-const form = ref({
-  title: ''
-});
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useCourseStore } from "@/stores/course";
+import { getcourseAssignments, getDelete } from "@/api/assignments";
+import { ElMessage, ElMessageBox } from "element-plus";
 
-const homeworkList = ref([
-  { id: 1, title: '班级作业1', startTime: '2023-10-01', endTime: '2023-10-10', submitted: 0 },
-  { id: 2, title: '班级作业2', startTime: '2023-10-05', endTime: '2023-10-15', submitted: 5 },
-  { id: 3, title: '班级作业3', startTime: '2023-10-07', endTime: '2023-10-17', submitted: 10 },
-]);
-// 列表请求 
-// const init = async()=>{
-//   const res = await getassignmentsTeacher({id:localStorage.getItem('userId')}) 
-//   homeworkList.value =  res?.userAssignmentList;
-// }
-// init();
+const router = useRouter();
+const form = ref({ title: "" });
+const homeworkList = ref([]);
 const pageSize = ref(8);
 const currentPage = ref(1);
-const searchQuery = ref('');
+const searchQuery = ref("");
+const courseStore = useCourseStore();
 
 const filteredHomeworkList = computed(() => {
   if (!searchQuery.value) {
     return homeworkList.value;
   }
-  return homeworkList.value.filter(homework =>
+  return homeworkList.value.filter((homework) =>
     homework.title.includes(searchQuery.value)
   );
 });
@@ -114,94 +100,119 @@ const paginatedData = computed(() => {
 
 const search = () => {
   searchQuery.value = form.value.title;
-  currentPage.value = 1; // 重置到第一页
+  currentPage.value = 1;
 };
 
 const publishHomework = async (row) => {
-  console.log('发布作业:', row);
-  const res = await getIssue({ ...row })
-  ElMessage('发布成功！')
+  console.log("发布作业:", row);
+  alert("发布成功！");
 };
 
 const publishGrades = async (row) => {
-  console.log('公布成绩:', row);
-  // const res = await getissueAnswer({id:row?.id})  
-  ElMessage('公布成功！')
+  console.log("公布成绩:", row);
+  alert("公布成功！");
 };
 
 const publishAnswers = async (row) => {
-  console.log('公布答案:', row);
-  const res = await getissueAnswer({ id: row?.id })
-  ElMessage('公布成功！')
+  console.log("公布答案:", row);
+  alert("公布成功！");
 };
 
 const editHomework = (row) => {
   router.push({
-    path: '/tea-end/course/examine/assign-homework',
-    query: { id: row.id }
+    path: "/tea-end/course/examine/assign-homework",
+    query: { id: row.id },
   });
 };
 
-const deleteHomework = (row) => {
-  console.log('删除作业:', row);
-  getDelete({ id: row.id }).then(res => {
-    ElMessage('删除成功！')
-  })
+// const deleteHomework = async (row) => {
+//   try {
+//     await ElMessageBox.confirm(`确定要删除作业 "${row.title}" 吗？`, "删除确认", {
+//       confirmButtonText: "删除",
+//       cancelButtonText: "取消",
+//       type: "warning",
+//     });
+//     // 执行删除操作
+//     await getDelete({ id: row.id });
+//     ElMessage.success("删除成功！");
+//     // 刷新作业列表
+//     getcourseAssignment();
+//   } catch (error) {
+//     // 用户取消了删除操作或删除失败
+//     if (error !== "cancel") {
+//       console.error("删除作业时出错:", error);
+//       ElMessage.error("删除失败，请稍后重试。");
+//     }
+//   }
+// };
+const deleteHomework = async (row) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除作业 "${row.title}" 吗？`, "删除确认", {
+      confirmButtonText: "删除",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    // 执行删除操作
+    const response = await getDelete({ id: row.id });
+    
+    // 检查删除请求的返回结果是否成功
+    if (response.status === 204) {
+      ElMessage.success("删除成功！");
+      // 刷新作业列表
+      await getcourseAssignment();
+    } else {
+      ElMessage.error("删除失败，请稍后重试。");
+    }
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("删除作业时出错:", error);
+      ElMessage.error("删除失败，请稍后重试。");
+    }
+  }
 };
 
 const goToAssignHomework = () => {
-  router.push({ path: '/tea-end/course/examine/assign-homework' });
+  router.push({ path: "/tea-end/course/examine/assign-homework" });
 };
 
 const goToSubmissonCondition = (row) => {
   router.push({
-    path: '/tea-end/course/examine/grade-homework',
-    query: {
-      title: row.title,
-      start: row.start,
-      end: row.end,
-      id: row.id
-    }
+    path: "/tea-end/course/examine/grade-homework",
+    query: { title: row.title, start: row.start, end: row.end, id: row.id },
   });
 };
 
 const goToHomeworkStatistics = (row) => {
-  router.push({ path: '/tea-end/course/examine/homework-statistics' });
+  router.push({ path: "/tea-end/course/examine/homework-statistics" });
 };
 
 function handleCurrentChange(page) {
   currentPage.value = page;
 }
 
+const getcourseAssignment = async () => {
+  let courseId = courseStore.getCourseId;
 
-// 列表请求 
-const init = async () => {
-  const res = await getcourseAssignments({ id: localStorage.getItem('userId') })
-  // homeworkList.value =  res;
-  homeworkList.value = [
-    {
-      "id": 93,
-      "courseId": "74",
-      "title": "果七层话",
-      "description": "组西状商次油作外都世权北等改。验到百群大准为被证该此变照术于。马知六活科天文调酸水温道装什层类。",
-      "start": "1978-01-19 05:39:53",
-      "end": "1982-05-18 06:43:14",
-      "isPrivate": 68,
-      "fullGrade": 20,
-      "delayedGrade": 89,
-      "latestEnd": "1980-06-07 03:38:54",
-      "multipleSubmission": 28,
-      "publishGrade": 14,
-      "requirePeerReview": 10,
-      "peerReviewStart": "2014-08-24 00:16:08",
-      "peerReviewEnd": "1985-05-19 19:56:28",
-      "minPeerReview": 96
-    },
-  ]
+  // 如果 courseStore 中没有 courseId，从 localStorage 获取
+  if (!courseId) {
+    courseId = localStorage.getItem("courseId");
+    if (courseId) {
+      courseStore.setCourseId(courseId); // 存储到 Pinia store 中
+    }
+  }
 
-}
-init();
+  if (courseId) {
+    const res = await getcourseAssignments({ id: courseId });
+    homeworkList.value = res || [];
+  } else {
+    console.error("课程 ID 为空，请确保课程 ID 已正确设置");
+  }
+};
 
+onMounted(async () => {
+  console.log("当前课程 ID:", courseStore.getCourseId); // 输出课程ID，检查是否为空
+  getcourseAssignment();
+});
 
 
 </script>
@@ -242,3 +253,4 @@ init();
   font-size: 18px;
 }
 </style>
+

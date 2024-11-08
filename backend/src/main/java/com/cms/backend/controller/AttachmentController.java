@@ -40,7 +40,9 @@ public class AttachmentController {
     @PostMapping(value = "upload")
     public ResponseEntity<UploadedAttachment> uploadAttachment(MultipartFile file) {
         String name = file.getOriginalFilename();
-        var f = new File("D:\\nginx\\nginx-1.26.2\\ICPRFiles\\" + name);
+//        var f = new File("D:\\nginx\\nginx-1.26.2\\ICPRFiles\\" + name);
+        var f = new File("F:\\cangqiongwaimai\\nginx-1.20.2\\ICPRFiles\\" + name);
+
 
         try {
             if (!f.exists()) {
