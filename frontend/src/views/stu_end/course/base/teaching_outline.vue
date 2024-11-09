@@ -55,8 +55,8 @@ export default {
         // 根据附件ID获取文件URL
         loadFileUrl(attachmentId) {
             getAttachmentUrl(attachmentId).then(res => {
-                if (res.data && res.data.url) {
-                    this.pdf = res.data.url // 设置 pdf 地址为获取到的文件 URL
+                if (res.url) {
+                    this.pdf = res.url // 设置 pdf 地址为获取到的文件 URL
                     console.log("文件URL加载成功")
                 } else {
                     console.log("未获取到文件URL")

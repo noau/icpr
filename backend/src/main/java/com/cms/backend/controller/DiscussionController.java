@@ -83,15 +83,15 @@ public class DiscussionController {
     @GetMapping(value = "/get-thread")
     public ResponseEntity<DiscussionReplyList> getThread(@RequestParam Integer id) {
         DiscussionThread discussionThread = discussionThreadService.getById(id);
-        User user = userService.findByUserName(discussionThread.getUserId());
+        User user = userService.findById(discussionThread.getUserId());
         List<DiscussionReply> replyLists = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId, id));
         List<DiscussionReplyDTO> replyList = new ArrayList<>();
         for (DiscussionReply discussionReply : replyLists) {
-            DiscussionReplyDTO discussionReplyDTO = new DiscussionReplyDTO(discussionReply.getId(), discussionReply.getThreadId(), discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getLikes(), discussionReply.getCreatedAt(), discussionReply.getRepliedId(), userService.findByUserName(discussionReply.getUserId()).getName(), userService.findByUserName(discussionReply.getUserId()).getAvatar());
+            DiscussionReplyDTO discussionReplyDTO = new DiscussionReplyDTO(discussionReply.getId(), discussionReply.getThreadId(), discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getLikes(), discussionReply.getCreatedAt(), discussionReply.getRepliedId(), userService.findById(discussionReply.getUserId()).getName(), userService.findById(discussionReply.getUserId()).getAvatar());
             replyList.add(discussionReplyDTO);
             List<DiscussionReply> replyReplies = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getReplyId, discussionReply.getId()));
             for (DiscussionReply discussionReplyReply : replyReplies) {
-                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(), discussionReplyReply.getThreadId(), discussionReplyReply.getReplyId(), discussionReplyReply.getUserId(), discussionReplyReply.getContent(), discussionReplyReply.getLikes(), discussionReplyReply.getCreatedAt(), discussionReplyReply.getRepliedId(),userService.findByUserName(discussionReplyReply.getUserId()).getName(), userService.findByUserName(discussionReplyReply.getUserId()).getAvatar());
+                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(), discussionReplyReply.getThreadId(), discussionReplyReply.getReplyId(), discussionReplyReply.getUserId(), discussionReplyReply.getContent(), discussionReplyReply.getLikes(), discussionReplyReply.getCreatedAt(), discussionReplyReply.getRepliedId(),userService.findById(discussionReplyReply.getUserId()).getName(), userService.findById(discussionReplyReply.getUserId()).getAvatar());
                 replyList.add(discussionReplyDTODTO);
             }
 
