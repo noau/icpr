@@ -241,9 +241,7 @@ public class NotificationController {
     @AllArgsConstructor
     public static class UpdateNotificationDTO {
         private Integer id;
-
         private Integer isRead;
-
         private Integer isStar;
     }
 

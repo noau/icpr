@@ -3,9 +3,11 @@ package com.cms.backend.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.DiscussionReply;
 import com.cms.backend.pojo.DiscussionThread;
+import com.cms.backend.pojo.Notification;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.DiscussionReplyService;
 import com.cms.backend.service.DiscussionThreadService;
+import com.cms.backend.service.NotificationService;
 import com.cms.backend.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,10 +30,13 @@ public class DiscussionController {
 
     private final UserService userService;
 
-    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService) {
+    private final NotificationService notificationService;
+
+    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService, NotificationService notificationService) {
         this.discussionThreadService = discussionThreadService;
         this.discussionReplyService = discussionReplyService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping(value = "/thread")
@@ -43,9 +50,23 @@ public class DiscussionController {
     @PostMapping(value = "/replies")
     public ResponseEntity<String> createReply(@RequestBody DiscussionReply discussionReply) {
         if (discussionReply.getThreadId() == 0) {
-            discussionReplyService.createReply(discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getCreatedAt(), discussionReply.getRepliedId());
+            DiscussionReply discussionReplyReply = new DiscussionReply(null, null, discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), 0, discussionReply.getCreatedAt(), discussionReply.getRepliedId());
+            discussionReplyService.save(discussionReplyReply);
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedNow = now.format(formatter);
+            DiscussionReply discussionReplyUser = discussionReplyService.getById(discussionReply.getRepliedId());
+            DiscussionThread discussionThread = discussionThreadService.getById(discussionReply.getReplyId());
+            Notification notification = new Notification(discussionReplyUser.getUserId(), "收到评论！", discussionReply.getUserId(), "评论", discussionReplyReply.getId(), "你的评论被回复啦~", 0, formattedNow, discussionThread.getCourseId(), 0);
+            notificationService.save(notification);
         } else {
             discussionReplyService.save(discussionReply);
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedNow = now.format(formatter);
+            DiscussionThread discussionThread = discussionThreadService.getById(discussionReply.getThreadId());
+            Notification notification = new Notification(discussionThread.getUserId(), "收到评论！", discussionReply.getUserId(), "评论", discussionReply.getId(), "你的帖子被回复啦~", 0, formattedNow, discussionThread.getCourseId(), 0);
+            notificationService.save(notification);
         }
 
         return ResponseEntity.ok("");

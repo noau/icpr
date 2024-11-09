@@ -169,7 +169,7 @@ public class CourseController {
         TeachingDTO teachingDTO = courseService.getTeacherId(id);
         User user = userService.findByUserName(teachingDTO.getTeacherId());
         TeacherInfo teacherInfo = courseService.getTeacherInfo(teachingDTO.getTeacherId());
-        Teacher teacher = new Teacher(user.getName(), user.getAcademy(), user.getGender(), user.getAcademy(), user.getEmail(), user.getPhoneNumber(), teacherInfo.getAddress(), teacherInfo.getTitle(), teacherInfo.getBrief());
+        Teacher teacher = new Teacher(user.getName(), user.getAcademy(), user.getGender(), user.getAvatar(), user.getEmail(), user.getPhoneNumber(), teacherInfo.getAddress(), teacherInfo.getTitle(), teacherInfo.getBrief());
 
         return ResponseEntity.ok(teacher);
     }

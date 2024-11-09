@@ -8,9 +8,7 @@ import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.DTO.*;
-import com.cms.backend.service.DiscussionThreadService;
-import com.cms.backend.service.FolderService;
-import com.cms.backend.service.UserService;
+import com.cms.backend.service.*;
 import com.cms.backend.utils.JWTUtils;
 import com.google.gson.Gson;
 import darabonba.core.client.ClientOverrideConfiguration;
@@ -26,6 +24,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -43,17 +43,23 @@ public class UserController {
 
     private final FolderService folderService;
 
+    private final NotificationService notificationService;
+
+    private final DiscussionReplyService discussionReplyService;
+
     @Value("${spring.mail.username}")
     private String sender;
 
     @Value("${spring.mail.nickname}")
     private String nickname;
 
-    public UserController(UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService) {
+    public UserController(UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
         this.userService = userService;
         this.mailSender = mailSender;
         this.discussionThreadService = discussionThreadService;
         this.folderService = folderService;
+        this.notificationService = notificationService;
+        this.discussionReplyService = discussionReplyService;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -415,9 +421,21 @@ public class UserController {
         if (discussionLike.getThreadId() != 0) {
             userService.like(discussionLike.getUserId(), discussionLike.getThreadId(), discussionLike.getCourseId(), null, discussionLike.getCreatedAt());
             userService.addLikeThread(discussionLike.getThreadId());
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedNow = now.format(formatter);
+            DiscussionThread discussionThread = discussionThreadService.getById(discussionLike.getThreadId());
+            Notification notification = new Notification(discussionThread.getUserId(), "收到点赞！", discussionLike.getUserId(), "帖子点赞", discussionLike.getThreadId(), "你的帖子被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            notificationService.save(notification);
         } else {
             userService.like(discussionLike.getUserId(), null, discussionLike.getCourseId(), discussionLike.getReplyId(), discussionLike.getCreatedAt());
             userService.addLikeReply(discussionLike.getReplyId());
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedNow = now.format(formatter);
+            DiscussionReply discussionReply = discussionReplyService.getById(discussionLike.getReplyId());
+            Notification notification = new Notification(discussionReply.getUserId(), "收到点赞！", discussionLike.getUserId(), "评论点赞", discussionLike.getReplyId(), "你的评论被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            notificationService.save(notification);
         }
 
         return ResponseEntity.ok("");
