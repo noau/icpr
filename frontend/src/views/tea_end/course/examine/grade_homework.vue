@@ -308,10 +308,11 @@ const filterSubmitted = (type) => {
 
 // 打开批阅页面
 const openReviewPage = (row) => {
+  console.log(row);
   router.push({
     path: '/tea-end/course/examine/rating-page',
     query: {
-      id: row.id, // 提交的作业ID
+      id: row.assignmentId, // 提交的作业ID
       title: homeworkTitle.value,
       startTime: startTime.value,
       endTime: endTime.value
