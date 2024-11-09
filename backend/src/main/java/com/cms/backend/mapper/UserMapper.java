@@ -21,7 +21,7 @@ public interface UserMapper {
             @Result(property = "idCardNumber", column = "id_card_number")
     })
     @Select("select * from user where id = #{id}")
-    User findByUserName(Integer id);
+    User findById(Integer id);
 
     @Results({
             @Result(property = "subscriptionId", column = "subscription_id"),

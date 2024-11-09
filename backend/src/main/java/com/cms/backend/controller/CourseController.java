@@ -2,7 +2,6 @@ package com.cms.backend.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.cms.backend.mapper.FolderMapper;
 import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.Assignments.AssignmentReview;
 import com.cms.backend.pojo.DTO.TeachingDTO;
@@ -171,7 +170,7 @@ public class CourseController {
     @GetMapping(value = "/get-teacher")
     public ResponseEntity<Teacher> getTeacher(@RequestParam String id) {
         TeachingDTO teachingDTO = courseService.getTeacherId(id);
-        User user = userService.findByUserName(teachingDTO.getTeacherId());
+        User user = userService.findById(teachingDTO.getTeacherId());
         TeacherInfo teacherInfo = courseService.getTeacherInfo(teachingDTO.getTeacherId());
         Teacher teacher = new Teacher(user.getName(), user.getAcademy(), user.getGender(), user.getAvatar(), user.getEmail(), user.getPhoneNumber(), teacherInfo.getAddress(), teacherInfo.getTitle(), teacherInfo.getBrief());
 

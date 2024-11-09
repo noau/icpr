@@ -10,6 +10,7 @@ import com.cms.backend.pojo.Notification;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.CourseService;
 import com.cms.backend.service.NotificationService;
+import com.cms.backend.service.UserService;
 import com.cms.backend.service.assignment.AssignmentReviewService;
 import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
@@ -44,11 +45,11 @@ public class AssignmentController {
     private final AssignmentReviewService assignmentReviewService;
     private final NotificationService notificationService;
     private final CourseService courseService;
-
+    private final UserService userService;
 
     private final Logger logger = LoggerFactory.getLogger(AssignmentController.class);
 
-    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService) {
+    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService) {
         this.assignmentService = assignmentService;
         this.assignmentSubmissionService = assignmentSubmissionService;
         this.attachmentService = attachmentService;
@@ -56,6 +57,7 @@ public class AssignmentController {
         this.assignmentReviewService = assignmentReviewService;
         this.notificationService = notificationService;
         this.courseService = courseService;
+        this.userService = userService;
     }
 
     /**
@@ -246,23 +248,32 @@ public class AssignmentController {
         return ResponseEntity.ok(assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id)));
     }
 
-    /**
-     * 作业的所有提交
-     *
-     * @param id 作业ID
-     * @return 获得作业提交列表
-     */
     @GetMapping("/review-list")
     public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsSubmissions(@RequestParam Integer id) {
         System.out.println(id);
+        // 获取与指定作业ID匹配的提交记录
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
+
         var details = submissions.stream().map(submission -> {
-            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
+            // 根据 submission 的 ID 查询相关附件 ID
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>()
+                            .eq(Attachment::getSubmissionId, submission.getId())
+                            .select(Attachment::getId))
                     .stream().map(Attachment::getId).toList();
-            return new AssignmentSubmissionDetail(submission, attachments);
+
+            // 使用 studentId 查询学生姓名
+            User student = userService.findById(submission.getStudentId());
+
+            // 创建 AssignmentSubmissionDetail 对象并设置学生姓名
+            AssignmentSubmissionDetail detail = new AssignmentSubmissionDetail(submission, attachments);
+            detail.setName(student.getName()); // 设置 name 属性
+
+            return detail;
         });
+
         return ResponseEntity.ok(details.collect(Collectors.toList()));
     }
+
 
     /**
      * 作业的所有提交
@@ -445,6 +456,7 @@ public class AssignmentController {
         }
 
         private Integer id;
+        private String name;
         private Integer assignmentId;
         private Integer studentId;
         private String submittedAt;

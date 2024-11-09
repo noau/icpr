@@ -21,9 +21,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findByUserName(Integer id) {
-        return userMapper.findByUserName(id);
+    public User findById(Integer id) {
+        return userMapper.findById(id);
     }
+
 
     @Override
     public List<FollowDTO> getUserFollowers(Integer id) {

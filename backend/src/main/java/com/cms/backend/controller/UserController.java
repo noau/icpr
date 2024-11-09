@@ -71,7 +71,7 @@ public class UserController {
         logger.info("Login attempt for account: {}", id);
 
         // 验证用户是否存在
-        User userLogin = userService.findByUserName(id);
+        User userLogin = userService.findById(id);
         if (userLogin == null) {
             logger.warn("Login failed. User not found: {}", id);
 
@@ -101,7 +101,7 @@ public class UserController {
         String password = user.getPassword();
 
         // 验证用户是否存在
-        User userLogin = userService.findByUserName(id);
+        User userLogin = userService.findById(id);
         if (userLogin == null) {
 
             return ResponseEntity.status(410).body(""); // 用户不存在
@@ -138,12 +138,12 @@ public class UserController {
 
     @GetMapping(value = "/info")
     public ResponseEntity<UserInfo> getUserInfo(@RequestParam Integer id) {
-        User user = userService.findByUserName(id);
+        User user = userService.findById(id);
         List<Folder> folderList = folderService.list(new LambdaQueryWrapper<Folder>().eq(Folder::getUserId, id));
         List<DiscussionThread> threadListList = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getUserId, id));
         List<DiscussionInfoDTO> threadList = new ArrayList<>();
         for (DiscussionThread discussionThread : threadListList) {
-            User threadUser = userService.findByUserName(discussionThread.getUserId());
+            User threadUser = userService.findById(discussionThread.getUserId());
             DiscussionInfoDTO discussionInfoDTO = new DiscussionInfoDTO(
                     discussionThread.getId(),
                     discussionThread.getCourseId(),
@@ -189,7 +189,7 @@ public class UserController {
         Integer id = userChangePasswordDTO.getId();
         String password = userChangePasswordDTO.getPassword();
         String newPassword = userChangePasswordDTO.getNewPassword();
-        User user = userService.findByUserName(id);
+        User user = userService.findById(id);
         System.out.println(password);
         System.out.println(user.getPassword());
 
@@ -302,9 +302,9 @@ public class UserController {
     @PostMapping(value = "/make-subscription")
     public ResponseEntity<String> makeSubscription(@RequestBody Follow follow) {
         Integer followingId = follow.getFollowingId();
-        String followingName = (userService.findByUserName(followingId)).getName();
+        String followingName = (userService.findById(followingId)).getName();
         Integer subscriptionId = follow.getSubscriptionId();
-        String subscriptionName = (userService.findByUserName(subscriptionId)).getName();
+        String subscriptionName = (userService.findById(subscriptionId)).getName();
         userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
         userService.addFollower(followingId);
         userService.addSubscriber(subscriptionId);
@@ -330,7 +330,7 @@ public class UserController {
         Integer id = user.getId();
         String email = user.getEmail();
         String idCardNumber = user.getIdCardNumber();
-        User checkUser = userService.findByUserName(id);
+        User checkUser = userService.findById(id);
         if (checkUser == null) {
             return ResponseEntity.status(410).body("");
         } else if (!Objects.equals(checkUser.getEmail(), email) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
@@ -392,7 +392,7 @@ public class UserController {
         String phoneNumber = user.getPhoneNumber();
         String idCardNumber = user.getIdCardNumber();
         String regionPhoneNumber = "+86" + phoneNumber;
-        User checkUser = userService.findByUserName(id);
+        User checkUser = userService.findById(id);
         if (checkUser == null) {
             return ResponseEntity.status(410).body("");
         } else if (!Objects.equals(checkUser.getPhoneNumber(), phoneNumber) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
