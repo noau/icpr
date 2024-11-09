@@ -30,4 +30,18 @@ public class Notification {
     private String courseId;
 
     private Integer isStar;
+
+    public Notification(Integer userId, String title, Integer triggeredBy, String type, Integer relatedId, String content, Integer isRead, String createdAt, String courseId, Integer isStar) {
+        this.userId = userId;
+        this.title = title;
+        this.triggeredBy = triggeredBy;
+        this.type = type;
+        this.relatedId = relatedId;
+        this.content = content;
+        this.isRead = isRead;
+        this.createdAt = createdAt;
+        this.courseId = courseId;
+        this.isStar = isStar;
+    }
+
 }

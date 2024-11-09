@@ -9,14 +9,4 @@ import org.springframework.stereotype.Service;
 @Service
 public class DiscussionReplyServiceImpl extends ServiceImpl<DiscussionReplyMapper, DiscussionReply> implements DiscussionReplyService {
 
-    private final DiscussionReplyMapper discussionReplyMapper;
-
-    public DiscussionReplyServiceImpl(DiscussionReplyMapper discussionReplyMapper) {
-        this.discussionReplyMapper = discussionReplyMapper;
-    }
-
-    @Override
-    public void createReply(Integer replyId, Integer userId, String content, String createdAt, Integer repliedId) {
-        discussionReplyMapper.createReply(replyId, userId, content, createdAt, repliedId);
-    }
 }

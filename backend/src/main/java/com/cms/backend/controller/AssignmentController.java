@@ -5,6 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cms.backend.pojo.Assignments.*;
 import com.cms.backend.pojo.Attachment;
+import com.cms.backend.pojo.DTO.TeachingDTO;
+import com.cms.backend.pojo.Notification;
+import com.cms.backend.pojo.User;
+import com.cms.backend.service.CourseService;
+import com.cms.backend.service.NotificationService;
 import com.cms.backend.service.assignment.AssignmentReviewService;
 import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
@@ -19,6 +24,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,16 +42,20 @@ public class AssignmentController {
     private final AttachmentService attachmentService;
     private final AssignmentPeerReviewService assignmentPeerReviewService;
     private final AssignmentReviewService assignmentReviewService;
+    private final NotificationService notificationService;
+    private final CourseService courseService;
 
 
     private final Logger logger = LoggerFactory.getLogger(AssignmentController.class);
 
-    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService) {
+    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService) {
         this.assignmentService = assignmentService;
         this.assignmentSubmissionService = assignmentSubmissionService;
         this.attachmentService = attachmentService;
         this.assignmentPeerReviewService = assignmentPeerReviewService;
         this.assignmentReviewService = assignmentReviewService;
+        this.notificationService = notificationService;
+        this.courseService = courseService;
     }
 
     /**
@@ -57,7 +68,6 @@ public class AssignmentController {
     public ResponseEntity<Void> issueAssignment(@RequestBody AssignmentIssue assignment) {
         var newAssignment = new Assignment(0, assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
         assignmentService.save(newAssignment);
-        System.out.println(newAssignment.getId());
         assignment.getAttachments().forEach(attachment ->
                 attachmentService.update(
                         new LambdaUpdateWrapper<Attachment>()
@@ -65,6 +75,17 @@ public class AssignmentController {
                                 .set(Attachment::getAssignmentId, newAssignment.getId())
                 )
         );
+
+        List<User> users = courseService.getAllStudents(assignment.courseId);
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.courseId);
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "新作业来啦~", teachingDTO.getTeacherId(), "作业发布", assignment.id, assignment.courseId + "作业已发布，请尽快完成", 0, formattedNow, assignment.courseId, 0);
+            notificationService.save(notification);
+        }
+
         return ResponseEntity.ok().build();
     }
 
