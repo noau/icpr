@@ -1,10 +1,8 @@
 package com.cms.backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.cms.backend.pojo.DiscussionReply;
-import com.cms.backend.pojo.DiscussionThread;
-import com.cms.backend.pojo.Notification;
-import com.cms.backend.pojo.User;
+import com.cms.backend.pojo.*;
+import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.service.DiscussionReplyService;
 import com.cms.backend.service.DiscussionThreadService;
 import com.cms.backend.service.NotificationService;
@@ -43,6 +41,15 @@ public class DiscussionController {
     public ResponseEntity<String> createThread(@RequestBody DiscussionThread discussionThread) {
         discussionThreadService.save(discussionThread);
         userService.addThreadNumber(discussionThread.getUserId());
+        User user = userService.findById(discussionThread.getUserId());
+        List<FollowDTO> users = userService.getUserFollowers(discussionThread.getUserId());
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        for (FollowDTO followDTO : users) {
+            Notification notification = new Notification(followDTO.getFollowingId(), "你的关注发帖啦！", discussionThread.getUserId(), "讨论区", discussionThread.getId(), "你的关注" + user.getName() + "发帖啦！快去看看吧~", 0, formattedNow, discussionThread.getCourseId(), 0);
+            notificationService.save(notification);
+        }
 
         return ResponseEntity.ok("");
     }
@@ -57,7 +64,7 @@ public class DiscussionController {
             String formattedNow = now.format(formatter);
             DiscussionReply discussionReplyUser = discussionReplyService.getById(discussionReply.getRepliedId());
             DiscussionThread discussionThread = discussionThreadService.getById(discussionReply.getReplyId());
-            Notification notification = new Notification(discussionReplyUser.getUserId(), "收到评论！", discussionReply.getUserId(), "评论", discussionReplyReply.getId(), "你的评论被回复啦~", 0, formattedNow, discussionThread.getCourseId(), 0);
+            Notification notification = new Notification(discussionReplyUser.getUserId(), "收到评论！", discussionReply.getUserId(), "讨论区", discussionReplyReply.getId(), "你的评论被回复啦~", 0, formattedNow, discussionThread.getCourseId(), 0);
             notificationService.save(notification);
         } else {
             discussionReplyService.save(discussionReply);
@@ -65,7 +72,7 @@ public class DiscussionController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedNow = now.format(formatter);
             DiscussionThread discussionThread = discussionThreadService.getById(discussionReply.getThreadId());
-            Notification notification = new Notification(discussionThread.getUserId(), "收到评论！", discussionReply.getUserId(), "评论", discussionReply.getId(), "你的帖子被回复啦~", 0, formattedNow, discussionThread.getCourseId(), 0);
+            Notification notification = new Notification(discussionThread.getUserId(), "收到评论！", discussionReply.getUserId(), "讨论区", discussionReply.getId(), "你的帖子被回复啦~", 0, formattedNow, discussionThread.getCourseId(), 0);
             notificationService.save(notification);
         }
 

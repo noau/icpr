@@ -308,6 +308,12 @@ public class UserController {
         userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
         userService.addFollower(followingId);
         userService.addSubscriber(subscriptionId);
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        User user = userService.findById(follow.getFollowingId());
+        Notification notification = new Notification(follow.getSubscriptionId(), "收到关注！", follow.getFollowingId(), "系统", 0, "你被" + user.getName() + "关注啦~", 0, formattedNow, "M310001B2计算机组成原理2024~2025上", 0);
+        notificationService.save(notification);
 
         return ResponseEntity.ok("");
     }
@@ -425,7 +431,7 @@ public class UserController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedNow = now.format(formatter);
             DiscussionThread discussionThread = discussionThreadService.getById(discussionLike.getThreadId());
-            Notification notification = new Notification(discussionThread.getUserId(), "收到点赞！", discussionLike.getUserId(), "帖子点赞", discussionLike.getThreadId(), "你的帖子被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            Notification notification = new Notification(discussionThread.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区", discussionLike.getThreadId(), "你的帖子被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
             notificationService.save(notification);
         } else {
             userService.like(discussionLike.getUserId(), null, discussionLike.getCourseId(), discussionLike.getReplyId(), discussionLike.getCreatedAt());
@@ -434,7 +440,7 @@ public class UserController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedNow = now.format(formatter);
             DiscussionReply discussionReply = discussionReplyService.getById(discussionLike.getReplyId());
-            Notification notification = new Notification(discussionReply.getUserId(), "收到点赞！", discussionLike.getUserId(), "评论点赞", discussionLike.getReplyId(), "你的评论被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            Notification notification = new Notification(discussionReply.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区", discussionLike.getReplyId(), "你的评论被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
             notificationService.save(notification);
         }
 
