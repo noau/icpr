@@ -238,10 +238,10 @@ public class AssignmentController {
 
 
     /**
-     * 课程下的所有作业
+     * 课程下的所有應該批改的作业
      *
      * @param id 课程ID
-     * @return 获得作业列表
+     * @return 获得批改作业列表
      */
     @GetMapping("/course-assignments")
     public ResponseEntity<List<Assignment>> getCourseAssignments(@RequestParam String id) {
@@ -263,11 +263,12 @@ public class AssignmentController {
 
             // 使用 studentId 查询学生姓名
             User student = userService.findById(submission.getStudentId());
+            Float grade = assignmentReviewService.findById(submission.getId());
 
             // 创建 AssignmentSubmissionDetail 对象并设置学生姓名
             AssignmentSubmissionDetail detail = new AssignmentSubmissionDetail(submission, attachments);
             detail.setName(student.getName()); // 设置 name 属性
-
+            detail.setGrade(grade);
             return detail;
         });
 
@@ -462,5 +463,6 @@ public class AssignmentController {
         private String submittedAt;
         private String content;
         private List<Integer> attachments;
+        private Float grade;
     }
 }
