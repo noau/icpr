@@ -41,6 +41,7 @@ const top=ref(false)
 const visibility = ref('全部可见');
 const isAnonymous = ref(false);
 import { useRouter } from 'vue-router'; // 使用路由进行跳转
+import { ElMessage } from 'element-plus';
   
   const router = useRouter(); // 初始化路由
 const submitPost = () => {
@@ -51,9 +52,15 @@ const submitPost = () => {
   console.log('标签：', tags.value);
   console.log('可见范围：', visibility.value);
   console.log('匿名1111：', isAnonymous.value);
+  console.log('courseId', localStorage.getItem('courseId'));
+  if (!title.value) {
+    ElMessage.error('标题不能为空');
+    return;
+  }
+
   let obj = {
 
-    courseId: localStorage.getItem('kcid'),
+    courseId: localStorage.getItem('courseId'),
     userId: localStorage.getItem('id'),
     title: title.value,
     content: content.value,

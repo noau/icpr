@@ -28,6 +28,8 @@ export default {
   },
   methods: {
     openCourse(course) {
+      // 存储课程ID到本地存储
+
       localStorage.setItem("courseId", course.id)
 
       // 跳转到课程主页
