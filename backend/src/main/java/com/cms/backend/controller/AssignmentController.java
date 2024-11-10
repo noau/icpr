@@ -84,7 +84,7 @@ public class AssignmentController {
         String formattedNow = now.format(formatter);
         TeachingDTO teachingDTO = courseService.getTeacherId(assignment.courseId);
         for (User user : users) {
-            Notification notification = new Notification(user.getId(), "新作业来啦~", teachingDTO.getTeacherId(), "作业发布", assignment.id, assignment.courseId + "作业已发布，请尽快完成", 0, formattedNow, assignment.courseId, 0);
+            Notification notification = new Notification(user.getId(), "新作业来啦~", teachingDTO.getTeacherId(), "作业", assignment.id, assignment.courseId + "作业已发布，请尽快完成", 0, formattedNow, assignment.courseId, 0);
             notificationService.save(notification);
         }
 
@@ -101,6 +101,15 @@ public class AssignmentController {
     public ResponseEntity<Void> reviewAssignment(@RequestBody AssignmentReview assignmentReview) {
         assignmentReviewService.save(assignmentReview);
         logger.info("Reviewed assignment ID: {}", assignmentReview.getSubmissionId());
+        AssignmentSubmission assignmentSubmission = assignmentSubmissionService.getById(assignmentReview.getSubmissionId());
+        Assignment assignment = assignmentService.getById(assignmentSubmission.getAssignmentId());
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+        Notification notification = new Notification(assignmentSubmission.getStudentId(), "作业已被批改", teachingDTO.getTeacherId(), "作业", assignmentReview.getSubmissionId(), "成绩：" + assignmentReview.getGrade(), 0, formattedNow, assignment.getCourseId(), 0);
+        notificationService.save(notification);
+
         return ResponseEntity.ok().build();
     }
 
