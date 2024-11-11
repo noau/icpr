@@ -8,4 +8,6 @@ public interface AssignmentReviewMapper extends BaseMapper<AssignmentReview> {
 
     @Select("SELECT grade FROM assignment_review WHERE submission_id = #{id}")
     Float findById(Integer id);
+    @Select("SELECT * FROM assignment_review WHERE submission_id = #{id}")
+    AssignmentReview findAllBySubmissionId(Integer assignmentId);
 }

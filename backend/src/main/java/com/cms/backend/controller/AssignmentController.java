@@ -21,16 +21,19 @@ import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Validated
@@ -46,10 +49,11 @@ public class AssignmentController {
     private final NotificationService notificationService;
     private final CourseService courseService;
     private final UserService userService;
+    private final ThreadPoolTaskScheduler taskScheduler;
 
     private final Logger logger = LoggerFactory.getLogger(AssignmentController.class);
 
-    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService) {
+    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
         this.assignmentService = assignmentService;
         this.assignmentSubmissionService = assignmentSubmissionService;
         this.attachmentService = attachmentService;
@@ -58,37 +62,76 @@ public class AssignmentController {
         this.notificationService = notificationService;
         this.courseService = courseService;
         this.userService = userService;
+        this.taskScheduler = taskScheduler; // 确保注入 taskScheduler
     }
 
     /**
-     * 发布作业
+     * 发布作业 + 作业通知
      *
      * @param assignment 作业信息
      * @return 发布作业结果
      */
     @PostMapping("/issue")
-    public ResponseEntity<Void> issueAssignment(@RequestBody AssignmentIssue assignment) {
+    public ResponseEntity<String> issueAssignment(@RequestBody AssignmentIssue assignment) {
         var newAssignment = new Assignment(0, assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
+
         assignmentService.save(newAssignment);
-        assignment.getAttachments().forEach(attachment ->
-                attachmentService.update(
-                        new LambdaUpdateWrapper<Attachment>()
-                                .eq(Attachment::getId, attachment)
-                                .set(Attachment::getAssignmentId, newAssignment.getId())
-                )
-        );
+
+        // 更新附件信息
+        assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
 
         List<User> users = courseService.getAllStudents(assignment.courseId);
         LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedNow = now.format(formatter);
+        String formattedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         TeachingDTO teachingDTO = courseService.getTeacherId(assignment.courseId);
+
         for (User user : users) {
-            Notification notification = new Notification(user.getId(), "新作业来啦~", teachingDTO.getTeacherId(), "作业", assignment.id, assignment.courseId + "作业已发布，请尽快完成", 0, formattedNow, assignment.courseId, 0);
+            Notification notification = new Notification(user.getId(), "新作业来啦~", teachingDTO.getTeacherId(), "作业通知", assignment.id, assignment.courseId + "作业已发布，请尽快完成", 0, formattedNow, assignment.courseId, 0);
             notificationService.save(notification);
         }
 
-        return ResponseEntity.ok().build();
+        //设置截止日期
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String endString = assignment.getEnd();
+        String latestEndString = assignment.getLatestEnd();
+        String peerReviewStartString = assignment.getPeerReviewStart();
+        String peerReviewEndString = assignment.getPeerReviewEnd();
+        // 将字符串转为 LocalDateTime 类型
+        LocalDateTime end = LocalDateTime.parse(endString, formatter);
+        LocalDateTime latestEnd = LocalDateTime.parse(latestEndString, formatter);
+        LocalDateTime peerReviewStart = LocalDateTime.parse(peerReviewStartString, formatter);
+        LocalDateTime peerReviewEnd = LocalDateTime.parse(peerReviewEndString, formatter);
+        // 设置提醒任务
+        scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
+        scheduleReminder(latestEnd.minusDays(1), users, newAssignment, "最迟补交提醒", "最迟补交时间剩余1天，请尽快完成");
+        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始不要忘记");
+        scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
+
+        return ResponseEntity.ok("作业发布成功，已通知所有学生。");
+    }
+
+    //设置提醒
+    private void scheduleReminder(LocalDateTime reminderTime, List<User> users, Assignment assignment, String title, String content) {
+        LocalDateTime now = LocalDateTime.now();
+        long delay = ChronoUnit.MILLIS.between(now, reminderTime);
+
+        if (delay > 0) {
+            // 将 reminderTime 转换为 Instant
+            Instant scheduleTime = reminderTime.atZone(ZoneId.systemDefault()).toInstant();
+            taskScheduler.schedule(() -> sendReminderNotification(users, assignment, title, content), scheduleTime);
+        }
+    }
+
+    // 发送提醒通知
+    private void sendReminderNotification(List<User> users, Assignment assignment, String title, String content) {
+        LocalDateTime now = LocalDateTime.now();
+        String formattedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), title, teachingDTO.getTeacherId(), "作业提醒", assignment.getId(), content, 0, formattedNow, assignment.getCourseId(), 0);
+            notificationService.save(notification);
+        }
     }
 
     /**
@@ -101,14 +144,6 @@ public class AssignmentController {
     public ResponseEntity<Void> reviewAssignment(@RequestBody AssignmentReview assignmentReview) {
         assignmentReviewService.save(assignmentReview);
         logger.info("Reviewed assignment ID: {}", assignmentReview.getSubmissionId());
-        AssignmentSubmission assignmentSubmission = assignmentSubmissionService.getById(assignmentReview.getSubmissionId());
-        Assignment assignment = assignmentService.getById(assignmentSubmission.getAssignmentId());
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedNow = now.format(formatter);
-        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
-        Notification notification = new Notification(assignmentSubmission.getStudentId(), "作业已被批改", teachingDTO.getTeacherId(), "作业", assignmentReview.getSubmissionId(), "成绩：" + assignmentReview.getGrade(), 0, formattedNow, assignment.getCourseId(), 0);
-        notificationService.save(notification);
 
         return ResponseEntity.ok().build();
     }
@@ -123,13 +158,7 @@ public class AssignmentController {
     public ResponseEntity<Void> submitAssignment(@RequestBody AssignmentSubmissionDTO submission) {
         var newSubmission = new AssignmentSubmission(0, submission.getAssignmentId(), submission.getStudentId(), submission.getSubmittedAt(), submission.getContent());
         assignmentSubmissionService.save(newSubmission);
-        submission.getAttachments().forEach(attachment ->
-                attachmentService.update(
-                        new LambdaUpdateWrapper<Attachment>()
-                                .eq(Attachment::getId, attachment)
-                                .set(Attachment::getSubmissionId, newSubmission.getId())
-                )
-        );
+        submission.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getSubmissionId, newSubmission.getId())));
         return ResponseEntity.ok().build();
     }
 
@@ -147,29 +176,31 @@ public class AssignmentController {
     }
 
     /**
-     * 公布作业答案
+     * 公布作业答案 + 通知提醒
      *
      * @return 公布作业答案结果
      */
     @PostMapping("/issue-answer")
     public ResponseEntity<Void> issueAnswer(@RequestBody IssueAnswer answer) {
-        assignmentService.update(
-                new LambdaUpdateWrapper<Assignment>()
-                        .eq(Assignment::getId, answer.assignmentId)
-                        .set(Assignment::getAnswer, answer.content)
-        );
-        answer.attachments.forEach(attachment ->
-                attachmentService.update(
-                        new LambdaUpdateWrapper<Attachment>()
-                                .eq(Attachment::getId, attachment)
-                                .set(Attachment::getAnswerId, answer.assignmentId)
-                )
-        );
+        assignmentService.update(new LambdaUpdateWrapper<Assignment>().eq(Assignment::getId, answer.assignmentId).set(Assignment::getAnswer, answer.content));
+        answer.attachments.forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAnswerId, answer.assignmentId)));
+        var assignment = assignmentService.getById(answer.assignmentId);
+        //获得该课程所有学生
+        List<User> users = courseService.getAllStudents(assignment.getCourseId());
+        //获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "作业公布答案", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "的答案已经公布", 0, formattedNow, assignment.getCourseId(), 0);
+            notificationService.save(notification);
+        }
         return ResponseEntity.ok().build();
     }
 
     /**
-     * 修改作业
+     * 修改作业 + 作业通知
      *
      * @param assignment 作业信息
      * @return 修改作业结果
@@ -178,18 +209,24 @@ public class AssignmentController {
     public ResponseEntity<Void> changeAssignment(@RequestBody AssignmentIssue assignment) {
         var newAssignment = new Assignment(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
         assignmentService.updateById(newAssignment);
-        assignment.getAttachments().forEach(attachment ->
-                attachmentService.update(
-                        new LambdaUpdateWrapper<Attachment>()
-                                .eq(Attachment::getId, attachment)
-                                .set(Attachment::getAssignmentId, newAssignment.getId())
-                )
-        );
+        assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
+        //获得该课程所有学生
+        List<User> users = courseService.getAllStudents(assignment.getCourseId());
+        //获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "作业被教师更新", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "的内容已经被更新", 0, formattedNow, assignment.getCourseId(), 0);
+            notificationService.save(notification);
+        }
         return ResponseEntity.ok().build();
     }
 
     /**
-     * 删除作业
+     * 删除作业 + 作业通知
      *
      * @param id 作业ID
      * @return 删除作业结果
@@ -198,7 +235,40 @@ public class AssignmentController {
     public ResponseEntity<Void> deleteAssignment(@RequestParam Integer id) {
         assignmentService.removeById(id);
         logger.info("Deleted assignment ID: {}", id);
+        //通过id查询到对应作业
+        var assignment = assignmentService.getById(id);
+        //获得该课程所有学生
+        List<User> users = courseService.getAllStudents(assignment.getCourseId());
+        //获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "作业被教师删除", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除", 0, formattedNow, assignment.getCourseId(), 0);
+            notificationService.save(notification);
+        }
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 获得作业详情
+     *
+     * @param studentId    作业ID
+     * @param assignmentId 作业ID
+     * @return 获得作业详情结果
+     */
+    @GetMapping("/submission")
+    public ResponseEntity<SubmissionInfo> getSubmissionInfo(@RequestParam Integer studentId, @RequestParam Integer assignmentId) {
+
+        AssignmentSubmission assignmentSubmission = assignmentSubmissionService.getOne(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentId).eq(AssignmentSubmission::getStudentId, studentId));
+        AssignmentReview assignmentReview = assignmentReviewService.findAllBySubmissionId(assignmentSubmission.getId());
+        List<Attachment> attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, assignmentSubmission.getId()));
+        var attachmentInfos = attachments.stream().map(attachment -> new AttachmentInfo(attachment.getId(), attachment.getName())).toList();
+
+        SubmissionInfo submissionInfo = new SubmissionInfo(studentId, assignmentSubmission.getSubmittedAt(), assignmentReview.getGrade(), assignmentSubmission.getContent(), assignmentReview.getFeedback(), assignmentReview.getGradedAt(), attachmentInfos);
+        return ResponseEntity.ok(submissionInfo);
     }
 
     /**
@@ -235,15 +305,12 @@ public class AssignmentController {
         // 查询附件
         List<Attachment> attachments = attachmentService.findByAssignmentId(assignment.getId());
         if (attachments != null && !attachments.isEmpty()) {
-            List<Integer> attachmentIds = attachments.stream()
-                    .map(Attachment::getId)
-                    .collect(Collectors.toList());
+            List<Integer> attachmentIds = attachments.stream().map(Attachment::getId).collect(Collectors.toList());
             descriptionDTO.setAttachments(attachmentIds);
         }
 
         return ResponseEntity.ok(descriptionDTO);
     }
-
 
 
     /**
@@ -265,10 +332,7 @@ public class AssignmentController {
 
         var details = submissions.stream().map(submission -> {
             // 根据 submission 的 ID 查询相关附件 ID
-            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>()
-                            .eq(Attachment::getSubmissionId, submission.getId())
-                            .select(Attachment::getId))
-                    .stream().map(Attachment::getId).toList();
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId)).stream().map(Attachment::getId).toList();
 
             // 使用 studentId 查询学生姓名
             User student = userService.findById(submission.getStudentId());
@@ -289,16 +353,15 @@ public class AssignmentController {
      * 作业的所有提交
      *
      * @param assignmentId 作业ID
-     * @param userId 评分人的ID
-     * @param count 需要评分的作业个数
+     * @param userId       评分人的ID
+     * @param count        需要评分的作业个数
      * @return 获得作业提交列表
      */
     @GetMapping("/peer-review-list")
     public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsPeerReviewList(@RequestParam Integer assignmentId, @RequestParam Integer userId, @RequestParam Integer count) {
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentId));
         var details = submissions.stream().filter(submission -> !Objects.equals(submission.getStudentId(), userId)).map(submission -> {
-            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId))
-                    .stream().map(Attachment::getId).toList();
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId)).stream().map(Attachment::getId).toList();
             return new AssignmentSubmissionDetail(submission, attachments);
         }).collect(Collectors.toList());
         Collections.shuffle(details);
@@ -433,6 +496,7 @@ public class AssignmentController {
         private List<Integer> attachments;
         private String answer;
     }
+
     @Data
     public static class DescriptionDTO {
         private Integer id;
@@ -473,5 +537,25 @@ public class AssignmentController {
         private String content;
         private List<Integer> attachments;
         private Float grade;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class SubmissionInfo {
+        Integer studentId;
+        String submittedAt;
+        Float grade;
+        String content;
+        String feedback;
+        String gradedAt;
+        private List<AttachmentInfo> attachments;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AttachmentInfo {
+        Integer id;
+
+        String name;
     }
 }
