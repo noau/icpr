@@ -19,4 +19,9 @@ public class AssignmentReviewServiceImpl extends ServiceImpl<AssignmentReviewMap
     public Float findById(Integer id) {
         return assignmentReviewMapper.findById(id);
     }
+
+    @Override
+    public AssignmentReview findAllBySubmissionId(Integer assignmentId) {
+        return assignmentReviewMapper.findAllBySubmissionId(assignmentId);
+    }
 }
