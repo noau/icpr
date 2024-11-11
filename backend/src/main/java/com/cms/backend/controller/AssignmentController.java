@@ -325,27 +325,40 @@ public class AssignmentController {
     }
 
     @GetMapping("/review-list")
-    public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsSubmissions(@RequestParam Integer id) {
-        System.out.println(id);
+    public ResponseEntity<AssignmentReviewListDTO> getAssignmentsSubmissions(@RequestParam Integer id) {
+
         // 获取与指定作业ID匹配的提交记录
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
 
+        var shouldBeSubmitted = courseService.getAllStudents(assignmentService.getById(id).getCourseId()).size();
+        var submitted = submissions.size();
+        var notSubmitted = shouldBeSubmitted - submitted;
+
         var details = submissions.stream().map(submission -> {
             // 根据 submission 的 ID 查询相关附件 ID
-            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId)).stream().map(Attachment::getId).toList();
+
+            var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>()
+                            .eq(Attachment::getSubmissionId, submission.getId()));
+            List<AttachmentListDTO> attachmentList = new ArrayList<>();
+            for (Attachment attachment : attachments) {
+                AttachmentListDTO attachmentDTO = new AttachmentListDTO(attachment.getId(), attachment.getName());
+                attachmentList.add(attachmentDTO);
+            }
 
             // 使用 studentId 查询学生姓名
             User student = userService.findById(submission.getStudentId());
             Float grade = assignmentReviewService.findById(submission.getId());
 
             // 创建 AssignmentSubmissionDetail 对象并设置学生姓名
-            AssignmentSubmissionDetail detail = new AssignmentSubmissionDetail(submission, attachments);
+            AssignmentSubmissionDetailDTO detail = new AssignmentSubmissionDetailDTO(submission, attachmentList);
             detail.setName(student.getName()); // 设置 name 属性
             detail.setGrade(grade);
             return detail;
-        });
+        }).collect(Collectors.toList());
 
-        return ResponseEntity.ok(details.collect(Collectors.toList()));
+        AssignmentReviewListDTO assignmentReviewListDTO = new AssignmentReviewListDTO(details, submitted, shouldBeSubmitted, notSubmitted);
+
+        return ResponseEntity.ok(assignmentReviewListDTO);
     }
 
 
@@ -537,10 +550,47 @@ public class AssignmentController {
         private String content;
         private List<Integer> attachments;
         private Float grade;
+
+    }
+
+    @Data
+    public static class AssignmentSubmissionDetailDTO {
+        public AssignmentSubmissionDetailDTO(AssignmentSubmission submission, List<AttachmentListDTO> attachments) {
+            this.id = submission.getId();
+            this.assignmentId = submission.getAssignmentId();
+            this.studentId = submission.getStudentId();
+            this.submittedAt = submission.getSubmittedAt();
+            this.content = submission.getContent();
+            this.attachments = attachments;
+        }
+
+        private Integer id;
+        private String name;
+        private Integer assignmentId;
+        private Integer studentId;
+        private String submittedAt;
+        private String content;
+        private List<AttachmentListDTO> attachments;
+        private Float grade;
+
     }
 
     @Data
     @AllArgsConstructor
+    public static class AssignmentReviewListDTO {
+        private List<AssignmentSubmissionDetailDTO> submissions;
+        private Integer submitted;
+        private Integer shouldBeSubmitted;
+        private Integer notSubmitted;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class AttachmentListDTO {
+        private Integer id;
+        private String name;
+    }
+
     public static class SubmissionInfo {
         Integer studentId;
         String submittedAt;
@@ -555,7 +605,7 @@ public class AssignmentController {
     @AllArgsConstructor
     public static class AttachmentInfo {
         Integer id;
-
         String name;
     }
+
 }
