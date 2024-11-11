@@ -51,9 +51,7 @@ const comments = ref([]);
 onMounted(() => {
   // 在这里获取帖子详情和评论列表的数据
   getget_threadList();
-
 });
-
 
 const threadId = route.params.id;
 
@@ -77,7 +75,12 @@ const likeComment = (comment) => {
 
 // 回复评论
 const replyComment = async (comment, replyContent) => {
-  console.log(comment,'commentcommentcomment',replyContent,'replyContentreplyContent');
+  console.log(
+    comment,
+    "commentcommentcomment",
+    replyContent,
+    "replyContentreplyContent"
+  );
 
   await getReplies({
     threadId,
@@ -118,21 +121,63 @@ function getget_threadList() {
     id: threadId,
   }).then((res) => {
     post.value = res;
-    comments.value = res.replyList.map((item) => {
-      return {
-        likes: item.likes,
-        id: item.id,
-        liked: item.liked,
-        author: {
-          name: item.name,
-          avatar: item.avatar || "https://via.placeholder.com/50",
-        },
-        content: item.content,
-        replies: item.replies,
-      };
-      // .push(obj);
-    });
+    // comments.value =
+    console.log(123, res.replyList, "123123");
+    const list = [];
+
+    getComments(res.replyList, list);
+
+    // comments.value = res.replyList;
+    console.log(comments.value, "comments.valuecomments.value");
   });
+}
+
+function getComments(array, list) {
+  // 创建一个映射来快速查找评论
+  const commentMap = new Map();
+
+  // 遍历每个评论
+  array.forEach((item) => {
+    const comment = {
+      likes: item.likes,
+      id: item.id,
+      liked: item.liked,
+      author: {
+        name: item.name,
+        avatar: item.avatar || "https://via.placeholder.com/50",
+      },
+      content: item.content,
+      replies: [],
+    };
+
+    // 将评论添加到映射中
+    commentMap.set(item.id, comment);
+
+    if (item.replyId === 0) {
+      // 如果是顶级评论，直接添加到列表中
+      list.push(comment);
+    } else {
+      // 如果是回复，找到父评论
+      const parentComment = commentMap.get(item.replyId);
+      if (parentComment) {
+        // 检查父评论是否是顶级评论
+        if (list.includes(parentComment)) {
+          // 如果是顶级评论，将回复添加为二级评论
+          parentComment.replies.push(comment);
+        } else {
+          const topLevelComment = list.find(c => c.replies.includes(parentComment));
+          if (topLevelComment) {
+            topLevelComment.replies.push({
+              ...comment,
+              content: `@${parentComment.author?.name}：` + item.content,
+            });
+          }
+        }
+      }
+    }
+  });
+
+  comments.value = list;
 }
 </script>
 

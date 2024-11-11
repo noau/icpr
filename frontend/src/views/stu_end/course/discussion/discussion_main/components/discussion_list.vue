@@ -45,7 +45,7 @@ function getcourseList() {
   let courseId = localStorage.getItem("courseId"); // 获取课程ID
   getcourse({id: courseId}).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
-    console.log(res.discussionThreads);
+    console.log(res.discussionThreads, '');
     posts.value = res.discussionThreads;
   }).catch(err => {
     console.error("获取帖子数据失败:", err);
