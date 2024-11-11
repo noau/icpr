@@ -1,7 +1,7 @@
 import httpInstance from '@/utils/http.js';
 
 //courses/all
-// 获取课程信息
+// 获取全部课程信息
 export const userCourses = (userId, token) =>
   httpInstance.get(`/courses/all?id=${userId}`, {
     headers: {
@@ -9,9 +9,28 @@ export const userCourses = (userId, token) =>
       Authorization: token,
     },
   });
-  
 
-  
+// 获取课程详细信息
+// export const getCourseInfo = (courseId, token) => {
+//   httpInstance.get(`/courses/get-info`, {
+//     headers: {
+//       Authorization: `Bearer ${token}`, // 设置Authorization头部
+//     },
+//     params: {
+//       id: courseId, // 传递课程ID
+//     },
+//   });
+// };
+export const getCourseInfo = (courseId, token) => {
+  return httpInstance.get('/courses/get-info', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: {
+      id: courseId,
+    },
+  });
+};
 //courses/all-teach
   export const teacherCourses = (id, token) =>
     httpInstance.get('/courses/all-teach?id=' + id, {
@@ -23,14 +42,25 @@ export const userCourses = (userId, token) =>
 
 // /courses/all-students
 
-export const allstudents = (id, token) =>
-  httpInstance.get('/courses/all-students?id=' + id, {
+export const allstudents = (id, token) =>{
+ return httpInstance.get('/courses/all-students?id=' + id, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: token,
     },
   });
-
+}
+ 
+// 获取教师信息
+// /courses/get-teacher
+export const getTeacherInfo = (id, token) =>{
+  return httpInstance.get('/courses/get-teacher?id=' + id, {
+     headers: {
+       'Content-Type': 'application/json',
+       Authorization: token,
+     },
+   });
+ }
 // /attachment/delete
 
 export const deleteFile = (id, token) =>
@@ -44,7 +74,7 @@ export const deleteFile = (id, token) =>
     },
   });
 
-// 确保在course.js中定义的getppt函数可以接收id参数并使用Authorization头
+// 
 export const getppt = (id) =>
   httpInstance.get(`/courses/get-ppt?id=${id}`, {
     headers: {
@@ -98,13 +128,6 @@ export const resourcesyllabus = (data) =>
 export const resourcecalendar = (data) =>
   httpInstance.post('/courses/resource-calendar', data);
 
-// /courses/get-syllabus
-// export const getsyllabus = (id) =>
-//   httpInstance.get('/courses/get-syllabus', {
-//     params: {
-//       id: id,
-//     },
-//   });
 export const getsyllabus = (id) =>
   httpInstance.get('/courses/get-syllabus', {
     params: {
@@ -154,5 +177,28 @@ export const uploadCourseInfo = (file, token) =>
       Authorization: token,
     },
   });
+
+export const uploadselection= (file, token) =>
+    httpInstance.post('/uploading/course-selection', file, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: token,
+      },
+    });
+export const uploadstudent= (file, token) =>
+      httpInstance.post('/uploading/users/student', file, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: token,
+        },
+      });
+export const uploadteacher = (file, token) =>
+        httpInstance.post('/uploading/users/teacher', file, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: token,
+          },
+        });
+
 
 

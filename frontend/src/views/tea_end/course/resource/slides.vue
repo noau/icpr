@@ -33,7 +33,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getppt, deleteFile, createattachmentfolder, upload } from '@/api/course';
+import { getppt, deleteFile, createattachmentfolder } from '@/api/course';
 
 const directoryData = ref([]); // Folder data
 const filteredFiles = ref([]); // File data
