@@ -5,4 +5,5 @@ import com.cms.backend.pojo.Assignments.AssignmentPeerReview;
 
 
 public interface AssignmentPeerReviewService extends IService<AssignmentPeerReview> {
+    int getPeerReviewCount(Integer studentId, Integer assignmentId);
 }
