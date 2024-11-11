@@ -40,12 +40,12 @@ const isFlag = ref(false);
 
 const userId = localStorage.getItem("userId");
 
-// 模拟帖子数据，可以通过 API 获取
+// 帖子数据，通过 API 获取
 const post = ref({
   id: postId,
 });
 
-// 模拟评论数据，可以通过 API 获取
+// 评论数据，通过 API 获取
 const comments = ref([]);
 
 onMounted(() => {
