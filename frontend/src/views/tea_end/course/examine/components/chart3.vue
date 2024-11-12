@@ -1,13 +1,12 @@
 <template>
   <el-table :data="tableData" style="width: 100%">
     <el-table-column prop="date" label="成绩项" width="180" />
-    <el-table-column prop="name" label="10-20" width="180" />
-    <el-table-column prop="name" label="20-30" width="180" />
-    <el-table-column prop="name" label="30-40" width="180" />
-    <el-table-column prop="name" label="40-50" width="180" />
-    <el-table-column prop="name" label="50-60" width="180" />
-    <el-table-column prop="name" label="60-80" width="180" />
-    <el-table-column prop="name" label="80-100" width="180" />  
+    <el-table-column prop="name" label="0%-59%" width="180" />
+    <el-table-column prop="name" label="60%-69%" width="180" />
+    <el-table-column prop="name" label="70%-79%" width="180" />
+    <el-table-column prop="name" label="80%-89%" width="180" />
+    <el-table-column prop="name" label="90%-99%" width="180" />
+    <el-table-column prop="name" label="100%" width="180" />
   </el-table>
 </template>
 

@@ -21,23 +21,23 @@
             <el-icon class="custom-icon">
               <Phone />
             </el-icon>
-            办公电话：{{ teacherInfo.phone }}
+            办公电话：{{ teacherInfo.phoneNumber }}
           </el-button>
           <el-button type="text" style="margin-right: 20px;">
             <el-icon class="custom-icon">
               <LocationFilled />
             </el-icon>
-            办公地址：{{ teacherInfo.officeAddress }}
+            办公地址：{{ teacherInfo.address }}
           </el-button>
           <br>
           <el-button type="text" style="margin-right: 20px;">
-            职称：{{ teacherInfo.position }}
+            职称：{{ teacherInfo.title }}
           </el-button>
+          <!-- <el-button type="text" style="margin-right: 20px;">
+            工号：{{ teacherInfo.academy }}
+          </el-button> -->
           <el-button type="text" style="margin-right: 20px;">
-            工号：{{ teacherInfo.employeeNumber }}
-          </el-button>
-          <el-button type="text" style="margin-right: 20px;">
-            教学单位：{{ teacherInfo.teachingUnit }}
+            教学单位：{{ teacherInfo.address }}
           </el-button>
           <br>
           <br>
@@ -48,7 +48,7 @@
     <br>
     <span>教师简介</span>
     <el-card class="teacher-intro-card">
-      <p>{{ teacherInfo.introduction }}</p>
+      <p>{{ teacherInfo.brief }}</p>
     </el-card>
   </div>
 </template>
@@ -56,10 +56,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getTeacherInfo } from '@/api/course.js'; // 确保路径正确
+import { getTeacherInfo } from '@/api/course.js'; 
 import { ElMessage } from 'element-plus';
 
-const teacherId = ref('M310001B2'); // 示例教师ID，根据实际情况调整
+let courseId = localStorage.getItem('courseId') // 获取课程ID
 const token = ref('您的授权Token'); // 真实环境中应该动态获取
 const teacherInfo = ref({
   name: '',
@@ -75,19 +75,22 @@ const teacherInfo = ref({
 
 const fetchTeacherInfo = async () => {
   try {
-    const response = await getTeacherInfo(teacherId.value, token.value);
-    if (response && response.data) {
-      teacherInfo.value = {
-        name: response.data.name,
-        title: response.data.title,
-        email: response.data.email,
-        phone: response.data.phone,
-        officeAddress: response.data.officeAddress,
-        position: response.data.position,
-        employeeNumber: response.data.employeeNumber,
-        teachingUnit: response.data.teachingUnit,
-        introduction: response.data.introduction,
-      };
+    const response = await getTeacherInfo(courseId, token.value);
+    console.log(response);
+    
+    if (response || response.data) {
+      teacherInfo.value=response
+      // teacherInfo.value = {
+      //   name: response.name,
+      //   title: response.title,
+      //   email: response.email,
+      //   phone: response.phone,
+      //   officeAddress: response.officeAddress,
+      //   position: response.position,
+      //   employeeNumber: response.employeeNumber,
+      //   teachingUnit: response.teachingUnit,
+      //   introduction: response.introduction,
+      // };
     }
   } catch (error) {
     ElMessage.error('获取教师信息失败，请检查网络或联系管理员');

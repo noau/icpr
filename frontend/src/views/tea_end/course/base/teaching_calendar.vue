@@ -4,18 +4,24 @@
     <div class="course-name">教学日历</div>
 
     <!-- 上传按钮，右对齐 -->
-    <div class="upload-section">
+    <div class="upload-section-bottom">
       <el-button round type="primary" @click="dialogVisible = true" style="padding: 8px">上传</el-button>
     </div>
 
-    <!-- PDF 预览区域，放置在标题和上传按钮的正下方，并占满空白区域 -->
-    <div v-if="pdfUrl" class="pdf-preview-section">
-      <iframe :src="pdfUrl" style="width: 100%; height: 100%;" frameborder="0"></iframe>
+    <!-- PDF 预览区域，优先使用 VueOfficePdf 组件展示 PDF 文件 -->
+    <vue-office-pdf 
+      v-if="pdfUrl"    
+      :src="pdfUrl"
+      style="height: calc(100vh - 200px); width: 100%;"
+      @rendered="renderedHandler"
+      @error="errorHandler"
+    />
+    <div v-else-if="pdfIframeUrl" class="pdf-preview-section">
+      <iframe :src="pdfIframeUrl" style="width: 100%; height: 100%;" frameborder="0"></iframe>
     </div>
 
     <!-- 上传对话框 -->
     <el-dialog title="上传教学日历" v-model="dialogVisible" width="40%" @close="handleClose">
-      <!-- 上传文件和权限设置 -->
       <div class="upload-permission-section">
         <div class="dialog-permission-section">
           <div>权限设置：</div>
@@ -43,14 +49,14 @@
             <el-button type="text" style="margin-right: 30px">点击选择文件</el-button>
           </el-upload>
         </div>
+
+        <div class="file-type-warning">
+          允许上传的文件类型：pdf
+        </div>
       </div>
 
-      <div class="file-type-warning">
-        允许上传的文件类型：doc、pdf、docx、jpg、png，文件不能超过2G
-      </div>
       <br />
 
-      <!-- 对话框底部按钮 -->
       <template v-slot:footer>
         <span class="dialog-footer">
           <el-button round type="primary" @click="confirmUpload" style="padding: 10px">确认</el-button>
@@ -62,67 +68,104 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { resourcecalendar } from '@/api/course'
+import { ref } from 'vue'
+import VueOfficePdf from '@vue-office/pdf'
+import { resourcecalendar, getcalendar, getAttachmentUrl } from '@/api/course'
 
-const fileList = ref([]);
-const uploadRef = ref(null);
-const acceptedFileTypes = ".doc,.docx,.pdf,.jpg,.png"; // 支持格式
-const selectedPermission = ref('course');
-const dialogVisible = ref(false);
-const attachmentIdList = ref([]);
-const pdfUrl = ref(null); // 存储预览文件的 URL
+const fileList = ref([])
+const uploadRef = ref(null)
+const acceptedFileTypes = ".pdf" // 支持格式
+const selectedPermission = ref('course')
+const dialogVisible = ref(false)
+
+
+const pdfUrl = ref(null) // 存储 VueOfficePdf 文件的 URL
+const pdfIframeUrl = ref(null) // 用于 iframe 预览的 URL
 const headers = {
-  Authorization: localStorage.getItem('token'),
-};
+  Authorization: localStorage.getItem('token')
+}
 
+// 上传文件前的检查
 const beforeUpload = (file) => {
-  const isAllowedSize = file.size / 1024 / 1024 < 2048; // 文件大小限制为 2G
+  const isAllowedSize = file.size / 1024 / 1024 < 2048 // 文件大小限制为 2G
   if (!isAllowedSize) {
-    alert('文件大小不能超过2G！');
-    return false;
+    alert('文件大小不能超过2G！')
+    return false
   }
-  return true;
-};
-
+  return true
+}
+const pdfId = ref('')
 // 上传文件成功后的处理
 const handleUploadSuccess = (response, file) => {
-  // 对 URL 进行编码以避免中文或特殊字符问题
-  pdfUrl.value = encodeURI(response.url); // 假设服务器返回的 URL 位于 response.url
-  dialogVisible.value = false; // 关闭上传对话框
-};
+  alert(`${file.name} 上传成功`)
+  pdfId.value = response.id // 记录文件的 ID
+  loadFileUrl(pdfId.value) // 使用加载文件 URL 函数加载预览
+  // dialogVisible.value = false // 关闭上传对话框
+}
 
 // 上传文件失败后的处理
 const handleUploadError = () => {
-  alert('上传失败');
-};
+  alert('上传失败')
+}
 
 // 提交上传操作
 const confirmUpload = () => {
-  if (attachmentIdList.value.length === 0) {
-    alert('请先选择文件上传');
-    return;
+  if (!pdfId.value) {
+    alert('请先选择文件上传')
+    return
   }
 
-  // 将附件信息保存到教学日历
+  // 将附件信息保存到课程日历
   resourcecalendar({
-    attachmentIdList: attachmentIdList.value,
+    attachmentIdList: [pdfId.value], //attachmentIdList.value,
+    id: localStorage.getItem('courseId')
+  }).then(res => {
+    console.log(res)
+    alert('文件信息保存成功')
+    dialogVisible.value = false // 关闭对话框
+  }).catch(error => {
+    alert('文件信息保存失败，请稍后再试')
+    console.error(error)
   })
-    .then((res) => {
-      console.log(res);
-      alert('文件信息保存成功');
-      dialogVisible.value = false; // 关闭对话框
-    })
-    .catch((error) => {
-      alert('文件信息保存失败，请稍后再试');
-      console.error(error);
-    });
-};
+}
 
 // 处理上传文件超过限制
 const handleExceed = () => {
-  alert('一次只能上传一个文件');
-};
+  alert('一次只能上传一个文件')
+}
+
+// 加载教学日历的 PDF 文件
+const loadCalendar = () => {
+  const courseId = localStorage.getItem('courseId')
+  getcalendar(courseId).then(res => {
+    if (res && res.attachmentIdList && res.attachmentIdList.length > 0) {
+      const attachmentId = res.attachmentIdList[res.attachmentIdList.length-1].id
+      loadFileUrl(attachmentId)
+    } else {
+      console.log("未找到教学日历附件")
+    }
+  }).catch(error => {
+    console.log("获取教学日历失败", error)
+  })
+}
+
+// 根据附件 ID 获取文件 URL
+const loadFileUrl = (attachmentId) => {
+  getAttachmentUrl(attachmentId).then(res => {
+    if (res && res.url) {
+      pdfUrl.value = res.url.endsWith('.pdf') ? res.url : null // 若为 PDF，设置为 PDF URL
+      pdfIframeUrl.value = !pdfUrl.value ? encodeURI(res.url) : null // 若非 PDF，则设置 iframe URL
+      console.log("文件URL加载成功")
+    } else {
+      console.log("未获取到文件URL")
+    }
+  }).catch(error => {
+    console.log("获取文件URL失败", error)
+  })
+}
+
+// 在页面加载时调用教学日历加载函数
+loadCalendar()
 </script>
 
 <style scoped>
@@ -137,7 +180,7 @@ const handleExceed = () => {
   font-weight: bold;
   margin-bottom: 10px;
 }
-.upload-section {
+.upload-section-bottom {
   text-align: right;
   width: 100%;
   margin-bottom: 20px;
@@ -162,7 +205,7 @@ const handleExceed = () => {
   margin-top: 20px;
 }
 .file-type-warning {
-  margin-top: -5px;
+  margin-top: -25px;
   font-size: 12px;
   color: gray;
 }
@@ -170,3 +213,4 @@ const handleExceed = () => {
   text-align: right;
 }
 </style>
+

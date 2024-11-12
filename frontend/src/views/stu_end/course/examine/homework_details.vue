@@ -1,148 +1,151 @@
 <template>
-  <div class="homework-details">
+  <div>
     <el-card>
-      <h2>{{ homework.title }}</h2>
-      <br>
-      <el-row>
-        <el-col :span="12">
-          <el-form label-width="120px">
-            <el-form-item label="作业内容">
-              <el-input type="textarea" :value="homework.content" disabled rows="10"></el-input>
-            </el-form-item>
-            <el-form-item label="附件">
-              <ul class="uploaded-files">
-                <li v-for="file in homework.fileList" :key="file.name">
-                  <a :href="file.url" download>{{ file.name }}</a>
-                </li>
-              </ul>
-            </el-form-item>
-          </el-form>
-        </el-col>
-        <el-col :span="3">
-        </el-col>
-        <el-col :span="9">
-          <el-form label-width="120px">
-            <el-form-item label="得分：">
-              <span>{{ homework.score }}</span>
-            </el-form-item>
-            <el-form-item label="批改状态：">
-              <span>{{ homework.reviewStatus }}</span>
-            </el-form-item>
-            <el-form-item label="老师评语：">
-              <span>{{ homework.teacherComment }}</span>
-            </el-form-item>
-          </el-form>
-        </el-col>
-      </el-row>
+      <h2>作业标题：{{ assignmentDetail.title }}</h2>
+      <!-- <br /> -->
+      <p>作业描述：{{ assignmentDetail.description }}</p>
+      <p>互评数量：{{ assignmentDetail.minPeerReview }}</p>
+
+      <br />
+      
+      <div class="attachment-header">
+        <h3>附件</h3>
+        <el-button round type="text" icon="el-icon-download" @click="handleDownload()">下载附件</el-button>
+      </div>
+
+      <!-- 使用 VueOfficePdf 组件来显示 PDF 文件 -->
+      <vue-office-pdf
+        v-if="urlType === 1"
+        :src="pdfUrl"
+        style="height: 100vh"
+        @rendered="renderedHandler"
+        @error="errorHandler"
+      />
+
+      <!-- 展示图片 -->
+      <div v-else-if="urlType === 2" style="text-align:center; padding-top:20px;">
+        <img :src="attachmentUrl" alt="Attachment Image" style="max-width: 100%; height: auto;" />
+      </div>
+
+      <!-- 展示 .doc 或 .docx 文件 -->
+      <vue-office-docx
+        v-else-if="urlType === 3"
+        :src="pdfUrl"
+        style="height: 100vh"
+        @rendered="renderedHandler"
+        @error="errorHandler"
+      />
+      <div v-else style="text-align:center; padding-top:20px;">
+        <p>暂无</p>
+      </div>
     </el-card>
-    <!-- <br> -->
-    <div class="button-container">
-      <el-button round type="primary" @click="goBack">返回</el-button>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { getAssignmentsInfo } from '@/api/homework.js'
+import axios from 'axios';
+import VueOfficePdf from '@vue-office/pdf';
+import VueOfficeDocx from '@vue-office/docx';
+import '@vue-office/docx/lib/index.css';
+import { useRoute } from 'vue-router';
+import { getAssignmentsInfo } from '@/api/assignments.js';
+import { getAttachmentUrl } from '@/api/common.js';
+import { getFileTypeFromUrl } from '@/utils/base.js';
 
 const route = useRoute();
-const router = useRouter();
 
-const homework = ref({
-  title: '',
-  score: '',
-  reviewStatus: '',
-  content: '',
-  fileList: [],
-  teacherComment: '',
-});
+const assignmentDetail = ref({});
+const pdfUrl = ref('');
+const urlType = ref(0);
+const fileName = ref('');
 
-function fetchHomeworkDetails(id) {
-  // 模拟根据作业 ID 获取作业详情
-  const assignments = {
-    '1': {
-      title: '作业标题1',
-      score: '90',
-      reviewStatus: '已批改',
-      content: '作业内容1。',
-      fileList: [
-        { name: 'file1.pdf', url: 'https://example.com/file1.pdf' },
-        { name: 'file2.pdf', url: 'https://example.com/file2.pdf' },
-      ],
-      teacherComment: '做得很好！',
-    },
-    '2': {
-      title: '作业标题 2',
-      score: '85',
-      reviewStatus: '已批改',
-      content: '作业内容2。',
-      fileList: [
-        { name: 'file3.pdf', url: 'https://example.com/file3.pdf' },
-        { name: 'file4.pdf', url: 'https://example.com/file4.pdf' },
-      ],
-      teacherComment: '需要改进。',
-    },
-    // 可以添加更多作业
-  };
+const loadAssignmentDetail = async () => {
+  const assignmentId = route.query.assignmentId;
+  try {
+    const response = await getAssignmentsInfo({ id: assignmentId });
+    if (response) {
+      assignmentDetail.value = response;
+      if (response.attachments && response.attachments.length > 0) {
+        const firstAttachmentId = response.attachments[0];
+        await loadFileUrl(firstAttachmentId);
+      }
+    }
+  } catch (error) {
+    console.error('获取作业详情失败:', error);
+  }
+};
 
-  // 根据 ID 返回对应的作业详情，若未找到则返回默认信息
-  return assignments[id] || {
-    title: '未知作业',
-    score: '',
-    reviewStatus: '',
-    content: '没有找到作业内容。',
-    fileList: [],
-    teacherComment: '无评语。',
-  };
+const loadFileUrl = async (attachmentId) => {
+  try {
+    const response = await getAttachmentUrl(attachmentId);
+    if (response && response.url) {
+      pdfUrl.value = response.url;
+      fileName.value = response.name;
+      urlType.value = getFileTypeFromUrl(response.url);
+      console.log(pdfUrl.value + ':  ' + urlType.value);
+    } else {
+      console.log('未获取到文件 URL');
+    }
+  } catch (error) {
+    console.error('获取文件 URL 失败:', error);
+  }
+};
+
+/**
+ * 通过链接下载文件
+ */
+ function handleDownload() {
+  // 获取文件 URL 和文件名
+  const url = pdfUrl.value; // 假设 row 中包含一个文件的 URL
+  const name = fileName.value; // 默认文件名，如果没有提供 name 属性，使用默认值
+
+  // 检查 URL 是否有效
+  if (url && name) {
+    downloadFile(url,name)
+  } else {
+   alert('文件 URL 不存在或无效!');
+  }
 }
 
-onMounted(() => {
-  const homeworkId = route.params.id; // Get the homework ID from the route parameters
-  homework.value = fetchHomeworkDetails(homeworkId);
-  getAssignmentsInfo(homeworkId).then(res => {
-    console.log(res);
-
-  })
-});
-
-function goBack() {
-  router.push({ path: '/stu-end/course/examine/stu-homework' }); // Adjust based on your route setup
+/**
+ * 根据路径下载文件
+ * @param pdfUrl 
+ * @param name 
+ */
+ async function downloadFile(url,name) {
+  console.log(url);
+  
+  const response = await axios({
+    url,
+    method: 'GET',
+    responseType: 'blob', // 必须指定为blob类型才能下载
+  });
+  url = window.URL.createObjectURL(new Blob([response.data]));
+  console.log(url);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download',  name);
+  document.body.appendChild(link);
+  link.click();
 }
+
+const renderedHandler = () => {
+  console.log('PDF 渲染完成');
+};
+
+const errorHandler = () => {
+  console.log('PDF 渲染失败');
+};
+
+onMounted(loadAssignmentDetail);
 </script>
 
 <style scoped>
-.homework-details {
-  padding: 20px;
-}
-
-.el-card {
-  margin-bottom: 20px;
-  height: 500px;
-}
-
-.uploaded-files {
-  list-style-type: none;
-  padding: 0;
-}
-
-.uploaded-files li {
-  margin: 5px 0;
-}
-
-.uploaded-files a {
-  color: #409EFF;
-  text-decoration: none;
-}
-
-.uploaded-files a:hover {
-  text-decoration: underline;
-}
-
-.button-container {
+.attachment-header {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+  align-items: center;
+  gap: 10px; /* 控制标题与按钮之间的间距 */
 }
 </style>

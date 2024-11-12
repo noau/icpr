@@ -75,25 +75,40 @@ export const deleteFile = (id, token) =>
   });
 
 // 
-export const getppt = (id) =>
-  httpInstance.get(`/courses/get-ppt?id=${id}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: localStorage.getItem('token'),
-    },
-  });
+
+export const getppt = (id, token) =>
+    httpInstance.get('/courses/get-ppt', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token,
+      },
+      params: {
+        id: id,
+      },
+});
 
 
-export const getexam = (id, token) =>
-  httpInstance.get('/courses/get-exam', {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token,
-    },
-    params: {
-      id
-    },
-  });
+// export const getexam = (id, token) =>
+//   httpInstance.get('/courses/get-exam', {
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: token,
+//     },
+//     params: {
+//       id
+//     },
+//   });
+
+  export const getexam = (id, token) =>
+    httpInstance.get('/courses/get-exam', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token,
+      },
+      params: {
+        id: id,
+      },
+    });
 export const getexercise = (id, token) =>
   httpInstance.get('/courses/get-exercise', {
     headers: {
@@ -112,8 +127,8 @@ export const resourceppt = (data) =>
 // /courses/resource-exam
 export const resourceexam = (data) =>
   httpInstance.post('/courses/resource-exam', data);
-// /courses/resource - exercise
-export const resourcecourse = (data) =>
+// /courses/resource-exercise
+export const resourceexercise = (data) =>
   httpInstance.post('/courses/resource-exercise', data);
 
 // /courses/create-attachment-folder
@@ -178,27 +193,20 @@ export const uploadCourseInfo = (file, token) =>
     },
   });
 
-export const uploadselection= (file, token) =>
-    httpInstance.post('/uploading/course-selection', file, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: token,
+// /courses/grade-list
+// 获取成绩
+export const getgrade = (id) =>
+  httpInstance.get('/courses/grade-list', {
+    params: {
+      id: id,
+    },
+  });
+
+  // /assignments/get-info
+  // 获取成绩
+  export const getAllgrade = (id) =>
+    httpInstance.get('/assignments/get-info', {
+      params: {
+        id: id,
       },
     });
-export const uploadstudent= (file, token) =>
-      httpInstance.post('/uploading/users/student', file, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: token,
-        },
-      });
-export const uploadteacher = (file, token) =>
-        httpInstance.post('/uploading/users/teacher', file, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: token,
-          },
-        });
-
-
-

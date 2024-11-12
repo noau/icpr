@@ -1,58 +1,53 @@
 <template>
-  <div class="course-header">
-    <div class="course-name">课程简介</div>
-    <div class="button-container">
-      <el-button round type="text" @click="isEditing ? saveCourseIntroduction() : isEditing = true">
-        {{ isEditing ? '保存' : '编辑' }}
-      </el-button>
+  <div class="course-container"> <!-- 添加根容器 -->
+    <div class="course-header">
+      <div class="course-name">课程简介</div>
     </div>
-  </div>
 
-  <el-card class="course-card">
-    <div class="course-info">
-      <el-input
-        v-if="isEditing"
-        type="textarea"
-        v-model="courseIntroduction"
-        placeholder="请输入课程简介"
-        rows="5"
-      ></el-input>
-      <div v-else>{{ courseIntroduction }}</div>
-    </div>
-  </el-card>
+    <el-card class="course-card">
+      <div class="course-info">
+        <div>{{ courseIntroduction }}</div>
+      </div>
+    </el-card>
+  </div>
 </template>
 
-
 <script setup>
-import { ref } from 'vue';
-import { uploadCourseInfo } from '@/api/course'; // 引入上传课程简介的API
+import { ref, onMounted } from 'vue';
+import { getCourseInfo } from '@/api/course'; // 引入获取课程信息的API方法
 
-const isEditing = ref(false);
-const courseIntroduction = ref('请输入课程简介');
+// 定义存储课程简介的变量
+const courseIntroduction = ref('加载中...');
 
-// 定义课程简介上传的处理函数
-const saveCourseIntroduction = () => {
-  const token = localStorage.getItem('token'); // 获取用户的授权令牌
-  if (!token) {
-    console.error("Token 不存在，请登录");
+// 获取课程简介的函数
+const fetchCourseIntroduction = async () => {
+  const token = localStorage.getItem('token'); // 从localStorage获取token
+  let courseId = localStorage.getItem('courseId') // 获取课程ID
+
+  if (!token || !courseId) {
+    console.error("Token或课程ID不存在，请检查");
     return;
   }
 
-  // 构建FormData对象，用于文件上传
-  const formData = new FormData();
-  formData.append('file', new Blob([courseIntroduction.value], { type: 'text/plain' }), 'course-introduction.txt');
+  try {
+    // 调用API获取课程信息
+    const response = await getCourseInfo(courseId, token);
+    console.log(response);
+    
+    const courseData = response;
 
-  // 调用上传课程简介的API
-  uploadCourseInfo(formData, token)
-    .then(response => {
-      console.log("课程简介上传成功:", response);
-      isEditing.value = false; // 保存成功后关闭编辑模式
-    })
-    .catch(error => {
-      console.error("课程简介上传失败:", error);
-    });
+    // 直接显示课程的简介内容
+    courseIntroduction.value = courseData.introduction || '暂无课程简介';
+  } catch (error) {
+    console.error("获取课程简介失败:", error);
+    courseIntroduction.value = '加载课程简介失败';
+  }
 };
 
+// 使用onMounted在页面加载时获取课程简介
+onMounted(() => {
+  fetchCourseIntroduction();
+});
 </script>
 
 <style scoped>
@@ -80,11 +75,5 @@ const saveCourseIntroduction = () => {
 .course-info {
   font-size: 14px;
   color: gray;
-}
-
-.button-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 5px;
 }
 </style>

@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/icpr
     username: root
-    password: 123456
+    password: 123455
   jpa:
     hibernate:
       ddl-auto: none

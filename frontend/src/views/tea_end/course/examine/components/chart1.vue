@@ -5,10 +5,27 @@
   <script setup>
   import { onMounted, ref } from 'vue';
   import * as echarts from 'echarts';
-   
+import {getgrade} from "@/api/course"
+
+const props = defineProps({
+  // 默认选中的部门id
+  list: {
+    type: Array,
+    default: null,
+  }
+})
+
+
   const echartsRef = ref(null);
    
-  onMounted(() => {
+  onMounted(async() => {
+  setTimeout(() => {
+    console.log(props.list);
+  }, 1000);
+    
+    // let data = await getgrade(1)
+    // console.log(data);
+    
     const chart = echarts.init(echartsRef.value); 
     const option = {
         title: {
@@ -29,11 +46,12 @@
             type: 'pie',
             radius: '50%',
             data: [
-                { value: 23, name: '10-20' },
-                { value: 735, name: '20-30' },
-                { value: 580, name: '20-30' },
-                { value: 484, name: '60-80' },
-                { value: 300, name: '80-100' }
+                { value: 1048, name: '0%-59%' },
+                { value: 23, name: '60%-69%' },
+                { value: 735, name: '70%-79%' },
+                { value: 580, name: '80%-89%' },
+                { value: 484, name: '90%-99%' },
+                { value: 300, name: '100%' }
             ],
             emphasis: {
                 itemStyle: {

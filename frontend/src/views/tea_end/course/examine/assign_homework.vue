@@ -4,7 +4,7 @@
       <el-input style="margin-right: 100px; width: 400px;" v-model="homeworkForm.title" placeholder="请输入作业标题"></el-input>
     </el-form-item>
 
-    <el-form-item label="作业要求">
+    <el-form-item label="作业描述">
       <div class="upload-container">
         <el-upload
           class="upload-demo"
@@ -31,13 +31,13 @@
         v-model="homeworkForm.description"
         class="markdown-editor"
         style="margin-right: 500px"
-        placeholder="请输入作业要求"
+        placeholder="请输入作业描述"
       />
     </el-form-item>
 
     <el-form-item>
       <span style="margin-left: -68px; margin-right: 13px;">作业满分</span>
-      <el-input-number v-model="homeworkForm.fullGrade" :min="0" label="作业满分" placeholder="作业满分" style="width: 150px; margin-right: 60px;"></el-input-number>
+      <el-input-number v-model="homeworkForm.fullGrade" min="0" label="作业满分" placeholder="作业满分" style="width: 150px; margin-right: 60px;"></el-input-number>
       <span style="margin-right: 13px;">补交满分</span>
       <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>    
       <el-checkbox v-model="homeworkForm.multipleSubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
@@ -65,7 +65,7 @@
     </el-form-item>
 
     <el-form-item>
-      <el-button round type="primary" @click="submitHomework" style="margin-left: 400px;">{{ isEditing ? '保存修改' : '发布作业' }}</el-button>
+      <el-button round type="primary" @click="submitHomework" style="margin-left: 400px;">{{ isEditing ? '保存修改' : '布置作业' }}</el-button>
       <el-button round @click="resetForm">重置</el-button>
     </el-form-item>
   </el-form>
@@ -151,6 +151,8 @@ const loadAssignmentDetails = async () => {
   if (!courseId) {
     courseId = localStorage.getItem("courseId");
     if (courseId) {
+      console.log(courseId);
+      
       courseStore.setCourseId(courseId); // 将 courseId 存储到 Pinia
     }
   }
@@ -166,6 +168,8 @@ const loadAssignmentDetails = async () => {
     isEditing.value = true;
     try {
       const res = await getAssignmentsInfo({ id: assignmentId });
+      console.log(res);
+      
       homeworkForm.value = {
         ...homeworkForm.value,
         ...res, // 展开 API 返回的数据
@@ -174,6 +178,7 @@ const loadAssignmentDetails = async () => {
         latestEnd: res.latestEnd ? moment(res.latestEnd).toDate() : '',
         peerReviewStart: res.peerReviewStart ? moment(res.peerReviewStart).toDate() : '',
         peerReviewEnd: res.peerReviewEnd ? moment(res.peerReviewEnd).toDate() : '',
+        attachments:res.attachments===null?[]:res.attachments
       };
       fileList.value = res.attachments || [];
     } catch (error) {
@@ -183,6 +188,7 @@ const loadAssignmentDetails = async () => {
 };
 
 const submitHomework = async () => {
+  console.log('Homework Form:', homeworkForm.value);
   const data = {
     ...homeworkForm.value,
     start: formatDateForSQL(homeworkForm.value.start),
@@ -190,9 +196,10 @@ const submitHomework = async () => {
     latestEnd: formatDateForSQL(homeworkForm.value.latestEnd),
     peerReviewStart: formatDateForSQL(homeworkForm.value.peerReviewStart),
     peerReviewEnd: formatDateForSQL(homeworkForm.value.peerReviewEnd),
-    attachments: homeworkForm.value.attachments.map(file => file.id)
+    attachments:homeworkForm.value.attachments.map(file => file.id)
   };
-
+  data.requirePeerReview? data.requirePeerReview = 1 : data.requirePeerReview = 0;
+  
   try {
     if (isEditing.value) {
       await getChange(data);
@@ -283,7 +290,7 @@ onMounted(loadAssignmentDetails);
     <el-form-item label="作业标题">
       <el-input style="margin-right: 100px; width: 400px;" v-model="homeworkForm.title" placeholder="请输入作业标题"></el-input>
     </el-form-item>
-    <el-form-item label="作业要求">
+    <el-form-item label="作业描述">
       <div class="upload-container">
         <el-upload
           class="upload-demo"
@@ -302,7 +309,7 @@ onMounted(loadAssignmentDetails);
       <v-md-editor 
         v-model="homeworkForm.description" 
         class="markdown-editor" style="margin-right: 500px"
-        placeholder="请输入作业要求" 
+        placeholder="请输入作业描述" 
       />
       <div style="width: 500px;"></div>
     </el-form-item>
@@ -422,10 +429,10 @@ const submitHomework = async () => {
 
   try {
     const response = await getIssue(data);
-    console.log('发布作业:', response.data);
+    console.log('公开作业:', response.data);
     // 在成功后执行操作，例如提示成功或跳转页面
   } catch (error) {
-    console.error('发布作业时出错:', error);
+    console.error('公开作业时出错:', error);
     // 在出错时执行操作，例如提示错误
   }
 };
@@ -508,7 +515,7 @@ onMounted(() => {
     <el-form-item label="作业标题">
       <el-input style="margin-right: 100px; width: 400px;" v-model="homeworkForm.title" placeholder="请输入作业标题"></el-input>
     </el-form-item>
-    <el-form-item label="作业要求">
+    <el-form-item label="作业描述">
       <div class="upload-container">
         <el-upload
           class="upload-demo"
@@ -534,7 +541,7 @@ onMounted(() => {
       <v-md-editor 
         v-model="homeworkForm.description" 
         class="markdown-editor" style="margin-right: 500px"
-        placeholder="请输入作业要求" 
+        placeholder="请输入作业描述" 
       />
       <div style="width: 500px;"></div>
     </el-form-item>
@@ -684,9 +691,9 @@ const submitHomework = async () => {
 
   try {
     const response = await getIssue(data);
-    console.log('发布作业:', response.data);
+    console.log('公开作业:', response.data);
   } catch (error) {
-    console.error('发布作业时出错:', error);
+    console.error('公开作业时出错:', error);
   }
 };
 
