@@ -267,7 +267,7 @@ public class AssignmentController {
         AssignmentSubmission assignmentSubmission = assignmentSubmissionService.getOne(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentId).eq(AssignmentSubmission::getStudentId, studentId));
         AssignmentReview assignmentReview = assignmentReviewService.findAllBySubmissionId(assignmentSubmission.getId());
         List<Attachment> attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, assignmentSubmission.getId()));
-        var attachmentInfos = attachments.stream().map(attachment -> new AttachmentInfo(attachment.getId(), attachment.getName())).toList();
+        var attachmentInfos = attachments.stream().map(attachment -> new AttachmentListDTO(attachment.getId(), attachment.getName())).toList();
 
         SubmissionInfo submissionInfo = new SubmissionInfo(studentId, assignmentSubmission.getSubmittedAt(), assignmentReview.getGrade(), assignmentSubmission.getContent(), assignmentReview.getFeedback(), assignmentReview.getGradedAt(), attachmentInfos);
         return ResponseEntity.ok(submissionInfo);
@@ -605,6 +605,8 @@ public class AssignmentController {
         private String name;
     }
 
+    @Data
+    @AllArgsConstructor
     public static class SubmissionInfo {
         Integer studentId;
         String submittedAt;
@@ -612,14 +614,6 @@ public class AssignmentController {
         String content;
         String feedback;
         String gradedAt;
-        private List<AttachmentInfo> attachments;
+        private List<AttachmentListDTO> attachments;
     }
-
-    @Data
-    @AllArgsConstructor
-    public static class AttachmentInfo {
-        Integer id;
-        String name;
-    }
-
 }
