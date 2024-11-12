@@ -36,8 +36,8 @@ public interface CourseMapper extends BaseMapper<Course> {
             @Result(property = "semesterYear", column = "semester_year"),
             @Result(property = "classNumber", column = "class_number")
     })
-    @Insert("insert into course values (#{id}, #{courseNumber}, #{name}, #{semesterYear}, #{classNumber}, #{start}, #{end}, #{academy}, #{teacher})")
-    void addCourse(String id, String courseNumber, String name, String semesterYear, Integer classNumber, String start, String end, String academy, String teacher);
+    @Insert("insert into course values (#{id}, #{courseNumber}, #{name}, #{semesterYear}, #{classNumber}, #{start}, #{end}, #{academy}, #{teacher}, #{introduction})")
+    void addCourse(String id, String courseNumber, String name, String semesterYear, Integer classNumber, String start, String end, String academy, String teacher, String introduction);
 
     @Results({
             @Result(property = "studentId", column = "student_id"),
@@ -114,7 +114,7 @@ public interface CourseMapper extends BaseMapper<Course> {
     @Select("select * from teacher_info where teacher_id = #{teachingId}")
     TeacherInfo getTeacherInfo(Integer teachingId);
 
-    @Insert("insert into attachment_folder (folder_name, parent_id) values (#{folderName}, #{parentId})")
+    @Insert("insert into attachment_folder (folder_name, parent_id, course_id, type) values (#{folderName}, #{parentId}, #{courseId}, #{type})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     void createAttachmentFolder(CourseController.AttachmentFolder attachmentFolder);
 

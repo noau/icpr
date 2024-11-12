@@ -253,8 +253,9 @@ final class CourseUploadListener implements ReadListener<Course> {
         String start = course.getStart();
         String end = course.getEnd();
         String teacher = course.getTeacher();
+        String introduction = course.getIntroduction();
 
-        courseService.addCourse(id, courseNumber, name, semesterYear, classNumber, start, end, academy, teacher);
+        courseService.addCourse(id, courseNumber, name, semesterYear, classNumber, start, end, academy, teacher, introduction);
     }
 
     @Override
