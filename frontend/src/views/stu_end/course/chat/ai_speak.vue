@@ -65,7 +65,7 @@ async function sendMessage() {
         }
     ]
 });
-  res.choices[0].message.content?messages.value.push({ text: `这是AI的回答：${res.choices[0].message.content}`,type: 'ai' }) : messages.value.push({ text: 'AI回答：' + '抱歉！AI挂掉了', type: 'ai' });
+  res.choices[0].message.content?messages.value.push({ text: `${res.choices[0].message.content}`,type: 'ai' }) : messages.value.push({ text: 'AI回答：' + '抱歉！AI挂掉了', type: 'ai' });
 
  
   
