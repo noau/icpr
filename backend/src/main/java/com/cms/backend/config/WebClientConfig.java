@@ -2,6 +2,7 @@ package com.cms.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,5 +29,8 @@ public class WebClientConfig {
         logger.info("WebClient bean created successfully");
         return webClient;
     }
-
+    @Bean
+    public ThreadPoolTaskScheduler taskScheduler() {
+        return new ThreadPoolTaskScheduler();
+    }
 }

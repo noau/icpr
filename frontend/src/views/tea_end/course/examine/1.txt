@@ -1,0 +1,401 @@
+<!-- 布置作业页面代码 -->
+<!-- <template>
+  <el-form :model="homeworkForm" label-width="120px">
+    <el-form-item label="作业标题">
+      <el-input v-model="homeworkForm.title" placeholder="请输入作业标题" />
+    </el-form-item>
+
+    <el-form-item label="作业描述">
+      <v-md-editor
+        v-model="homeworkForm.description"
+        placeholder="请输入作业描述"
+      />
+    </el-form-item>
+
+    <el-form-item label="开始时间">
+      <el-date-picker
+        v-model="homeworkForm.start"
+        placeholder="选择开始时间"
+        type="datetime"
+      />
+    </el-form-item>
+
+    <el-form-item label="截止时间">
+      <el-date-picker
+        v-model="homeworkForm.end"
+        type="datetime"
+        placeholder="选择截止时间"
+      />
+    </el-form-item>
+
+    <el-form-item label="补交截止时间">
+      <el-date-picker
+        v-model="homeworkForm.latestEnd"
+        type="datetime"
+        placeholder="选择补交截止时间"
+      />
+    </el-form-item>
+
+    <el-form-item>
+      <el-checkbox v-model.number="homeworkForm.isPrivate"
+        >是否公开</el-checkbox
+      >
+      <el-input-number
+        v-model="homeworkForm.fullGrade"
+        :min="0"
+        label="作业满分"
+        placeholder="满分"
+      />
+      <el-input-number
+        v-model="homeworkForm.delayedGrade"
+        :min="0"
+        label="补交满分"
+        placeholder="补交满分"
+      />
+      <el-checkbox v-model.number="homeworkForm.multipleSubmission"
+        >允许多次提交</el-checkbox
+      >
+      <el-checkbox v-model.number="homeworkForm.publishGrade"
+        >公布作业成绩</el-checkbox
+      >
+    </el-form-item>
+
+    <el-form-item>
+      <el-button type="primary" @click="submitHomework" v-if="homeworkForm.id"
+        >修改作业</el-button
+      >
+      <el-button type="primary" @click="submitHomework" v-else
+        >发布作业</el-button
+      >
+      <el-button @click="resetForm">重置</el-button>
+    </el-form-item>
+  </el-form>
+</template>
+
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import {
+  getIssue,
+  getAssignmentsDetail,
+  getChange,
+} from "@/api/assignments.js";
+import VMdEditor from "@kangc/v-md-editor";
+import "@kangc/v-md-editor/lib/style/base-editor.css";
+import githubTheme from "@kangc/v-md-editor/lib/theme/github.js";
+
+VMdEditor.use(githubTheme);
+
+const route = useRoute();
+const homeworkForm = ref({
+  courseId: "", // 由路由参数提供
+  title: "",
+  description: "",
+  start: "",
+  end: "",
+  latestEnd: "",
+  isPrivate: 1,
+  fullGrade: 100,
+  delayedGrade: 80,
+  multipleSubmission: 0,
+  publishGrade: 0,
+  requirePeerReview: 0,
+
+  minPeerReview: 1,
+  attachments: [],
+});
+
+// 当组件挂载时，获取路由参数中的课程ID
+onMounted(async () => {
+  const workId = route.query.id;
+
+  if (workId) {
+    const work = await getAssignmentsDetail({ id: workId });
+    homeworkForm.value.id = workId;
+
+    Object.assign(homeworkForm.value, work);
+    homeworkForm.value.isPrivate = work.isPrivate == 1 ? true : false;
+    homeworkForm.value.multipleSubmission =
+      work.multipleSubmission == 1 ? true : false;
+    homeworkForm.value.publishGrade = work.publishGrade == 1 ? true : false;
+  }
+
+  const courseId = localStorage.getItem("courseId");
+  if (courseId) {
+    homeworkForm.value.courseId = courseId;
+  } else {
+    console.error("课程ID缺失");
+  }
+});
+
+const formatDateTime = (date) => {
+  var y = date.getFullYear();
+  var m = date.getMonth() + 1;
+  m = m < 10 ? "0" + m : m;
+  var d = date.getDate();
+  d = d < 10 ? "0" + d : d;
+  var h = date.getHours();
+  h = h < 10 ? "0" + h : h;
+  var minute = date.getMinutes();
+  minute = minute < 10 ? "0" + minute : minute;
+  var second = date.getSeconds();
+  second = second < 10 ? "0" + second : second;
+  return y + "-" + m + "-" + d + " " + h + ":" + minute + ":" + second;
+};
+
+const submitHomework = async () => {
+  homeworkForm.value.isPrivate = homeworkForm.value.isPrivate ? 1 : 0;
+  homeworkForm.value.multipleSubmission = homeworkForm.value.multipleSubmission
+    ? 1
+    : 0;
+  homeworkForm.value.publishGrade = homeworkForm.value.publishGrade ? 1 : 0;
+
+  if (homeworkForm.value.start instanceof Date) {
+    homeworkForm.value.start = formatDateTime(homeworkForm.value.start);
+    homeworkForm.value.end = formatDateTime(homeworkForm.value.end);
+    homeworkForm.value.latestEnd = formatDateTime(homeworkForm.value.latestEnd);
+  }
+
+  if (homeworkForm.value.end instanceof Date) {
+    homeworkForm.value.end = formatDateTime(homeworkForm.value.end);
+  }
+
+  if (homeworkForm.value.latestEnd instanceof Date) {
+    homeworkForm.value.latestEnd = formatDateTime(homeworkForm.value.latestEnd);
+  }
+
+  try {
+    if (homeworkForm.value.id) {
+      const response = await getChange(homeworkForm.value);
+      console.log("作业修改成功:", response);
+      alert("作业修改成功");
+    } else {
+      const response = await getIssue(homeworkForm.value);
+      console.log("作业发布成功:", response);
+      alert("作业发布成功");
+    }
+  } catch (error) {
+    if (error.response) {
+      console.error("作业发布失败:", error.response.data);
+    } else {
+      console.error("作业发布失败:", error.message);
+    }
+    alert("作业发布失败，请重试");
+  }
+};
+
+const resetForm = () => {
+  homeworkForm.value = {
+    courseId: localStorage.getItem("courseId") || "", // 重置时保留课程ID
+    title: "",
+    description: "",
+    start: "",
+    end: "",
+    latestEnd: "",
+    isPrivate: 1,
+    fullGrade: 100,
+    delayedGrade: 80,
+    multipleSubmission: 0,
+    publishGrade: 0,
+    requirePeerReview: 0,
+
+    minPeerReview: 1,
+    attachments: [],
+  };
+};
+</script>
+
+<style scoped>
+.el-form-item {
+  margin-bottom: 20px;
+}
+.el-button {
+  margin-right: 10px;
+}
+</style> -->
+
+
+
+
+
+
+
+<template>
+  <div class="common-layout">
+    <el-container>
+      <el-header>
+        <back_header/>
+      </el-header>
+      <el-main>
+        <div class="grading-container"> 
+          <!-- Table -->
+          <div class="custom-table">
+            <el-row>
+              <!-- <el-col :span="23" style="margin-left: -40px; margin-right: -15px; margin-top: -40px;">
+                <el-table :data="transformedData" border style="width: 100%" :show-header="false">
+                  <el-table-column prop="label" width="100">
+                    <template #default="scope">
+                      <strong>{{ scope.row.label }}</strong>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    v-for="(item, index) in tableData"
+                    :key="index"
+                    :prop="`value${index}`"
+                    width="90"
+                  >
+                    <template #default="scope">
+                      <div :class="{'highlight': currentStudentIndex === index}">
+                        {{ scope.row.label === '得分' && currentStudentIndex === index ? '正在批阅...' : scope.row[`value${index}`] }}
+                      </div>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </el-col> -->
+              <el-col :span="1" class="button-col" style="margin-left: 40px;  margin-top: -40px;">
+                <el-button round type="primary" style="margin-bottom: 10px; margin-right: 15px; padding: 7px;" @click="previousStudent">上一个</el-button>
+                <el-button round style="margin-right: 25px; padding: 7px;" @click="nextStudent">下一个</el-button>
+              </el-col>
+            </el-row>
+          </div>
+
+          <!-- 评分区域 -->
+          <el-row :gutter="20" class="content" style="margin-top: -30px;">
+            <el-col :span="16">
+              <el-card>
+                <iframe src="path/to/your/pdf" width="100%" height="500px"></iframe>
+              </el-card>
+            </el-col>
+            <el-col :span="8">
+              <el-card>
+                <el-form :model="gradingForm">
+                  <el-form-item label="成绩" required>
+                    <el-input-number v-model="gradingForm.grade" :min="0" :max="10"></el-input-number>
+                  </el-form-item>
+                  <el-form-item label="评语" label-position="top">
+                    <v-md-editor v-model="gradingForm.comment" height="200px"></v-md-editor>
+                  </el-form-item>
+                  <el-form-item style="text-align: right;">
+                    <el-button round type="primary" @click="submitGrading">确定</el-button>
+                  </el-form-item>
+                </el-form>
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
+      </el-main>
+    </el-container>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import VMdEditor from '@kangc/v-md-editor';
+import '@kangc/v-md-editor/lib/style/base-editor.css';
+import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
+import '@kangc/v-md-editor/lib/theme/style/github.css';
+import back_header from '@/components/back_header.vue';
+import { useRouter, useRoute } from 'vue-router';
+const router = useRouter();
+const route = useRoute();
+// 使用 github 主题
+VMdEditor.use(githubTheme);
+
+import { getReviewList } from '@/api/assignments.js' 
+const tableData = ref();   
+const init = async()=>{
+  tableData.value = [
+    {
+        "id": 11,
+        "assignmentId": 10,
+        "studentId": 62,
+        "submittedAt": "2012-07-27 06:53:22",
+        "content": "minim deserunt",
+        "attachments": [
+            89
+        ]
+    },
+    {
+        "id": 30,
+        "assignmentId": 61,
+        "studentId": 17,
+        "submittedAt": "2021-04-14 15:14:17",
+        "content": "sunt reprehenderit Excepteur",
+        "attachments": [
+            71
+        ]
+    }
+  ];
+  const res = await getReviewList({id:route.query.id}) 
+  tableData.value = res;
+}
+init();
+
+
+const transformedData = ref([
+  { label: '姓名', ...tableData.value.reduce((acc, item, index) => ({ ...acc, [`value${index}`]: item.name }), {}) },
+  { label: '得分', ...tableData.value.reduce((acc, item, index) => ({ ...acc, [`value${index}`]: item.score }), {}) },
+]);
+
+const currentStudentIndex = ref(15);
+
+const gradingForm = ref({
+  grade: 0,
+  comment: ''
+});
+
+const submitGrading = () => {
+  console.log('提交评分:', gradingForm.value);
+  // Implement submission logic here
+};
+
+const previousStudent = () => {
+  if (currentStudentIndex.value > 0) {
+    currentStudentIndex.value--;
+  }
+};
+
+const nextStudent = () => {
+  if (currentStudentIndex.value < tableData.value.length - 1) {
+    currentStudentIndex.value++;
+  }
+};
+</script>
+
+<style scoped>
+.grading-container {
+  padding: 20px;
+}
+
+.custom-table {
+  padding: 20px;
+}
+
+.button-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.highlight {
+  background-color: orange;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.content {
+  margin-bottom: 20px;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.right-align {
+  text-align: right;
+}
+</style>

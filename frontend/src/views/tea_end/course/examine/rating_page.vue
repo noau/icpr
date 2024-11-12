@@ -142,7 +142,7 @@ const loadFileUrl = async (attachmentId) => {
 };
 
 const updateSubmissionId = () => {
-  console.log("当前索引:", currentStudentIndex.value,tableData.value);
+  console.log("当前索引11:", currentStudentIndex.value,tableData.value);
   if (tableData.value.length > currentStudentIndex.value) {
     gradingForm.value.submissionId = tableData.value[currentStudentIndex.value].id; // 更新 submissionId
   }
@@ -171,7 +171,7 @@ const submitGrading = async () => {
   }
 
   try {
-    const response = await submitReview(gradingForm.value);
+    const response = await submitReview({...gradingForm.value,feedback:gradingForm.value.comment});
     console.log('提交评分成功:', response);
     alert('评分提交成功');
 

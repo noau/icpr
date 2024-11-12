@@ -2,7 +2,7 @@
   <div class="posts-list">
     <el-card v-for="post in posts" :key="post.id" class="post-card" @click="goToPost(post)" >
       <h3 class="post-title">{{ post.title }}</h3>
-      <div v-html="post.content"></div>
+      <div class="vHtml" v-html="post.content"></div>
       <div class="post-actions">
 
         <Like :theme="post.liked ? 'filled' : 'outline'" size="15" fill="#333" @click.stop="toggleLike(post)"/>
@@ -45,7 +45,7 @@ function getcourseList() {
   let courseId = localStorage.getItem("courseId"); // 获取课程ID
   getcourse({id: courseId}).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
-    console.log(res.discussionThreads);
+    console.log(res.discussionThreads, '');
     posts.value = res.discussionThreads;
   }).catch(err => {
     console.error("获取帖子数据失败:", err);
@@ -137,6 +137,16 @@ const goToPost = post => {
 .post-title {
   font-size: 20px;
   font-weight: bold;
+  margin-bottom: 10px;
+}
+.vHtml {
+  max-height: 180px;
+  /* height: 200px; */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
   margin-bottom: 10px;
 }
 

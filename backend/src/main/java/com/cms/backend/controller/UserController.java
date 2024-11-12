@@ -8,9 +8,7 @@ import com.aliyun.sdk.service.dysmsapi20170525.models.SendSmsResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.DTO.*;
-import com.cms.backend.service.DiscussionThreadService;
-import com.cms.backend.service.FolderService;
-import com.cms.backend.service.UserService;
+import com.cms.backend.service.*;
 import com.cms.backend.utils.JWTUtils;
 import com.google.gson.Gson;
 import darabonba.core.client.ClientOverrideConfiguration;
@@ -26,6 +24,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -43,17 +43,23 @@ public class UserController {
 
     private final FolderService folderService;
 
+    private final NotificationService notificationService;
+
+    private final DiscussionReplyService discussionReplyService;
+
     @Value("${spring.mail.username}")
     private String sender;
 
     @Value("${spring.mail.nickname}")
     private String nickname;
 
-    public UserController(UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService) {
+    public UserController(UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
         this.userService = userService;
         this.mailSender = mailSender;
         this.discussionThreadService = discussionThreadService;
         this.folderService = folderService;
+        this.notificationService = notificationService;
+        this.discussionReplyService = discussionReplyService;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -65,7 +71,7 @@ public class UserController {
         logger.info("Login attempt for account: {}", id);
 
         // 验证用户是否存在
-        User userLogin = userService.findByUserName(id);
+        User userLogin = userService.findById(id);
         if (userLogin == null) {
             logger.warn("Login failed. User not found: {}", id);
 
@@ -95,7 +101,7 @@ public class UserController {
         String password = user.getPassword();
 
         // 验证用户是否存在
-        User userLogin = userService.findByUserName(id);
+        User userLogin = userService.findById(id);
         if (userLogin == null) {
 
             return ResponseEntity.status(410).body(""); // 用户不存在
@@ -132,12 +138,12 @@ public class UserController {
 
     @GetMapping(value = "/info")
     public ResponseEntity<UserInfo> getUserInfo(@RequestParam Integer id) {
-        User user = userService.findByUserName(id);
+        User user = userService.findById(id);
         List<Folder> folderList = folderService.list(new LambdaQueryWrapper<Folder>().eq(Folder::getUserId, id));
         List<DiscussionThread> threadListList = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getUserId, id));
         List<DiscussionInfoDTO> threadList = new ArrayList<>();
         for (DiscussionThread discussionThread : threadListList) {
-            User threadUser = userService.findByUserName(discussionThread.getUserId());
+            User threadUser = userService.findById(discussionThread.getUserId());
             DiscussionInfoDTO discussionInfoDTO = new DiscussionInfoDTO(
                     discussionThread.getId(),
                     discussionThread.getCourseId(),
@@ -183,7 +189,7 @@ public class UserController {
         Integer id = userChangePasswordDTO.getId();
         String password = userChangePasswordDTO.getPassword();
         String newPassword = userChangePasswordDTO.getNewPassword();
-        User user = userService.findByUserName(id);
+        User user = userService.findById(id);
         System.out.println(password);
         System.out.println(user.getPassword());
 
@@ -296,12 +302,18 @@ public class UserController {
     @PostMapping(value = "/make-subscription")
     public ResponseEntity<String> makeSubscription(@RequestBody Follow follow) {
         Integer followingId = follow.getFollowingId();
-        String followingName = (userService.findByUserName(followingId)).getName();
+        String followingName = (userService.findById(followingId)).getName();
         Integer subscriptionId = follow.getSubscriptionId();
-        String subscriptionName = (userService.findByUserName(subscriptionId)).getName();
+        String subscriptionName = (userService.findById(subscriptionId)).getName();
         userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
         userService.addFollower(followingId);
         userService.addSubscriber(subscriptionId);
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        User user = userService.findById(follow.getFollowingId());
+        Notification notification = new Notification(follow.getSubscriptionId(), "收到关注！", follow.getFollowingId(), "系统", 0, "你被" + user.getName() + "关注啦~", 0, formattedNow, "M310001B2计算机组成原理2024~2025上", 0);
+        notificationService.save(notification);
 
         return ResponseEntity.ok("");
     }
@@ -324,7 +336,7 @@ public class UserController {
         Integer id = user.getId();
         String email = user.getEmail();
         String idCardNumber = user.getIdCardNumber();
-        User checkUser = userService.findByUserName(id);
+        User checkUser = userService.findById(id);
         if (checkUser == null) {
             return ResponseEntity.status(410).body("");
         } else if (!Objects.equals(checkUser.getEmail(), email) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
@@ -386,7 +398,7 @@ public class UserController {
         String phoneNumber = user.getPhoneNumber();
         String idCardNumber = user.getIdCardNumber();
         String regionPhoneNumber = "+86" + phoneNumber;
-        User checkUser = userService.findByUserName(id);
+        User checkUser = userService.findById(id);
         if (checkUser == null) {
             return ResponseEntity.status(410).body("");
         } else if (!Objects.equals(checkUser.getPhoneNumber(), phoneNumber) && !Objects.equals(checkUser.getIdCardNumber(), idCardNumber)) {
@@ -415,9 +427,21 @@ public class UserController {
         if (discussionLike.getThreadId() != 0) {
             userService.like(discussionLike.getUserId(), discussionLike.getThreadId(), discussionLike.getCourseId(), null, discussionLike.getCreatedAt());
             userService.addLikeThread(discussionLike.getThreadId());
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedNow = now.format(formatter);
+            DiscussionThread discussionThread = discussionThreadService.getById(discussionLike.getThreadId());
+            Notification notification = new Notification(discussionThread.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区", discussionLike.getThreadId(), "你的帖子被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            notificationService.save(notification);
         } else {
             userService.like(discussionLike.getUserId(), null, discussionLike.getCourseId(), discussionLike.getReplyId(), discussionLike.getCreatedAt());
             userService.addLikeReply(discussionLike.getReplyId());
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedNow = now.format(formatter);
+            DiscussionReply discussionReply = discussionReplyService.getById(discussionLike.getReplyId());
+            Notification notification = new Notification(discussionReply.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区", discussionLike.getReplyId(), "你的评论被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            notificationService.save(notification);
         }
 
         return ResponseEntity.ok("");

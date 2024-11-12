@@ -8,4 +8,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AssignmentReviewServiceImpl extends ServiceImpl<AssignmentReviewMapper, AssignmentReview> implements AssignmentReviewService {
+
+    private final AssignmentReviewMapper assignmentReviewMapper;
+
+    public AssignmentReviewServiceImpl(AssignmentReviewMapper assignmentReviewMapper) {
+        this.assignmentReviewMapper = assignmentReviewMapper;
+    }
+
+    @Override
+    public Float findById(Integer id) {
+        return assignmentReviewMapper.findById(id);
+    }
+
+    @Override
+    public AssignmentReview findAllBySubmissionId(Integer assignmentId) {
+        return assignmentReviewMapper.findAllBySubmissionId(assignmentId);
+    }
 }
