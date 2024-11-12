@@ -3,22 +3,24 @@ package com.cms.backend.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.cms.backend.pojo.Assignments.*;
+import com.cms.backend.pojo.Assignments.Assignment;
+import com.cms.backend.pojo.Assignments.AssignmentPeerReview;
+import com.cms.backend.pojo.Assignments.AssignmentReview;
+import com.cms.backend.pojo.Assignments.AssignmentSubmission;
 import com.cms.backend.pojo.Attachment;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.pojo.Notification;
 import com.cms.backend.pojo.User;
+import com.cms.backend.service.AttachmentService;
 import com.cms.backend.service.CourseService;
 import com.cms.backend.service.NotificationService;
 import com.cms.backend.service.UserService;
+import com.cms.backend.service.assignment.AssignmentPeerReviewService;
 import com.cms.backend.service.assignment.AssignmentReviewService;
 import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
-import com.cms.backend.service.assignment.AssignmentPeerReviewService;
-import com.cms.backend.service.AttachmentService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -338,7 +340,7 @@ public class AssignmentController {
             // 根据 submission 的 ID 查询相关附件 ID
 
             var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>()
-                            .eq(Attachment::getSubmissionId, submission.getId()));
+                    .eq(Attachment::getSubmissionId, submission.getId()));
             List<AttachmentListDTO> attachmentList = new ArrayList<>();
             for (Attachment attachment : attachments) {
                 AttachmentListDTO attachmentDTO = new AttachmentListDTO(attachment.getId(), attachment.getName());
@@ -399,23 +401,33 @@ public class AssignmentController {
                 }
             }
 
-            AssignmentStudent assignmentStudent = getAssignmentStudent(assignment, grade);
+            var peerReviewCount = assignmentPeerReviewService.getPeerReviewCount(userId, assignment.getId());
+            AssignmentStudent assignmentStudent = new AssignmentStudent(assignment.getId(),
+                    assignment.getCourseId(),
+                    assignment.getTitle(),
+                    assignment.getDescription(),
+                    assignment.getStart(),
+                    assignment.getEnd(),
+                    assignment.getIsPrivate(),
+                    assignment.getFullGrade(),
+                    assignment.getDelayedGrade(),
+                    assignment.getLatestEnd(),
+                    assignment.getMultipleSubmission(),
+                    assignment.getPublishGrade(),
+                    assignment.getRequirePeerReview(),
+                    assignment.getPeerReviewStart(),
+                    assignment.getPeerReviewEnd(),
+                    assignment.getMinPeerReview(),
+                    assignment.getAnswer(),
+                    grade == null ? 1 : 0,
+                    grade,
+                    peerReviewCount >= assignment.getMinPeerReview()
+            );
 
             assignmentStudentList.add(assignmentStudent);
         }
 
         return ResponseEntity.ok(assignmentStudentList);
-    }
-
-    @NotNull
-    private static AssignmentStudent getAssignmentStudent(Assignment assignment, Float grade) {
-        AssignmentStudent assignmentStudent;
-        if (grade != null) {
-            assignmentStudent = new AssignmentStudent(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer(), 1, grade);
-        } else {
-            assignmentStudent = new AssignmentStudent(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer(), 0, null);
-        }
-        return assignmentStudent;
     }
 
     @Data
@@ -469,6 +481,8 @@ public class AssignmentController {
         private Integer isGrade;
 
         private Float grade;
+
+        private boolean peerReviewFinished;
 
     }
 
