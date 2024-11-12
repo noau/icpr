@@ -136,6 +136,7 @@ async function getCourseAssignmentsList() {
   }
 }
 
+
 function handleSubmit(row) {
   assignmentId.value = row.id;
   dialogVisible.value = true;

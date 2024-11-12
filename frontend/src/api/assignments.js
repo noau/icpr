@@ -54,6 +54,7 @@ export const getAssignmentsInfo = ({ id }) =>
 export const getAssignmentsDetail = ({ id }) =>
   httpInstance.get("/assignments/get-detail?id=" + id, { id });
 
+
 //获得互评列表
 export const getPeerReviews = ({ id }) =>
   httpInstance.get("/assignments/peer-reviews?id=" + id, { id });
