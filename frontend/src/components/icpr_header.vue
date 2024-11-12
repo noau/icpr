@@ -14,8 +14,7 @@ s<template>
 
 <script>
   import { Bell, User } from '@element-plus/icons-vue';
-  import { useUserStore } from '@/stores/user.js';
-  const userStore = useUserStore();
+
 export default {
   components: {
     Bell,
@@ -23,7 +22,8 @@ export default {
   },
   methods: {
     goToNotifications() {
-      const type = userStore.type;
+      const type = localStorage.getItem("userType");
+      console.log(type);
       if(type === 'student'){
         // 跳转到通知页面
         this.$router.push('/stu-end/notification');

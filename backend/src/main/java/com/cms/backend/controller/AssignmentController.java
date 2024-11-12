@@ -235,8 +235,6 @@ public class AssignmentController {
      */
     @DeleteMapping("/delete")
     public ResponseEntity<Void> deleteAssignment(@RequestParam Integer id) {
-        assignmentService.removeById(id);
-        logger.info("Deleted assignment ID: {}", id);
         //通过id查询到对应作业
         var assignment = assignmentService.getById(id);
         //获得该课程所有学生
@@ -251,6 +249,9 @@ public class AssignmentController {
             Notification notification = new Notification(user.getId(), "作业被教师删除", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除", 0, formattedNow, assignment.getCourseId(), 0);
             notificationService.save(notification);
         }
+
+        assignmentService.removeById(id);
+        logger.info("Deleted assignment ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 

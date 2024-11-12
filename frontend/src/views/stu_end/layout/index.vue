@@ -22,7 +22,7 @@
 
           <!-- 右侧 reminder_card，占 6/24 -->
           <el-col :span="6">
-            <reminder_card :reminders="reminders" @remove="removeReminder" />
+<!--            <reminder_card :reminders="reminders" @remove="removeReminder" />-->
           </el-col>
         </el-row>
       </el-main>

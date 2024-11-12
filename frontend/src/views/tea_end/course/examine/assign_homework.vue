@@ -1,25 +1,26 @@
 <template>
   <el-form :model="homeworkForm" label-width="120px">
     <el-form-item label="作业标题">
-      <el-input style="margin-right: 100px; width: 400px;" v-model="homeworkForm.title" placeholder="请输入作业标题"></el-input>
+      <el-input style="margin-right: 100px; width: 400px;" v-model="homeworkForm.title"
+                placeholder="请输入作业标题"></el-input>
     </el-form-item>
 
     <el-form-item label="作业描述">
       <div class="upload-container">
         <el-upload
-          class="upload-demo"
-          :limit="1"
-          action="http://localhost:8080/attachment/upload"
-          :headers="headers"
-          :before-upload="beforeUpload"
-          :on-success="handleUploadSuccess"
-          :on-error="handleUploadError"
-          :on-preview="handlePreview"
-          :on-remove="handleRemove"
-          :file-list="fileList"
-          :accept="acceptedFileTypes"
-          ref="uploadRef"
-          multiple
+            class="upload-demo"
+            :limit="1"
+            action="http://localhost:8080/attachment/upload"
+            :headers="headers"
+            :before-upload="beforeUpload"
+            :on-success="handleUploadSuccess"
+            :on-error="handleUploadError"
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :file-list="fileList"
+            :accept="acceptedFileTypes"
+            ref="uploadRef"
+            multiple
         >
           <template #trigger>
             <el-button round type="primary">添加附件</el-button>
@@ -28,18 +29,20 @@
         <div class="el-upload__tip">支持格式：docx、doc、pdf、jpg、png</div>
       </div>
       <v-md-editor
-        v-model="homeworkForm.description"
-        class="markdown-editor"
-        style="margin-right: 500px"
-        placeholder="请输入作业描述"
+          v-model="homeworkForm.description"
+          class="markdown-editor"
+          style="margin-right: 500px"
+          placeholder="请输入作业描述"
       />
     </el-form-item>
 
     <el-form-item>
       <span style="margin-left: -68px; margin-right: 13px;">作业满分</span>
-      <el-input-number v-model="homeworkForm.fullGrade" min="0" label="作业满分" placeholder="作业满分" style="width: 150px; margin-right: 60px;"></el-input-number>
+      <el-input-number v-model="homeworkForm.fullGrade" min="0" label="作业满分" placeholder="作业满分"
+                       style="width: 150px; margin-right: 60px;"></el-input-number>
       <span style="margin-right: 13px;">补交满分</span>
-      <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>    
+      <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分"
+                       style="width: 150px; margin-right: 60px;"></el-input-number>
       <el-checkbox v-model="homeworkForm.multipleSubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
       <el-checkbox v-model="homeworkForm.publishGrade">公布作业成绩</el-checkbox>
     </el-form-item>
@@ -58,29 +61,34 @@
 
     <el-form-item>
       <el-checkbox v-model="homeworkForm.requirePeerReview" style="margin-left: -67px;">互评任务</el-checkbox>
-      <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewStart" type="datetime" placeholder="开始时间" style="margin-left: 20px;"></el-date-picker>
-      <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewEnd" type="datetime" placeholder="截止时间" style="margin-left: 20px; margin-right: 30px;"></el-date-picker>
+      <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewStart" type="datetime"
+                      placeholder="开始时间" style="margin-left: 20px;"></el-date-picker>
+      <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewEnd" type="datetime"
+                      placeholder="截止时间" style="margin-left: 20px; margin-right: 30px;"></el-date-picker>
       <span v-if="homeworkForm.requirePeerReview" style="margin-right: 3px;">学生最低互评数量</span>
-      <el-input-number v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.minPeerReview" :min="1" label="最少互评数量" style="width: 150px; margin-left: 20px;"></el-input-number>
+      <el-input-number v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.minPeerReview" :min="1"
+                       label="最少互评数量" style="width: 150px; margin-left: 20px;"></el-input-number>
     </el-form-item>
 
     <el-form-item>
-      <el-button round type="primary" @click="submitHomework" style="margin-left: 400px;">{{ isEditing ? '保存修改' : '布置作业' }}</el-button>
+      <el-button round type="primary" @click="submitHomework" style="margin-left: 400px;">
+        {{ isEditing ? '保存修改' : '布置作业' }}
+      </el-button>
       <el-button round @click="resetForm">重置</el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import {ref, onMounted} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
 import VMdEditor from '@kangc/v-md-editor';
 import '@kangc/v-md-editor/lib/style/base-editor.css';
 import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
 import '@kangc/v-md-editor/lib/theme/style/github.css';
-import { getAssignmentsInfo, getIssue, getChange } from '@/api/assignments.js';
+import {getAssignmentsInfo, getIssue, getChange} from '@/api/assignments.js';
 import moment from 'moment';
-import { useCourseStore } from '@/stores/course'; // 引入 Pinia store
+import {useCourseStore} from '@/stores/course'; // 引入 Pinia store
 
 VMdEditor.use(githubTheme);
 
@@ -141,7 +149,7 @@ const handlePreview = (file) => {
 
 const handleRemove = (file, fileList) => {
   homeworkForm.value.attachments = homeworkForm.value.attachments.filter(
-    (attachment) => attachment.id !== file.id
+      (attachment) => attachment.id !== file.id
   );
 };
 
@@ -152,11 +160,11 @@ const loadAssignmentDetails = async () => {
     courseId = localStorage.getItem("courseId");
     if (courseId) {
       console.log(courseId);
-      
+
       courseStore.setCourseId(courseId); // 将 courseId 存储到 Pinia
     }
   }
-  
+
   if (courseId) {
     homeworkForm.value.courseId = courseId; // 将 courseId 赋值到表单
   } else {
@@ -167,9 +175,9 @@ const loadAssignmentDetails = async () => {
   if (assignmentId) {
     isEditing.value = true;
     try {
-      const res = await getAssignmentsInfo({ id: assignmentId });
+      const res = await getAssignmentsInfo({id: assignmentId});
       console.log(res);
-      
+
       homeworkForm.value = {
         ...homeworkForm.value,
         ...res, // 展开 API 返回的数据
@@ -178,7 +186,7 @@ const loadAssignmentDetails = async () => {
         latestEnd: res.latestEnd ? moment(res.latestEnd).toDate() : '',
         peerReviewStart: res.peerReviewStart ? moment(res.peerReviewStart).toDate() : '',
         peerReviewEnd: res.peerReviewEnd ? moment(res.peerReviewEnd).toDate() : '',
-        attachments:res.attachments===null?[]:res.attachments
+        attachments: res.attachments === null ? [] : res.attachments
       };
       fileList.value = res.attachments || [];
     } catch (error) {
@@ -196,10 +204,10 @@ const submitHomework = async () => {
     latestEnd: formatDateForSQL(homeworkForm.value.latestEnd),
     peerReviewStart: formatDateForSQL(homeworkForm.value.peerReviewStart),
     peerReviewEnd: formatDateForSQL(homeworkForm.value.peerReviewEnd),
-    attachments:homeworkForm.value.attachments.map(file => file.id)
+    attachments: homeworkForm.value.attachments.map(file => file.id)
   };
-  data.requirePeerReview? data.requirePeerReview = 1 : data.requirePeerReview = 0;
-  
+  data.requirePeerReview = data.requirePeerReview ? 1 : 0;
+
   try {
     if (isEditing.value) {
       await getChange(data);
@@ -284,75 +292,75 @@ onMounted(loadAssignmentDetails);
 }
 </style>
 
- 
- <!-- <template>
-  <el-form :model="homeworkForm" label-width="120px">
-    <el-form-item label="作业标题">
-      <el-input style="margin-right: 100px; width: 400px;" v-model="homeworkForm.title" placeholder="请输入作业标题"></el-input>
-    </el-form-item>
-    <el-form-item label="作业描述">
-      <div class="upload-container">
-        <el-upload
-          class="upload-demo"
-          action="#"
-          :on-preview="handlePreview"
-          :on-remove="handleRemove"
-          :file-list="fileList"
-          :auto-upload="false"
-          multiple>
-          <template #trigger>
-            <el-button round type="primary">添加附件</el-button>
-          </template>
-        </el-upload>
-        <div class="el-upload__tip">支持所有格式</div>
-      </div>
-      <v-md-editor 
-        v-model="homeworkForm.description" 
-        class="markdown-editor" style="margin-right: 500px"
-        placeholder="请输入作业描述" 
-      />
-      <div style="width: 500px;"></div>
-    </el-form-item>
 
-    <br>
-    <el-form-item>
-      <span style="margin-left: -68px; margin-right: 13px;">作业满分</span>
-      <el-input-number v-model="homeworkForm.fullGrade" :min="0" label="作业满分" placeholder="作业满分" style="width: 150px; margin-right: 60px;"></el-input-number>
-      <span style="margin-right: 13px;">补交满分</span>
-      <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>    
-      <el-checkbox v-model="homeworkForm.multipleSubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
-      <el-checkbox v-model="homeworkForm.publishGrade">公布作业成绩</el-checkbox>
-    </el-form-item>
+<!-- <template>
+ <el-form :model="homeworkForm" label-width="120px">
+   <el-form-item label="作业标题">
+     <el-input style="margin-right: 100px; width: 400px;" v-model="homeworkForm.title" placeholder="请输入作业标题"></el-input>
+   </el-form-item>
+   <el-form-item label="作业描述">
+     <div class="upload-container">
+       <el-upload
+         class="upload-demo"
+         action="#"
+         :on-preview="handlePreview"
+         :on-remove="handleRemove"
+         :file-list="fileList"
+         :auto-upload="false"
+         multiple>
+         <template #trigger>
+           <el-button round type="primary">添加附件</el-button>
+         </template>
+       </el-upload>
+       <div class="el-upload__tip">支持所有格式</div>
+     </div>
+     <v-md-editor
+       v-model="homeworkForm.description"
+       class="markdown-editor" style="margin-right: 500px"
+       placeholder="请输入作业描述"
+     />
+     <div style="width: 500px;"></div>
+   </el-form-item>
 
-    <el-form-item label="开始时间">
-      <el-date-picker v-model="homeworkForm.start" type="datetime" placeholder="选择开始时间"></el-date-picker>
-      <span class="form-tip">（开始时间之前的作业不会显示在学生的列表中）</span>
-    </el-form-item>
+   <br>
+   <el-form-item>
+     <span style="margin-left: -68px; margin-right: 13px;">作业满分</span>
+     <el-input-number v-model="homeworkForm.fullGrade" :min="0" label="作业满分" placeholder="作业满分" style="width: 150px; margin-right: 60px;"></el-input-number>
+     <span style="margin-right: 13px;">补交满分</span>
+     <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分" style="width: 150px; margin-right: 60px;"></el-input-number>
+     <el-checkbox v-model="homeworkForm.multipleSubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
+     <el-checkbox v-model="homeworkForm.publishGrade">公布作业成绩</el-checkbox>
+   </el-form-item>
 
-    <el-form-item label="正常截止时间" style="margin-left: 28px;">
-      <el-date-picker v-model="homeworkForm.end" type="datetime" placeholder="选择正常截止时间"></el-date-picker>
-      <span class="form-tip">（晚于正常截止时间提交的作业将被标记为“补交”，但学生依然可以提交作业）</span>
-    </el-form-item>
+   <el-form-item label="开始时间">
+     <el-date-picker v-model="homeworkForm.start" type="datetime" placeholder="选择开始时间"></el-date-picker>
+     <span class="form-tip">（开始时间之前的作业不会显示在学生的列表中）</span>
+   </el-form-item>
 
-    <el-form-item label="补交截止时间" style="margin-left: 28px;">
-      <el-date-picker v-model="homeworkForm.latestEnd" type="datetime" placeholder="选择补交截止时间"></el-date-picker>
-      <span class="form-tip">（在补交截止时间之后的作业，不可提交）</span>
-    </el-form-item>
+   <el-form-item label="正常截止时间" style="margin-left: 28px;">
+     <el-date-picker v-model="homeworkForm.end" type="datetime" placeholder="选择正常截止时间"></el-date-picker>
+     <span class="form-tip">（晚于正常截止时间提交的作业将被标记为“补交”，但学生依然可以提交作业）</span>
+   </el-form-item>
 
-    <el-form-item>
-      <el-checkbox v-model="homeworkForm.requirePeerReview" style="margin-left: -67px;">互评任务</el-checkbox>
-      <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewStart" type="datetime" placeholder="开始时间" style="margin-left: 20px;"></el-date-picker>
-      <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewEnd" type="datetime" placeholder="截止时间" style="margin-left: 20px; margin-right: 30px;"></el-date-picker>
-      <span v-if="homeworkForm.requirePeerReview" style="margin-right: 3px;">学生最低互评数量</span>
-      <el-input-number v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.minPeerReview" :min="1" label="最少互评数量" style="width: 150px; margin-left: 20px;"></el-input-number>
-    </el-form-item>
+   <el-form-item label="补交截止时间" style="margin-left: 28px;">
+     <el-date-picker v-model="homeworkForm.latestEnd" type="datetime" placeholder="选择补交截止时间"></el-date-picker>
+     <span class="form-tip">（在补交截止时间之后的作业，不可提交）</span>
+   </el-form-item>
 
-    <br>
-    <el-form-item>      
-      <el-button round type="primary" @click="submitHomework" style="margin-left: 400px;">发布</el-button>
-      <el-button round @click="resetForm">重置</el-button>
-    </el-form-item>
-  </el-form>
+   <el-form-item>
+     <el-checkbox v-model="homeworkForm.requirePeerReview" style="margin-left: -67px;">互评任务</el-checkbox>
+     <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewStart" type="datetime" placeholder="开始时间" style="margin-left: 20px;"></el-date-picker>
+     <el-date-picker v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.peerReviewEnd" type="datetime" placeholder="截止时间" style="margin-left: 20px; margin-right: 30px;"></el-date-picker>
+     <span v-if="homeworkForm.requirePeerReview" style="margin-right: 3px;">学生最低互评数量</span>
+     <el-input-number v-if="homeworkForm.requirePeerReview" v-model="homeworkForm.minPeerReview" :min="1" label="最少互评数量" style="width: 150px; margin-left: 20px;"></el-input-number>
+   </el-form-item>
+
+   <br>
+   <el-form-item>
+     <el-button round type="primary" @click="submitHomework" style="margin-left: 400px;">发布</el-button>
+     <el-button round @click="resetForm">重置</el-button>
+   </el-form-item>
+ </el-form>
 </template>
 
 <script setup>
@@ -372,144 +380,143 @@ import { getIssue } from '@/api/assignments.js';
 const courseStore = useCourseStore();
 
 const homeworkForm = ref({
-  courseId: '',  // 填入需要的课程ID
-  title: '',
-  description: '',
-  start: '',
-  end: '',
-  isPrivate: 0,
-  fullGrade: 100,
-  delayedGrade: 100,
-  latestEnd: '',
-  multipleSubmission: 0,
-  publishGrade: 0,
-  requirePeerReview: 0,
-  peerReviewStart: '',
-  peerReviewEnd: '',
-  minPeerReview: 1,
-  attachments: []
+ courseId: '',  // 填入需要的课程ID
+ title: '',
+ description: '',
+ start: '',
+ end: '',
+ isPrivate: 0,
+ fullGrade: 100,
+ delayedGrade: 100,
+ latestEnd: '',
+ multipleSubmission: 0,
+ publishGrade: 0,
+ requirePeerReview: 0,
+ peerReviewStart: '',
+ peerReviewEnd: '',
+ minPeerReview: 1,
+ attachments: []
 });
 
 const fileList = ref([]);
 
 const handlePreview = (file) => {
-  console.log('预览文件:', file);
+ console.log('预览文件:', file);
 };
 
 const handleRemove = (file, fileList) => {
-  console.log('移除文件:', file, fileList);
+ console.log('移除文件:', file, fileList);
 };
 
 import moment from 'moment';
 
 const formatDateForSQL = (date) => {
-  if (!date) return null;
-  return moment(date).isValid() ? moment(date).format('YYYY-MM-DD HH:mm:ss') : null;
+ if (!date) return null;
+ return moment(date).isValid() ? moment(date).format('YYYY-MM-DD HH:mm:ss') : null;
 };
 
 const submitHomework = async () => {
-  const data = {
-    courseId: homeworkForm.value.courseId,
-    title: homeworkForm.value.title,
-    description: homeworkForm.value.description,
-    start: formatDateForSQL(homeworkForm.value.start),
-    end: formatDateForSQL(homeworkForm.value.end),
-    isPrivate: homeworkForm.value.isPrivate ? 1 : 0,
-    fullGrade: homeworkForm.value.fullGrade,
-    delayedGrade: homeworkForm.value.delayedGrade,
-    latestEnd: formatDateForSQL(homeworkForm.value.latestEnd),
-    multipleSubmission: homeworkForm.value.multipleSubmission ? 1 : 0,
-    publishGrade: homeworkForm.value.publishGrade ? 1 : 0,
-    requirePeerReview: homeworkForm.value.requirePeerReview ? 1 : 0,
-    peerReviewStart: formatDateForSQL(homeworkForm.value.peerReviewStart),
-    peerReviewEnd: formatDateForSQL(homeworkForm.value.peerReviewEnd),
-    minPeerReview: homeworkForm.value.minPeerReview,
-    attachments: fileList.value.map(file => file.id)
-  };
+ const data = {
+   courseId: homeworkForm.value.courseId,
+   title: homeworkForm.value.title,
+   description: homeworkForm.value.description,
+   start: formatDateForSQL(homeworkForm.value.start),
+   end: formatDateForSQL(homeworkForm.value.end),
+   isPrivate: homeworkForm.value.isPrivate ? 1 : 0,
+   fullGrade: homeworkForm.value.fullGrade,
+   delayedGrade: homeworkForm.value.delayedGrade,
+   latestEnd: formatDateForSQL(homeworkForm.value.latestEnd),
+   multipleSubmission: homeworkForm.value.multipleSubmission ? 1 : 0,
+   publishGrade: homeworkForm.value.publishGrade ? 1 : 0,
+   requirePeerReview: homeworkForm.value.requirePeerReview ? 1 : 0,
+   peerReviewStart: formatDateForSQL(homeworkForm.value.peerReviewStart),
+   peerReviewEnd: formatDateForSQL(homeworkForm.value.peerReviewEnd),
+   minPeerReview: homeworkForm.value.minPeerReview,
+   attachments: fileList.value.map(file => file.id)
+ };
 
-  try {
-    const response = await getIssue(data);
-    console.log('公开作业:', response.data);
-    // 在成功后执行操作，例如提示成功或跳转页面
-  } catch (error) {
-    console.error('公开作业时出错:', error);
-    // 在出错时执行操作，例如提示错误
-  }
+ try {
+   const response = await getIssue(data);
+   console.log('公开作业:', response.data);
+   // 在成功后执行操作，例如提示成功或跳转页面
+ } catch (error) {
+   console.error('公开作业时出错:', error);
+   // 在出错时执行操作，例如提示错误
+ }
 };
 
 
 
 const resetForm = () => {
-  homeworkForm.value = {
-    courseId: courseStore.courseId || '',  // 重置时保留课程 ID
-    title: '',
-    description: '',
-    start: '',
-    end: '',
-    isPrivate: 0,
-    fullGrade: 100,
-    delayedGrade: 100,
-    latestEnd: '',
-    multipleSubmission: 0,
-    publishGrade: 0,
-    requirePeerReview: 0,
-    peerReviewStart: '',
-    peerReviewEnd: '',
-    minPeerReview: 1,
-    attachments: []
-  };
-  fileList.value = [];
+ homeworkForm.value = {
+   courseId: courseStore.courseId || '',  // 重置时保留课程 ID
+   title: '',
+   description: '',
+   start: '',
+   end: '',
+   isPrivate: 0,
+   fullGrade: 100,
+   delayedGrade: 100,
+   latestEnd: '',
+   multipleSubmission: 0,
+   publishGrade: 0,
+   requirePeerReview: 0,
+   peerReviewStart: '',
+   peerReviewEnd: '',
+   minPeerReview: 1,
+   attachments: []
+ };
+ fileList.value = [];
 };
 
 onMounted(() => {
-  // 从 Pinia store 获取课程 ID，并设置到 homeworkForm 中
-  if (courseStore.courseId) {
-    homeworkForm.value.courseId = courseStore.courseId;
-  } else {
-    console.warn("课程ID未设置！");
-  }
+ // 从 Pinia store 获取课程 ID，并设置到 homeworkForm 中
+ if (courseStore.courseId) {
+   homeworkForm.value.courseId = courseStore.courseId;
+ } else {
+   console.warn("课程ID未设置！");
+ }
 });
 </script>
 
 <style scoped>
 ::v-deep .markdown-editor {
-  margin-left: -150px !important;
-  height: 700px !important;
+ margin-left: -150px !important;
+ height: 700px !important;
 }
 
 .el-form-item {
-  margin-bottom: 20px;
+ margin-bottom: 20px;
 }
 
 .el-button {
-  margin-right: 10px;
+ margin-right: 10px;
 }
 
 .upload-demo .el-upload__tip {
-  font-size: 12px;
-  color: #666;
+ font-size: 12px;
+ color: #666;
 }
 
 .upload-container {
-  display: flex;
-  align-items: center;
-  margin-left: 820px;
+ display: flex;
+ align-items: center;
+ margin-left: 820px;
 }
 
 .upload-container .el-upload__tip {
-  margin-left: 5px;
+ margin-left: 5px;
 }
 
 .form-tip {
-  margin-left: 10px;
-  font-size: 12px;
-  color: #666;
+ margin-left: 10px;
+ font-size: 12px;
+ color: #666;
 }
 </style> -->
 
 
-
-<!-- 
+<!--
 <template>
   <el-form :model="homeworkForm" label-width="120px">
     <el-form-item label="作业标题">
