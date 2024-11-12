@@ -1,5 +1,6 @@
 package com.cms.backend.controller;
 
+import com.cms.backend.BackendApplication;
 import com.cms.backend.pojo.Attachment;
 import com.cms.backend.service.AttachmentService;
 import lombok.AllArgsConstructor;
@@ -40,8 +41,7 @@ public class AttachmentController {
     @PostMapping(value = "upload")
     public ResponseEntity<UploadedAttachment> uploadAttachment(MultipartFile file) {
         String name = file.getOriginalFilename();
-        var f = new File("D:\\nginx\\nginx-1.26.2\\ICPRFiles\\" + name);
-//        var f = new File("F:\\cangqiongwaimai\\nginx-1.20.2\\ICPRFiles\\" + name);
+        var f = new File(BackendApplication.NGINX_BASE_PATH + name);
         try {
             if (!f.exists()) {
                 if (!f.createNewFile()) {
