@@ -52,7 +52,7 @@ export default {
       this.$router.push('/stu-end'); // 返回首页
     },
     goToNotifications() {
-      this.$router.push('/notification'); // 跳转到通知页面
+      this.$router.push('/stu-end/notification'); // 跳转到通知页面
     },
     goToProfile() {
       this.$router.push('/profile'); // 跳转到个人中心页面

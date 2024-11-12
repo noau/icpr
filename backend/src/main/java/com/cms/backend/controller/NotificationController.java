@@ -31,7 +31,6 @@ public class NotificationController {
     @PostMapping(value = "/publish")
     public ResponseEntity<String> publishNotification(@RequestBody Notification notification) {
         notificationService.save(notification);
-
         return ResponseEntity.ok("");
     }
 
@@ -70,19 +69,12 @@ public class NotificationController {
      * @return 更新结果
      */
     @PostMapping("/star")
-    public ResponseEntity<Void> updateCollectionNotification(@RequestBody Notification notification) {
-        // 创建一个更新对象
-        UpdateNotificationDTO notificationDTO = new UpdateNotificationDTO(
-                notification.getId(),
-                notification.getIsRead(),
-                notification.getIsStar()
-        );
-
+    public ResponseEntity<Void> updateCollectionNotification(@RequestBody NotificationDTO notification) {
         // 更新通知信息
         notificationService.update(
                 new LambdaUpdateWrapper<Notification>()
-                        .eq(Notification::getId, notificationDTO.getId())
-                        .set(Notification::getIsStar, notificationDTO.getIsStar())
+                        .eq(Notification::getId, notification.getId())
+                        .set(Notification::getIsStar, notification.getIsStar())
         );
         return ResponseEntity.ok().build();
     }
@@ -94,19 +86,12 @@ public class NotificationController {
      * @return 更新结果
      */
     @PostMapping("/read")
-    public ResponseEntity<Void> updateReadNotification(@RequestBody Notification notification) {
-        // 创建一个更新对象
-        UpdateNotificationDTO notificationDTO = new UpdateNotificationDTO(
-                notification.getId(),
-                notification.getIsRead(),
-                notification.getIsStar()
-        );
-
+    public ResponseEntity<Void> updateReadNotification(@RequestBody NotificationDTO notification) {
         // 更新通知信息
         notificationService.update(
                 new LambdaUpdateWrapper<Notification>()
-                        .eq(Notification::getId, notificationDTO.getId())
-                        .set(Notification::getIsRead, notificationDTO.getIsRead())
+                        .eq(Notification::getId, notification.getId())
+                        .set(Notification::getIsRead, notification.getIsRead())
         );
         return ResponseEntity.ok().build();
     }
@@ -235,14 +220,6 @@ public class NotificationController {
 
         private String title;
 
-    }
-
-    @Data
-    @AllArgsConstructor
-    public static class UpdateNotificationDTO {
-        private Integer id;
-        private Integer isRead;
-        private Integer isStar;
     }
 
     @Data
