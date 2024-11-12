@@ -151,6 +151,10 @@ const router = createRouter({
           ]
         },
         {
+          path: '/stu-end/course/chat/ai-speak',
+          component: () => import('@/views/stu_end/course/chat/ai_speak.vue')
+        },
+        {
           path: '/stu-end/course/discussion',
           component: () => import('@/views/stu_end/course/discussion/discussion_main/index.vue')
         },

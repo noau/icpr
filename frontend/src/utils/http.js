@@ -39,6 +39,11 @@ instance.interceptors.request.use(
     if (userStore.token || localStorage.getItem('token')) {
       config.headers.Authorization = userStore.token || localStorage.getItem('token')
     }
+    // TODO 2. 判断请求是否是 /api/v1/chat/completions，如果是，使用不同的 baseURL
+    if (config.url && config.url.includes('/api/v1/chat/completions')) {
+      config.baseURL = 'http://10.60.133.180:3000' // 设置新的基础 URL
+      config.headers.Authorization = 'Bearer fastgpt-r4ErzyLcOk9M7ATxfoW8kzpMqji46WIXE2q0eE3sjMbXNCXHongATXTq'
+    }
     return config
   },
   (err) => Promise.reject(err)
