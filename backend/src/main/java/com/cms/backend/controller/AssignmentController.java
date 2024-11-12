@@ -269,7 +269,13 @@ public class AssignmentController {
         List<Attachment> attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, assignmentSubmission.getId()));
         var attachmentInfos = attachments.stream().map(attachment -> new AttachmentListDTO(attachment.getId(), attachment.getName())).toList();
 
-        SubmissionInfo submissionInfo = new SubmissionInfo(studentId, assignmentSubmission.getSubmittedAt(), assignmentReview.getGrade(), assignmentSubmission.getContent(), assignmentReview.getFeedback(), assignmentReview.getGradedAt(), attachmentInfos);
+        SubmissionInfo submissionInfo = new SubmissionInfo(studentId,
+                assignmentSubmission.getSubmittedAt(),
+                assignmentReview == null ? null : assignmentReview.getGrade(),
+                assignmentSubmission.getContent(),
+                assignmentReview == null ? null : assignmentReview.getFeedback(),
+                assignmentReview == null ? null : assignmentReview.getGradedAt(),
+                attachmentInfos);
         return ResponseEntity.ok(submissionInfo);
     }
 
