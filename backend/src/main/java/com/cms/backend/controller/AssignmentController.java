@@ -1,7 +1,6 @@
 package com.cms.backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cms.backend.pojo.Assignments.Assignment;
 import com.cms.backend.pojo.Assignments.AssignmentPeerReview;
@@ -391,6 +390,7 @@ public class AssignmentController {
         return ResponseEntity.ok(details.subList(0, review_count));
     }
 
+
     @GetMapping("/course-assignments/student")
     public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(@RequestBody AssignmentsStudentBody assignmentsStudentBody) {
         String id = assignmentsStudentBody.id;
@@ -398,18 +398,22 @@ public class AssignmentController {
         List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));
         List<AssignmentStudent> assignmentStudentList = new ArrayList<>();
         for (Assignment assignment : assignmentList) {
-            List<AssignmentSubmission> assignmentSubmissionList = assignmentSubmissionService.list(new QueryWrapper<AssignmentSubmission>().eq("assignment_id", assignment.getId()).eq("student_id", userId));
+
             Float grade = null;
-            for (AssignmentSubmission assignmentSubmission : assignmentSubmissionList) {
-                AssignmentReview assignmentReview = assignmentReviewService.getOne(new LambdaQueryWrapper<AssignmentReview>().eq(AssignmentReview::getSubmissionId, assignmentSubmission.getId()));
+            var submitted = false;
+            var assignmentSubmission = assignmentSubmissionService.getOne(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignment.getId()).eq(AssignmentSubmission::getStudentId, userId));
+            if (assignmentSubmission != null) {
+                submitted = true;
+                var assignmentReview = assignmentReviewService.getById(assignmentSubmission.getId());
                 if (assignmentReview != null) {
                     grade = assignmentReview.getGrade();
-                    break;
                 }
             }
 
+
             var peerReviewCount = assignmentPeerReviewService.getPeerReviewCount(userId, assignment.getId());
-            AssignmentStudent assignmentStudent = new AssignmentStudent(assignment.getId(),
+            AssignmentStudent assignmentStudent = new AssignmentStudent(
+                    assignment.getId(),
                     assignment.getCourseId(),
                     assignment.getTitle(),
                     assignment.getDescription(),
@@ -428,7 +432,8 @@ public class AssignmentController {
                     assignment.getAnswer(),
                     grade == null ? 1 : 0,
                     grade,
-                    peerReviewCount >= assignment.getMinPeerReview()
+                    peerReviewCount >= assignment.getMinPeerReview(),
+                    submitted
             );
 
             assignmentStudentList.add(assignmentStudent);
@@ -490,6 +495,8 @@ public class AssignmentController {
         private Float grade;
 
         private boolean peerReviewFinished;
+
+        private boolean submitted;
 
     }
 

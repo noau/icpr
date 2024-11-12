@@ -24,23 +24,10 @@
           <el-table-column prop="start" label="作业开始" width="150" label-class-name="table-label-center"></el-table-column>
           <!-- 作业截止 -->
           <el-table-column prop="end" label="作业截止" width="150" label-class-name="table-label-center"></el-table-column>
-          <!-- 提交人数 -->
-          <!-- <el-table-column prop="submitted" label="提交人数" width="100" label-class-name="table-label-center"></el-table-column> -->
-          <!-- 提交时间 -->
-          <!-- <el-table-column prop="submitTime" label="提交时间" width="100" label-class-name="table-label-center"></el-table-column> -->
           <!-- 得分 -->
           <el-table-column prop="grade" label="得分" width="100" label-class-name="table-label-center"></el-table-column>
           <!-- 批改状态 -->
           <el-table-column prop="isGrade" label="批改状态" width="100" label-class-name="table-label-center"></el-table-column>
-          <!-- 操作 -->
-          <!-- <el-table-column label="操作" width="200" label-class-name="table-label-center">
-            <template #default="scope">
-              <el-button round type="text" @click="handleSubmit(scope.row)">提交</el-button>
-              <el-button round type="text" @click="peerReview(scope.row)" 
-              :disabled="!scope.row.requirePeerReview || +new Date() < scope.row.peerReviewStart || +new Date() > scope.row.peerReviewEnd">互评</el-button>
-              <el-button round type="text" @click="viewSubmission(scope.row)">查看</el-button>
-            </template>
-          </el-table-column> -->
           <el-table-column label="操作" width="200" label-class-name="table-label-center">
             <template #default="scope">
               <el-button round type="text" @click="handleSubmit(scope.row)">提交</el-button>
@@ -149,6 +136,7 @@ async function getCourseAssignmentsList() {
   }
 }
 
+
 function handleSubmit(row) {
   assignmentId.value = row.id;
   dialogVisible.value = true;
@@ -231,13 +219,11 @@ async function submitAssignment() {
       content: formData.value.content,
       attachments: formData.value.attachments || [],
     };
-    
+
     const response = await getSubmissions(obj);
     // 找到对应的作业记录并更新其submitted状态
     const assignment = tableData.value.find(item => item.id === assignmentId.value);
-    if (assignment) {
-      assignment.submitted = true; // 更新提交状态
-    }
+    console.log(assignment);
     dialogVisible.value = false;
   } catch (error) {
     console.error('Error submitting assignment:', error);

@@ -54,11 +54,12 @@ export const getAssignmentsInfo = ({ id }) =>
 export const getAssignmentsDetail = ({ id }) =>
   httpInstance.get("/assignments/get-detail?id=" + id, { id });
 
+
 //获得互评列表
 export const getPeerReviews = ({ id }) =>
   httpInstance.get("/assignments/peer-reviews?id=" + id, { id });
 
-//课程作业列表
+//教师端课程作业列表
 export const getcourseAssignments = ({ id }) =>
   httpInstance.get("/assignments/course-assignments?id=" + id, { id });
 
