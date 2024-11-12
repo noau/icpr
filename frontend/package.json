@@ -12,7 +12,11 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@icon-park/vue-next": "^1.4.2",
+    "@js-preview/docx": "^1.6.2",
+    "@js-preview/excel": "^1.7.12",
+    "@js-preview/pdf": "^2.0.8",
     "@kangc/v-md-editor": "^2.3.18",
+    "@vue-office/docx": "^1.6.2",
     "@vue-office/pdf": "^2.0.6",
     "axios": "^1.7.7",
     "echarts": "^5.5.1",

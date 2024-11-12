@@ -8,10 +8,24 @@
       <el-button round type="primary" @click="dialogVisible = true" style="padding: 8px">上传</el-button>
     </div>
 
-    <!-- PDF 预览区域，放置在标题和上传按钮的正下方，并占满空白区域 -->
-    <div v-if="pdfUrl" class="pdf-preview-section">
-      <iframe :src="pdfUrl" style="width: 100%; height: 100%;" frameborder="0"></iframe>
-    </div>
+    <!-- PDF 预览区域，优先使用 VueOfficePdf 组件展示 PDF 文件 -->
+    <vue-office-pdf 
+      v-if="pdfUrl"    
+      :src="pdfUrl"
+      style="height: calc(100vh - 200px); width: 100%;"
+      @rendered="renderedHandler"
+      @error="errorHandler"
+    />
+    <!-- <div v-else-if="pdfIframeUrl" class="pdf-preview-section">
+      <iframe :src="pdfIframeUrl" style="width: 100%; height: 100%;" frameborder="0"></iframe>
+    </div> -->
+    <vue-office-docx
+        :v-else-if="pdfIframeUrl"
+        :src="pdfIframeUrl"
+        style="height: calc(100vh - 200px); width: 100%;"
+        @rendered="renderedHandler"
+        @error="errorHandler"
+    />
 
     <!-- 上传对话框 -->
     <el-dialog title="上传教学大纲" v-model="dialogVisible" width="40%" @close="handleClose">
@@ -44,7 +58,7 @@
         </div>
 
         <div class="file-type-warning">
-          允许上传的文件类型：doc、pdf、docx、jpg、png，文件不能超过2G
+          允许上传的文件类型：pdf
         </div>
       </div>
 
@@ -62,16 +76,19 @@
 
 <script setup>
 import { ref } from 'vue'
-import { resourcesyllabus } from '@/api/course'
+import VueOfficePdf from '@vue-office/pdf'
+import VueOfficeDocx from '@vue-office/docx';
+import { resourcesyllabus, getsyllabus, getAttachmentUrl } from '@/api/course'
 
 const fileList = ref([])
 const uploadRef = ref(null)
-const acceptedFileTypes = ".doc,.docx,.pdf,.jpg,.png" // 支持格式
+const acceptedFileTypes = ".pdf" // 支持格式
 const selectedPermission = ref('course')
 const dialogVisible = ref(false)
 
-const attachmentIdList = ref([])
-const pdfUrl = ref(null) // 存储预览文件的 URL
+
+const pdfUrl = ref(null) // 存储 VueOfficePdf 文件的 URL
+const pdfIframeUrl = ref(null) // 用于 iframe 预览的 URL
 const headers = {
   Authorization: localStorage.getItem('token')
 }
@@ -85,13 +102,13 @@ const beforeUpload = (file) => {
   }
   return true
 }
-
+const pdfId = ref('')
 // 上传文件成功后的处理
 const handleUploadSuccess = (response, file) => {
   alert(`${file.name} 上传成功`)
-  console.log('response',response)
-  pdfUrl.value = encodeURI(response.url) // 假设服务器返回的 URL 位于 response.url，编码后保存到 pdfUrl
-  dialogVisible.value = false // 关闭上传对话框
+  pdfId.value = response.id // 记录文件的 ID
+  loadFileUrl(pdfId.value) // 使用加载文件 URL 函数加载预览
+  // dialogVisible.value = false // 关闭上传对话框
 }
 
 // 上传文件失败后的处理
@@ -101,14 +118,15 @@ const handleUploadError = () => {
 
 // 提交上传操作
 const confirmUpload = () => {
-  if (attachmentIdList.value.length === 0) {
+  if (!pdfId.value) {
     alert('请先选择文件上传')
     return
   }
 
   // 将附件信息保存到课程大纲
   resourcesyllabus({
-    attachmentIdList: attachmentIdList.value
+    attachmentIdList: [pdfId.value], //attachmentIdList.value,
+    id: localStorage.getItem('courseId')
   }).then(res => {
     console.log(res)
     alert('文件信息保存成功')
@@ -123,6 +141,46 @@ const confirmUpload = () => {
 const handleExceed = () => {
   alert('一次只能上传一个文件')
 }
+
+// 加载教学大纲的 PDF 文件
+const loadSyllabus = () => {
+  const courseId = localStorage.getItem('courseId')
+  getsyllabus(courseId).then(res => {
+    if (res && res.attachmentIdList && res.attachmentIdList.length > 0) {
+      const attachmentId = res.attachmentIdList[res.attachmentIdList.length-1].id
+      loadFileUrl(attachmentId)
+    } else {
+      console.log("未找到教学大纲附件")
+    }
+  }).catch(error => {
+    console.log("获取教学大纲失败", error)
+  })
+}
+
+// 根据附件 ID 获取文件 URL
+const loadFileUrl = (attachmentId) => {
+  getAttachmentUrl(attachmentId).then(res => {
+    if (res && res.url) {
+      if (res.url.endsWith('.pdf')) {
+        pdfUrl.value = res.url
+        pdfIframeUrl.value = null
+        console.log("pdf文档加载成功")
+      } else if (res.url.endsWith('.docx')) {
+        pdfUrl.value = null
+        pdfIframeUrl.value = res.url
+        console.log("docx文档加载成功")
+      }
+      console.log("文件URL加载成功")
+    } else {
+      console.log("未获取到文件URL")
+    }
+  }).catch(error => {
+    console.log("获取文件URL失败", error)
+  })
+}
+
+// 在页面加载时调用教学大纲加载函数
+loadSyllabus()
 </script>
 
 <style scoped>
@@ -170,3 +228,4 @@ const handleExceed = () => {
   text-align: right;
 }
 </style>
+

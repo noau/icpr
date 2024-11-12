@@ -8,7 +8,7 @@
         @error="errorHandler"
     />
     <div v-else style="text-align:center; padding-top:20px;">
-        <p>未能加载 PDF 文件，请稍后再试或联系管理员。</p>
+        <p>暂无</p>
     </div>
 </template>
 
@@ -27,6 +27,7 @@ export default {
         }
     },
     mounted () {
+        console.log('teaching_outline出发')
         this.loadSyllabus() // 页面加载时调用 loadSyllabus 方法
     },
     methods: {
@@ -38,11 +39,12 @@ export default {
         },
         // 获取教学大纲的附件ID并加载PDF
         loadSyllabus() {
-            let courseId = 'M310006B1机械学习2024~2025上'//localStorage.getItem('courseId') // 获取课程ID
+            let courseId = localStorage.getItem('courseId') // 获取课程ID
             getsyllabus(courseId).then(res => {
                 console.log(res,'===')
                 if (res && res.attachmentIdList && res.attachmentIdList.length > 0) {
-                    const attachmentId = 47//res.attachmentIdList[0].id // 获取第一个附件的 ID
+                    // const attachmentId = res.attachmentIdList[0].id // 获取第一个附件的 ID
+                    const attachmentId = res.attachmentIdList[res.attachmentIdList.length-1].id
                     // 根据附件ID加载文件URL
                     this.loadFileUrl(attachmentId)
                 } else {
@@ -55,8 +57,8 @@ export default {
         // 根据附件ID获取文件URL
         loadFileUrl(attachmentId) {
             getAttachmentUrl(attachmentId).then(res => {
-                if (res.data && res.data.url) {
-                    this.pdf = res.data.url // 设置 pdf 地址为获取到的文件 URL
+                if (res && res.url) {
+                    this.pdf = res.url // 设置 pdf 地址为获取到的文件 URL
                     console.log("文件URL加载成功")
                 } else {
                     console.log("未获取到文件URL")

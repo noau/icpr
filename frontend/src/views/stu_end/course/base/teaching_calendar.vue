@@ -1,19 +1,23 @@
 <template> 
     <!-- 使用 VueOfficePdf 组件来显示 PDF 文件 -->
     <vue-office-pdf 
+        v-if="pdf"    
         :src="pdf"
         style="height: 100vh"
         @rendered="renderedHandler"
         @error="errorHandler"
     />
-  </template>
-  
-  <script>
-  // 引入VueOfficePdf组件和API函数
-  import VueOfficePdf from '@vue-office/pdf'
-  import { getcalendar, getAttachmentUrl } from '@/api/course'
-  
-  export default {
+    <div v-else style="text-align:center; padding-top:20px;">
+        <p>暂无</p>
+    </div>
+</template>
+
+<script>
+// 引入VueOfficePdf组件和API函数
+import VueOfficePdf from '@vue-office/pdf'
+import { getcalendar, getAttachmentUrl } from '@/api/course'
+
+export default {
     components: {
         VueOfficePdf
     },
@@ -23,7 +27,8 @@
         }
     },
     mounted () {
-        this.loadcalendar() // 页面加载时调用 loadcalendar 方法
+        console.log('teaching_outline出发')
+        this.loadCalendar() // 页面加载时调用 loadCalendar 方法
     },
     methods: {
         renderedHandler() {
@@ -32,26 +37,28 @@
         errorHandler() {
             console.log("PDF 渲染失败")
         },
-        // 获取教学大纲的附件ID并加载PDF
-        loadcalendar() {
+        // 获取教学日历的附件ID并加载PDF
+        loadCalendar() {
             let courseId = localStorage.getItem('courseId') // 获取课程ID
             getcalendar(courseId).then(res => {
-                if (res.data && res.data.attachmentIdList && res.data.attachmentIdList.length > 0) {
-                    const attachmentId = res.data.attachmentIdList[0].id // 获取第一个附件的 ID
+                console.log(res,'===')
+                if (res && res.attachmentIdList && res.attachmentIdList.length > 0) {
+                    // const attachmentId = res.attachmentIdList[0].id // 获取第一个附件的 ID
+                    const attachmentId = res.attachmentIdList[res.attachmentIdList.length-1].id
                     // 根据附件ID加载文件URL
                     this.loadFileUrl(attachmentId)
                 } else {
-                    console.log("未找到教学大纲附件")
+                    console.log("未找到教学日历附件")
                 }
             }).catch(error => {
-                console.log("获取教学大纲失败", error)
+                console.log("获取教学日历失败", error)
             })
         },
         // 根据附件ID获取文件URL
         loadFileUrl(attachmentId) {
             getAttachmentUrl(attachmentId).then(res => {
-                if (res.data && res.data.url) {
-                    this.pdf = res.data.url // 设置 pdf 地址为获取到的文件 URL
+                if (res && res.url) {
+                    this.pdf = res.url // 设置 pdf 地址为获取到的文件 URL
                     console.log("文件URL加载成功")
                 } else {
                     console.log("未获取到文件URL")
@@ -61,6 +68,5 @@
             })
         }
     }
-  }
-  </script>
-  
+}
+</script>

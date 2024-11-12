@@ -1,67 +1,59 @@
-<!-- <template> 
-  <el-card class="course-card">
-    <div class="course-header">
-      <div class="course-name">{{ courseName }}</div>
-    </div>
-    <div class="course-info">
-      {{ courseIntroduction }}
-    </div>
-  </el-card>
-</template> -->
-
 <template>
-  <el-card class="course-card">
+  <div class="course-container"> <!-- 添加根容器 -->
     <div class="course-header">
-      <div class="course-name">{{ courseInfo }}</div>
+      <div class="course-name">课程简介</div>
     </div>
-    <div class="course-info">
-      {{ courseInfo }}
-    </div>
-  </el-card>
+
+    <el-card class="course-card">
+      <div class="course-info">
+        <div>{{ courseIntroduction }}</div>
+      </div>
+    </el-card>
+  </div>
 </template>
 
-
-
 <script setup>
-import { userCourses } from '@/api/course';
 import { ref, onMounted } from 'vue';
+import { getCourseInfo } from '@/api/course'; // 引入获取课程信息的API方法
 
-const courseInfo = ref(null);
+// 定义存储课程简介的变量
+const courseIntroduction = ref('加载中...');
 
-const fetchCourseInfo = async () => {
-  const userId = localStorage.getItem('userId'); // 确保 userId 是用户 ID
-  const token = localStorage.getItem('token');
+// 获取课程简介的函数
+const fetchCourseIntroduction = async () => {
+  const token = localStorage.getItem('token'); // 从localStorage获取token
+  let courseId = localStorage.getItem('courseId') // 获取课程ID
 
-  if (!userId) {
-    console.error("用户 ID 不存在，请检查 'userId' 是否存储在 localStorage 中");
-    return;
-  }
-
-  if (!token) {
-    console.error("Token 不存在，请检查 'token' 是否存储在 localStorage 中");
+  if (!token || !courseId) {
+    console.error("Token或课程ID不存在，请检查");
     return;
   }
 
   try {
-    const response = await userCourses(userId, token);
-    courseInfo.value = response.data; // 假设后端返回的课程信息数据在 `response.data` 中
-    console.log("课程信息：", courseInfo.value);
+    // 调用API获取课程信息
+    const response = await getCourseInfo(courseId, token);
+    console.log(response);
+    
+    const courseData = response;
+
+    // 直接显示课程的简介内容
+    courseIntroduction.value = courseData.introduction || '暂无课程简介';
   } catch (error) {
-    console.error("获取课程信息失败:", error);
+    console.error("获取课程简介失败:", error);
+    courseIntroduction.value = '加载课程简介失败';
   }
 };
 
-// 在组件挂载时调用 fetchCourseInfo
+// 使用onMounted在页面加载时获取课程简介
 onMounted(() => {
-  fetchCourseInfo();
+  fetchCourseIntroduction();
 });
-
 </script>
 
 <style scoped>
 .course-card {
-  width: 100%;          /* 使卡片占满列的宽度 */
-  height: auto;         /* 高度根据内容自动调整 */
+  width: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -71,7 +63,8 @@ onMounted(() => {
 .course-header {
   display: flex;
   align-items: center;
-  margin-bottom: 10px; /* 增加下方信息的间距 */
+  justify-content: space-between; 
+  margin-bottom: 10px;
 }
 
 .course-name {

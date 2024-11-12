@@ -51,7 +51,7 @@
 
             <el-table-column label="操作" width="250" align="center" header-align="center">
               <template #default="scope">
-                <el-button type="text" @click="publishHomework(scope.row)">发布作业</el-button>
+                <el-button type="text" @click="publishHomework(scope.row)">公开作业</el-button>
                 <el-button type="text" @click="publishGrades(scope.row)">公布成绩</el-button>
                 <el-button type="text" @click="publishAnswers(scope.row)">公布答案</el-button>
                 <el-button type="text" @click="editHomework(scope.row)">修改</el-button>
@@ -73,7 +73,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useCourseStore } from "@/stores/course";
-import { getcourseAssignments, getDelete } from "@/api/assignments";
+import { getcourseAssignments, getDelete,getChange } from "@/api/assignments";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
@@ -104,12 +104,19 @@ const search = () => {
 };
 
 const publishHomework = async (row) => {
-  console.log("发布作业:", row);
+  console.log("公开作业:", row);
+
+  let data = await getChange({...row,isPrivate:1,attachments:[]})
+  console.log(data);
+  
   alert("发布成功！");
 };
 
 const publishGrades = async (row) => {
-  console.log("公布成绩:", row);
+  console.log("公开作业:", row);
+
+let data = await getChange({...row,publishGrade:1,attachments:[]})
+console.log(data);
   alert("公布成功！");
 };
 
@@ -183,7 +190,9 @@ const goToSubmissonCondition = (row) => {
 };
 
 const goToHomeworkStatistics = (row) => {
-  router.push({ path: "/tea-end/course/examine/homework-statistics" });
+  console.log(row);
+  
+  router.push({ path: `/tea-end/course/examine/homework-statistics`,query:{id:row.id} });
 };
 
 function handleCurrentChange(page) {

@@ -12,35 +12,56 @@
     <div class="box-card">
       <el-card>
         <el-table :data="paginatedData" style="width: 100%">
-          <!-- 作业标题 -->
-          <el-table-column prop="title" label="作业标题" width="200"></el-table-column>
-          <!-- 作业开始 -->
-          <el-table-column prop="start" label="作业开始" width="180"></el-table-column>
-          <!-- 作业截止 -->
-          <el-table-column prop="end" label="作业截止" width="180"></el-table-column>
-          <!-- 提交人数 -->
-          <el-table-column prop="submitted" label="提交人数" width="100"></el-table-column>
-          <!-- 提交时间 -->
-          <el-table-column prop="submitTime" label="提交时间" width="150"></el-table-column>
-          <!-- 得分 -->
-          <el-table-column prop="score" label="得分" width="100"></el-table-column>
-          <!-- 批改状态 -->
-          <el-table-column prop="reviewStatus" label="批改状态" width="100"></el-table-column>
-          <!-- 操作 -->
-          <el-table-column label="操作" width="200">
+          <!-- 作业标题，点击跳转至详情页面 -->
+          <el-table-column label="作业标题" width="200" label-class-name="table-label-center">
             <template #default="scope">
-              <el-button round type="text" @click="handleSubmit(scope.row)">提交</el-button>
-              <el-button round type="text" @click="viewDetails(scope.row)">查看</el-button>
+              <el-button type="text" @click="viewDetails(scope.row)">
+                {{ scope.row.title }}
+              </el-button>
             </template>
           </el-table-column>
+          <!-- 作业开始 -->
+          <el-table-column prop="start" label="作业开始" width="150" label-class-name="table-label-center"></el-table-column>
+          <!-- 作业截止 -->
+          <el-table-column prop="end" label="作业截止" width="150" label-class-name="table-label-center"></el-table-column>
+          <!-- 提交人数 -->
+          <!-- <el-table-column prop="submitted" label="提交人数" width="100" label-class-name="table-label-center"></el-table-column> -->
+          <!-- 提交时间 -->
+          <!-- <el-table-column prop="submitTime" label="提交时间" width="100" label-class-name="table-label-center"></el-table-column> -->
+          <!-- 得分 -->
+          <el-table-column prop="grade" label="得分" width="100" label-class-name="table-label-center"></el-table-column>
+          <!-- 批改状态 -->
+          <el-table-column prop="isGrade" label="批改状态" width="100" label-class-name="table-label-center"></el-table-column>
+          <!-- 操作 -->
+          <!-- <el-table-column label="操作" width="200" label-class-name="table-label-center">
+            <template #default="scope">
+              <el-button round type="text" @click="handleSubmit(scope.row)">提交</el-button>
+              <el-button round type="text" @click="peerReview(scope.row)" 
+              :disabled="!scope.row.requirePeerReview || +new Date() < scope.row.peerReviewStart || +new Date() > scope.row.peerReviewEnd">互评</el-button>
+              <el-button round type="text" @click="viewSubmission(scope.row)">查看</el-button>
+            </template>
+          </el-table-column> -->
+          <el-table-column label="操作" width="200" label-class-name="table-label-center">
+            <template #default="scope">
+              <el-button round type="text" @click="handleSubmit(scope.row)">提交</el-button>
+              <el-button round type="text" @click="peerReview(scope.row)" 
+                :disabled="!scope.row.requirePeerReview || +new Date() < scope.row.peerReviewStart || +new Date() > scope.row.peerReviewEnd">
+                互评
+              </el-button>
+              <!-- 如果未提交作业，查看按钮置灰 -->
+              <el-button round type="text" @click="viewSubmission(scope.row)" 
+                :disabled="!scope.row.submitted">查看</el-button>
+            </template>
+          </el-table-column>
+
         </el-table>
+
         <div class="pagination-container">
           <el-pagination layout="prev, pager, next" :total="filteredData.length" :page-size="pageSize"
             :current-page="currentPage" @current-change="handleCurrentChange" />
         </div>
       </el-card>
     </div>
-
     <!-- 提交作业的弹窗 -->
     <el-dialog title="文件内容" v-model="dialogVisible" width="500px">
       <el-form ref="submitForm" :model="formData">
@@ -50,13 +71,13 @@
         <el-form-item label="上传文件">
           <el-upload class="upload-demo" action="http://localhost:8080/attachment/upload"
             :on-success="handleUploadSuccess" :headers="headers" :on-preview="handlePreview" :on-remove="handleRemove"
-            :file-list="fileList">
+            :file-list="fileList" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.gif,.bmp,.zip,.rar">
             <template v-slot:trigger>
               <el-button round style="padding: 10px;" size="small" type="primary">点击上传</el-button>
             </template>
             <template v-slot:tip>
               <div class="el-upload__tip">
-                允许上传任意格式的文件
+                允许上传的文件类型: pdf, doc, docx, jpg, jpeg, png, gif, bmp, zip, rar，文件不超过2G。
               </div>
             </template>
           </el-upload>
@@ -114,16 +135,12 @@ async function getCourseAssignmentsList() {
       console.error('Course ID is missing!');
       return;
     }
-    console.log('Course ID:', courseId);
-    
     const response = await getcourseAssignments({ id: courseId });
-    console.log('Full API Response:', response);
 
     if (Array.isArray(response)) {
       tableData.value = response;
       searchResult.value = tableData.value;
     } else {
-      console.error('Invalid response structure:', response);
       tableData.value = [];
       searchResult.value = [];
     }
@@ -137,11 +154,42 @@ function handleSubmit(row) {
   dialogVisible.value = true;
 }
 
-function viewDetails(row) {
+function viewSubmission(row) {
+  console.log('Navigating to submission view for assignment:', row.id);
   router.push({
-    path: `/stu-end/course/examine/homework-details/${row.id}`
+    path: '/stu-end/course/examine/view-submission',
+    query: {
+      assignmentId: row.id,
+      studentId: localStorage.getItem('userId')
+    }
   });
 }
+
+
+/**
+ * 点击互评跳转页面
+ * @param row 
+ */
+function peerReview(row) {
+  router.push({
+    path: '/stu-end/course/examine/rating-page',
+    query: {
+      assignmentId:row.id,
+      count:row.minPeerReview
+    }
+  });
+}
+function viewDetails(row) {
+  console.log('Navigating to details of assignment:', row.id);
+  router.push({
+    path: `/stu-end/course/examine/homework-details`,
+    query: {
+      assignmentId: row.id
+    }
+  });
+}
+
+
 
 function handlePreview(file) {
   console.log('Previewing file:', file);
@@ -167,10 +215,9 @@ function handleSearch() {
 }
 
 function handleUploadSuccess(res) {
-  console.log('Upload success:', res);
-  formData.value.attachments = formData.value.attachments || [];
-  formData.value.attachments.push(res.id); // 假设 res.id 是文件 ID
+  formData.value.attachments.push(res.id);
 }
+
 function formatDateToMysql(date) {
   return date.toISOString().slice(0, 19).replace('T', ' ');
 }
@@ -180,12 +227,17 @@ async function submitAssignment() {
     const obj = {
       assignmentId: assignmentId.value,
       studentId: localStorage.getItem('userId'),
-      submittedAt: formatDateToMysql(new Date()), // 转换为 MySQL 格式
+      submittedAt: formatDateToMysql(new Date()),
       content: formData.value.content,
       attachments: formData.value.attachments || [],
     };
+    
     const response = await getSubmissions(obj);
-    console.log('Submission response:', response);
+    // 找到对应的作业记录并更新其submitted状态
+    const assignment = tableData.value.find(item => item.id === assignmentId.value);
+    if (assignment) {
+      assignment.submitted = true; // 更新提交状态
+    }
     dialogVisible.value = false;
   } catch (error) {
     console.error('Error submitting assignment:', error);
@@ -195,6 +247,9 @@ async function submitAssignment() {
 </script>
 
 <style scoped>
+.table-label-center {
+  text-align: center;
+}
 .el-table th, .el-table td {
   text-align: center;
 }
@@ -216,4 +271,3 @@ async function submitAssignment() {
   margin-top: 20px;
 }
 </style>
-

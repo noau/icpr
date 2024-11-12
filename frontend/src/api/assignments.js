@@ -13,10 +13,24 @@ export const getIssue = (data) => httpInstance.post("/assignments/issue", data);
 export const getSubmissions = (data) =>
   httpInstance.post("/assignments/submissions", data);
 
+// View specific assignment submission by assignmentId and studentId
+export const viewSubmission = ({ assignmentId, studentId }) =>
+  httpInstance.get(`/assignments/submission`, {
+    params: { assignmentId, studentId }
+  });
+
+
+//互评作业列表
+export const getPeerReviewList = (data) =>
+  httpInstance.get("/assignments/peer-review-list", { params: { ...data } });
 
 //互评作业
 export const getpeerReviews = ({ id }) =>
   httpInstance.post("/assignments/peer-reviews", { id });
+
+//添加互评作业
+export const addPeerReviews = (data) =>
+  httpInstance.post("/assignments/peer-reviews", data);
 
 //公布答案
 export const getissueAnswer = ({ id }) =>

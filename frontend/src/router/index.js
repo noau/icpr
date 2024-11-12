@@ -27,6 +27,12 @@ const router = createRouter({
       path: '/stu-end',
       component: () => import('@/views/stu_end/layout/index.vue'),
     },
+
+    {
+      path: '/stu-end/course/examine/rating-page',
+      component: () => import('@/views/stu_end/course/examine/rating_page.vue'),
+      meta: { breadcrumbName: '评分页面' }
+    },
       // 通知信箱
     {
       path: '/stu-end/notification',
@@ -128,9 +134,19 @@ const router = createRouter({
               meta: { breadcrumbName: '作业'},
             },
             {
-              path: '/stu-end/course/examine/homework-details/:id',
+              path: '/stu-end/course/examine/homework-details',
               component: () => import('@/views/stu_end/course/examine/homework_details.vue'),
               meta: { breadcrumbName: '作业详情' }
+            },
+            {
+              path: '/stu-end/course/examine/peer-grade-list',
+              component: () => import('@/views/stu_end/course/examine/peer_grade_list.vue'),
+              meta: { breadcrumbName: '互评作业' }
+            },
+            {
+              path: '/stu-end/course/examine/view-submission',
+              component: () => import('@/views/stu_end/course/examine/view_submission.vue'),
+              meta: { breadcrumbName: '查看提交' }
             },
           ]
         },
