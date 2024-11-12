@@ -58,7 +58,7 @@ export const getAssignmentsDetail = ({ id }) =>
 export const getPeerReviews = ({ id }) =>
   httpInstance.get("/assignments/peer-reviews?id=" + id, { id });
 
-//课程作业列表
+//教师端课程作业列表
 export const getcourseAssignments = ({ id }) =>
   httpInstance.get("/assignments/course-assignments?id=" + id, { id });
 
