@@ -2,6 +2,7 @@ package com.cms.backend.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.cms.backend.BackendApplication;
 import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.Assignments.AssignmentReview;
 import com.cms.backend.pojo.DTO.TeachingDTO;
@@ -78,7 +79,7 @@ public class CourseController {
                 .collect(Collectors.toList());
 
         // 定义文件的保存路径
-        String fileName = "D:\\nginx\\nginx-1.26.2\\ICPRFiles\\" + id + "学生列表" + ".xlsx";
+        String fileName = BackendApplication.NGINX_BASE_PATH + id + "学生列表" + ".xlsx";
 
         // 使用 EasyExcel 写入文件，这里使用 Student 作为 Excel 数据模型
         EasyExcel.write(fileName, Student.class).sheet("学生信息").doWrite(studentList);
