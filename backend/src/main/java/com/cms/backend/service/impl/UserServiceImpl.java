@@ -4,6 +4,7 @@ import com.cms.backend.controller.UserController;
 import com.cms.backend.mapper.UserMapper;
 import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
+import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.UserService;
@@ -169,6 +170,31 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteThreadNumber(Integer id) {
         userMapper.deleteThreadNumber(id);
+    }
+
+    @Override
+    public void deleteLikeThreadInfo(Integer id, Integer userId) {
+        userMapper.deleteLikeThreadInfo(id, userId);
+    }
+
+    @Override
+    public void deleteLikeReplyInfo(Integer id, Integer userId) {
+        userMapper.deleteLikeReplyInfo(id, userId);
+    }
+
+    @Override
+    public void addThreadCollect(Integer userId, Integer threadId, String courseId, String createdAt) {
+        userMapper.addThreadCollect(userId, threadId, courseId, createdAt);
+    }
+
+    @Override
+    public Favorite getFavorite(Integer id) {
+        return userMapper.getFavorite(id);
+    }
+
+    @Override
+    public void deleteDiscussionCollect(Integer threadId, Integer userId) {
+        userMapper.deleteDiscussionCollect(threadId, userId);
     }
 
 }

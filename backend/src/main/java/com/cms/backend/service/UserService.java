@@ -3,6 +3,7 @@ package com.cms.backend.service;
 import com.cms.backend.controller.UserController;
 import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
+import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
 import com.cms.backend.pojo.User;
 
@@ -68,5 +69,15 @@ public interface UserService {
     void addThreadNumber(Integer id);
 
     void deleteThreadNumber(Integer id);
+
+    void deleteLikeThreadInfo(Integer id, Integer userId);
+
+    void deleteLikeReplyInfo(Integer id, Integer userId);
+
+    void addThreadCollect(Integer userId, Integer threadId, String courseId, String createdAt);
+
+    Favorite getFavorite(Integer id);
+
+    void deleteDiscussionCollect(Integer threadId, Integer userId);
 
 }

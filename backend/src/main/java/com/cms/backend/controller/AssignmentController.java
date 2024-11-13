@@ -143,7 +143,7 @@ public class AssignmentController {
      */
     @PostMapping("/reviews")
     public ResponseEntity<Void> reviewAssignment(@RequestBody AssignmentReview assignmentReview) {
-        assignmentReviewService.save(assignmentReview);
+        assignmentReviewService.saveOrUpdate(assignmentReview);
         logger.info("Reviewed assignment ID: {}", assignmentReview.getSubmissionId());
 
         return ResponseEntity.ok().build();
@@ -152,14 +152,20 @@ public class AssignmentController {
     /**
      * 提交作业
      *
-     * @param submission 作业提交信息
+     * @param assignmentSubmissionDTO 作业提交信息
      * @return 提交作业结果
      */
     @PostMapping("/submissions")
-    public ResponseEntity<Void> submitAssignment(@RequestBody AssignmentSubmissionDTO submission) {
-        var newSubmission = new AssignmentSubmission(0, submission.getAssignmentId(), submission.getStudentId(), submission.getSubmittedAt(), submission.getContent());
-        assignmentSubmissionService.save(newSubmission);
-        submission.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getSubmissionId, newSubmission.getId())));
+    public ResponseEntity<Void> submitAssignment(@RequestBody AssignmentSubmissionDTO assignmentSubmissionDTO) {
+        var submission = new AssignmentSubmission(null, assignmentSubmissionDTO.getAssignmentId(), assignmentSubmissionDTO.getStudentId(), assignmentSubmissionDTO.getSubmittedAt(), assignmentSubmissionDTO.getContent());
+        var checkSubmission = assignmentSubmissionService.getOne(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
+        if (checkSubmission == null) {
+            assignmentSubmissionService.save(submission);
+        } else {
+            assignmentSubmissionService.update(submission,  new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
+        }
+
+        assignmentSubmissionDTO.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getSubmissionId, submission.getId())));
         return ResponseEntity.ok().build();
     }
 

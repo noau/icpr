@@ -249,6 +249,7 @@ public class UserController {
         String createdAt = favorites.getCreatedAt();
         userService.addFavorite(userId, threadId, folderId, createdAt);
         userService.addFavorites(threadId);
+        userService.addThreadCollect(userId, threadId, discussionThreadService.getById(threadId).getCourseId(), createdAt);
 
         return ResponseEntity.ok("");
     }
@@ -274,9 +275,11 @@ public class UserController {
 
     @DeleteMapping(value = "/delete-favorite")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<String> deleteFavorite(@RequestBody Favorite favorite) {
-        Integer id = favorite.getId();
+    public ResponseEntity<String> deleteFavorite(@RequestBody DeleteFavoriteCollect deleteFavoriteCollect) {
+        Integer id = deleteFavoriteCollect.getId();
+        Favorite favorite = userService.getFavorite(id);
         userService.deleteFavorite(id);
+        userService.deleteDiscussionCollect(favorite.getThreadId(), deleteFavoriteCollect.userId);
 
         return ResponseEntity.noContent().build();
     }
@@ -451,12 +454,24 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> deleteLike(@RequestBody DiscussionLikeDTO discussionLikeDTO) {
         if (discussionLikeDTO.isThread == 1) {
+            userService.deleteLikeThreadInfo(discussionLikeDTO.id, discussionLikeDTO.userId);
             userService.deleteLikeThread(discussionLikeDTO.id);
         } else {
+            userService.deleteLikeReplyInfo(discussionLikeDTO.id, discussionLikeDTO.userId);
             userService.deleteLikeReply(discussionLikeDTO.id);
         }
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class DeleteFavoriteCollect {
+
+        private Integer id;
+
+        private Integer userId;
+
     }
 
     @Data
@@ -466,6 +481,8 @@ public class UserController {
         private Integer id;
 
         private Integer isThread;
+
+        private Integer userId;
 
     }
 

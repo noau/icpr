@@ -3,10 +3,7 @@ package com.cms.backend.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.DTO.FollowDTO;
-import com.cms.backend.service.DiscussionReplyService;
-import com.cms.backend.service.DiscussionThreadService;
-import com.cms.backend.service.NotificationService;
-import com.cms.backend.service.UserService;
+import com.cms.backend.service.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -30,11 +27,17 @@ public class DiscussionController {
 
     private final NotificationService notificationService;
 
-    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService, NotificationService notificationService) {
+    private final DiscussionLikeService discussionLikeService;
+
+    private final DiscussionCollectService discussionCollectService;
+
+    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService, NotificationService notificationService, DiscussionLikeService discussionLikeService, DiscussionCollectService discussionCollectService) {
         this.discussionThreadService = discussionThreadService;
         this.discussionReplyService = discussionReplyService;
         this.userService = userService;
         this.notificationService = notificationService;
+        this.discussionLikeService = discussionLikeService;
+        this.discussionCollectService = discussionCollectService;
     }
 
     @PostMapping(value = "/thread")
@@ -80,9 +83,31 @@ public class DiscussionController {
     }
 
     @GetMapping(value = "/course")
-    public ResponseEntity<DiscussionThreadList> getCourse(@RequestParam String id) {
+    public ResponseEntity<DiscussionThreadList> getCourse(@RequestParam String id, Integer userId) {
         List<DiscussionThread> discussionThreads = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getCourseId, id));
-        DiscussionThreadList discussionThreadList = new DiscussionThreadList(discussionThreads);
+        List<DiscussionThreadDTO> discussionThreadDTOS = new ArrayList<>();
+        for (DiscussionThread discussionThread : discussionThreads) {
+            DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
+            DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
+            DiscussionThreadDTO discussionThreadDTO = new DiscussionThreadDTO(discussionThread.getId(),
+                        discussionThread.getCourseId(),
+                        discussionThread.getUserId(),
+                        discussionThread.getTitle(),
+                        discussionThread.getContent(),
+                        discussionThread.getLikes(),
+                        discussionThread.getFavorites(),
+                        discussionThread.getClosed(),
+                        discussionThread.getTop(),
+                        discussionThread.getCreatedAt(),
+                        discussionThread.getTag(),
+                        discussionThread.getUpdatedAt(),
+                    (discussionLike == null) ? 0 : 1,
+                    (discussionCollect == null) ? 0 : 1
+            );
+
+            discussionThreadDTOS.add(discussionThreadDTO);
+        }
+        DiscussionThreadList discussionThreadList = new DiscussionThreadList(discussionThreadDTOS);
 
         return ResponseEntity.ok(discussionThreadList);
     }
@@ -137,7 +162,41 @@ public class DiscussionController {
     @AllArgsConstructor
     public static class DiscussionThreadList {
 
-        private List<DiscussionThread> discussionThreads;
+        private List<DiscussionThreadDTO> discussionThreads;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class DiscussionThreadDTO {
+
+        private Integer id;
+
+        private String courseId;
+
+        private Integer userId;
+
+        private String title;
+
+        private String content;
+
+        private Integer likes;
+
+        private Integer favorites;
+
+        private Integer closed;
+
+        private Integer top;
+
+        private String createdAt;
+
+        private String tag;
+
+        private String updatedAt;
+
+        private Integer isLike;
+
+        private Integer isFavorite;
 
     }
 

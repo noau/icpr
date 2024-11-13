@@ -3,6 +3,7 @@ package com.cms.backend.mapper;
 import com.cms.backend.controller.UserController;
 import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
+import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
 import com.cms.backend.pojo.User;
 import org.apache.ibatis.annotations.*;
@@ -196,5 +197,32 @@ public interface UserMapper {
 
     @Update("update user set thread_number = thread_number - 1 where id = #{id}")
     void deleteThreadNumber(Integer id);
+
+    @Results({
+            @Result(property = "id", column = "thread_id"),
+            @Result(property = "userId", column = "user_id")
+    })
+    @Delete("delete from discussion_like where thread_id = #{id} and user_id = #{userId}")
+    void deleteLikeThreadInfo(Integer id, Integer userId);
+
+    @Results({
+            @Result(property = "id", column = "reply_id"),
+            @Result(property = "userId", column = "user_id")
+    })
+    @Delete("delete from discussion_like where reply_id = #{id} and user_id = #{userId}")
+    void deleteLikeReplyInfo(Integer id, Integer userId);
+
+    @Insert("insert into discussion_collect (user_id, thread_id, course_id, created_at) values (#{userId}, #{threadId}, #{courseId}, #{createdAt})")
+    void addThreadCollect(Integer userId, Integer threadId, String courseId, String createdAt);
+
+    @Select("select * from favorite where id = #{id}")
+    Favorite getFavorite(Integer id);
+
+    @Results({
+            @Result(property = "id", column = "thread_id"),
+            @Result(property = "userId", column = "user_id")
+    })
+    @Delete("delete from discussion_collect where thread_id = #{threadId} and user_id = #{userId}")
+    void deleteDiscussionCollect(Integer threadId, Integer userId);
 
 }

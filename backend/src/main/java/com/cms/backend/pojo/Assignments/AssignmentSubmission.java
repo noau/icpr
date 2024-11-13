@@ -10,12 +10,8 @@ import lombok.Data;
 public class AssignmentSubmission {
     @TableId(type = IdType.AUTO)
     private Integer id;
-
     private Integer assignmentId;
-
     private Integer studentId;
-
     private String submittedAt;
-
     private String content;
 }
