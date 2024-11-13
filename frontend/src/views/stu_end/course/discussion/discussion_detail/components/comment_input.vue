@@ -27,6 +27,7 @@ import { useRoute } from "vue-router";
 const route = useRoute();
 console.log(route.params);
 const threadId = route.params.id;
+const userId = localStorage.getItem("userId");
 
 const props = defineProps({
   isFlag: {
@@ -64,6 +65,7 @@ const submitComment = () => {
 function getget_threadList() {
   getget_thread({
     id: threadId,
+    userId
   }).then((res) => {
     // console.log(res);
   });

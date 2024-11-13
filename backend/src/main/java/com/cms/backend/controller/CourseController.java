@@ -177,15 +177,24 @@ public class CourseController {
     public ResponseEntity<List<FolderAttachmentListDTO>> getExam(@RequestParam String id) {
         List<AttachmentFolder> folders = attachmentFolderService.list(new LambdaQueryWrapper<AttachmentFolder>().eq(AttachmentFolder::getCourseId, id).eq(AttachmentFolder::getType, "exam"));
         List<FolderAttachmentListDTO> folderAttachmentListDTOS = new ArrayList<>();
+
         for (AttachmentFolder folder : folders) {
             FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
             folderAttachmentListDTO.setId(folder.getId());
             folderAttachmentListDTO.setName(folder.getFolderName());
-            System.out.println(folder.getFolderName());
 
-            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id).eq(Attachment::getAttachmentFolderId,folderAttachmentListDTO.getId()));
+            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id).eq(Attachment::getAttachmentFolderId, folderAttachmentListDTO.getId()));
             getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
         }
+
+        FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
+        folderAttachmentListDTO.setId(null);
+        folderAttachmentListDTO.setName(null);
+        List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id).isNull(Attachment::getAttachmentFolderId));
+        if (!attachmentList.isEmpty()) {
+            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
+        }
+
 
         return ResponseEntity.ok(folderAttachmentListDTOS);
     }
@@ -194,12 +203,21 @@ public class CourseController {
     public ResponseEntity<List<FolderAttachmentListDTO>> getPpt(@RequestParam String id) {
         List<AttachmentFolder> folders = attachmentFolderService.list(new LambdaQueryWrapper<AttachmentFolder>().eq(AttachmentFolder::getCourseId, id).eq(AttachmentFolder::getType, "ppt"));
         List<FolderAttachmentListDTO> folderAttachmentListDTOS = new ArrayList<>();
+
         for (AttachmentFolder folder : folders) {
             FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
             folderAttachmentListDTO.setId(folder.getId());
             folderAttachmentListDTO.setName(folder.getFolderName());
 
-            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getPptId, id));
+            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getPptId, id).eq(Attachment::getAttachmentFolderId, folderAttachmentListDTO.getId()));
+            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
+        }
+
+        FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
+        folderAttachmentListDTO.setId(null);
+        folderAttachmentListDTO.setName(null);
+        List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getPptId, id).isNull(Attachment::getAttachmentFolderId));
+        if (!attachmentList.isEmpty()) {
             getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
         }
 
@@ -210,12 +228,21 @@ public class CourseController {
     public ResponseEntity<List<FolderAttachmentListDTO>> getExercise(@RequestParam String id) {
         List<AttachmentFolder> folders = attachmentFolderService.list(new LambdaQueryWrapper<AttachmentFolder>().eq(AttachmentFolder::getCourseId, id).eq(AttachmentFolder::getType, "exercise"));
         List<FolderAttachmentListDTO> folderAttachmentListDTOS = new ArrayList<>();
+
         for (AttachmentFolder folder : folders) {
             FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
             folderAttachmentListDTO.setId(folder.getId());
             folderAttachmentListDTO.setName(folder.getFolderName());
 
-            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExerciseId, id));
+            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExerciseId, id).eq(Attachment::getAttachmentFolderId, folderAttachmentListDTO.getId()));
+            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
+        }
+
+        FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
+        folderAttachmentListDTO.setId(null);
+        folderAttachmentListDTO.setName(null);
+        List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExerciseId, id).isNull(Attachment::getAttachmentFolderId));
+        if (!attachmentList.isEmpty()) {
             getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
         }
 
@@ -225,9 +252,14 @@ public class CourseController {
     private void getResource(List<FolderAttachmentListDTO> folderAttachmentListDTOS, FolderAttachmentListDTO folderAttachmentListDTO, List<Attachment> attachmentList) {
         List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
         for (var attachment : attachmentList) {
-            AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
-            AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
-            attachmentDTOList.add(attachmentDTO);
+            if (folderAttachmentListDTO.name != null) {
+                AttachmentFolder attachmentFolder = courseService.getAttachmentFolder(attachment.getAttachmentFolderId());
+                AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), attachmentFolder.getFolderName(), attachmentFolder.getParentId());
+                attachmentDTOList.add(attachmentDTO);
+            } else {
+                AttachmentDTO attachmentDTO = new AttachmentDTO(attachment.getId(), attachment.getUrl(), attachment.getName(), attachment.getExamId(), attachment.getPptId(), attachment.getExerciseId(), attachment.getAllowDownload(), attachment.getAttachmentFolderId(), null, null);
+                attachmentDTOList.add(attachmentDTO);
+            }
         }
         folderAttachmentListDTO.setFiles(attachmentDTOList);
 

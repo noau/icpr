@@ -315,7 +315,8 @@ function createDirectory() {
   // }
   createattachmentfolder({
     folderName: newDirectory.value.name,
-    // id: localStorage.getItem('courseId')
+    courseId: localStorage.getItem('courseId')
+    type: "exercise"
   }).then(res => {
     console.log(res);
     createDialogVisible.value = false;
