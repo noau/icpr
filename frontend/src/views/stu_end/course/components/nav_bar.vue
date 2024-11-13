@@ -95,6 +95,9 @@ const handleSelect = (key) => {
     case '4':
       router.push('/stu-end/course/discussion')
       break  
+    case '5':
+      router.push('/stu-end/course/chat/ai-speak')
+      break
   }
 }
 </script>

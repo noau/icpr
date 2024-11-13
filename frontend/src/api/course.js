@@ -210,3 +210,26 @@ export const getgrade = (id) =>
         id: id,
       },
     });
+
+export const uploadselection= (file, token) =>
+      httpInstance.post('/uploading/course-selection', file, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: token,
+        },
+      });
+
+export const uploadstudent= (file, token) =>
+        httpInstance.post('/uploading/users/student', file, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: token,
+          },
+        });
+export const uploadteacher = (file, token) =>
+          httpInstance.post('/uploading/users/teacher', file, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              Authorization: token,
+            },
+          });
