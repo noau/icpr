@@ -1,8 +1,8 @@
 package com.cms.backend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.DTO.FollowDTO;
+import com.cms.backend.pojo.*;
 import com.cms.backend.service.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -90,19 +90,19 @@ public class DiscussionController {
             DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
             DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
             DiscussionThreadDTO discussionThreadDTO = new DiscussionThreadDTO(discussionThread.getId(),
-                        discussionThread.getCourseId(),
-                        discussionThread.getUserId(),
-                        discussionThread.getTitle(),
-                        discussionThread.getContent(),
-                        discussionThread.getLikes(),
-                        discussionThread.getFavorites(),
-                        discussionThread.getClosed(),
-                        discussionThread.getTop(),
-                        discussionThread.getCreatedAt(),
-                        discussionThread.getTag(),
-                        discussionThread.getUpdatedAt(),
-                    (discussionLike == null) ? 0 : 1,
-                    (discussionCollect == null) ? 0 : 1
+                    discussionThread.getCourseId(),
+                    discussionThread.getUserId(),
+                    discussionThread.getTitle(),
+                    discussionThread.getContent(),
+                    discussionThread.getLikes(),
+                    discussionThread.getFavorites(),
+                    discussionThread.getClosed(),
+                    discussionThread.getTop(),
+                    discussionThread.getCreatedAt(),
+                    discussionThread.getTag(),
+                    discussionThread.getUpdatedAt(),
+                    discussionLike != null,
+                    discussionCollect != null
             );
 
             discussionThreadDTOS.add(discussionThreadDTO);
@@ -113,23 +113,64 @@ public class DiscussionController {
     }
 
     @GetMapping(value = "/get-thread")
-    public ResponseEntity<DiscussionReplyList> getThread(@RequestParam Integer id) {
+    public ResponseEntity<DiscussionReplyList> getThread(@RequestParam Integer id, Integer userId) {
         DiscussionThread discussionThread = discussionThreadService.getById(id);
         User user = userService.findById(discussionThread.getUserId());
         List<DiscussionReply> replyLists = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId, id));
         List<DiscussionReplyDTO> replyList = new ArrayList<>();
-        for (DiscussionReply discussionReply : replyLists) {
-            DiscussionReplyDTO discussionReplyDTO = new DiscussionReplyDTO(discussionReply.getId(), discussionReply.getThreadId(), discussionReply.getReplyId(), discussionReply.getUserId(), discussionReply.getContent(), discussionReply.getLikes(), discussionReply.getCreatedAt(), discussionReply.getRepliedId(), userService.findById(discussionReply.getUserId()).getName(), userService.findById(discussionReply.getUserId()).getAvatar());
+        for (var discussionReply : replyLists) {
+            var discussionLikeReply = discussionLikeService.getOne(
+                    new LambdaQueryWrapper<DiscussionLike>()
+                            .eq(DiscussionLike::getReplyId, discussionReply.getId())
+                            .eq(DiscussionLike::getUserId, userId));
+            DiscussionReplyDTO discussionReplyDTO = new DiscussionReplyDTO(discussionReply.getId(),
+                    discussionReply.getThreadId(),
+                    discussionReply.getReplyId(),
+                    discussionReply.getUserId(),
+                    discussionReply.getContent(),
+                    discussionReply.getLikes(),
+                    discussionReply.getCreatedAt(),
+                    discussionReply.getRepliedId(),
+                    userService.findById(discussionReply.getUserId()).getName(),
+                    userService.findById(discussionReply.getUserId()).getAvatar(),
+                    discussionLikeReply != null);
             replyList.add(discussionReplyDTO);
             List<DiscussionReply> replyReplies = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getReplyId, discussionReply.getId()));
             for (DiscussionReply discussionReplyReply : replyReplies) {
-                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(), discussionReplyReply.getThreadId(), discussionReplyReply.getReplyId(), discussionReplyReply.getUserId(), discussionReplyReply.getContent(), discussionReplyReply.getLikes(), discussionReplyReply.getCreatedAt(), discussionReplyReply.getRepliedId(),userService.findById(discussionReplyReply.getUserId()).getName(), userService.findById(discussionReplyReply.getUserId()).getAvatar());
+                DiscussionLike discussionLikeReplyReply = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getReplyId, discussionReplyReply.getId()).eq(DiscussionLike::getUserId, userId));
+                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(),
+                        discussionReplyReply.getThreadId(),
+                        discussionReplyReply.getReplyId(),
+                        discussionReplyReply.getUserId(),
+                        discussionReplyReply.getContent(),
+                        discussionReplyReply.getLikes(),
+                        discussionReplyReply.getCreatedAt(),
+                        discussionReplyReply.getRepliedId(),
+                        userService.findById(discussionReplyReply.getUserId()).getName(),
+                        userService.findById(discussionReplyReply.getUserId()).getAvatar(),
+                        discussionLikeReplyReply != null);
                 replyList.add(discussionReplyDTODTO);
             }
-
         }
 
-        DiscussionReplyList discussionReplyList = new DiscussionReplyList(discussionThread.getCourseId(), discussionThread.getUserId(), discussionThread.getTitle(), discussionThread.getContent(), discussionThread.getLikes(), discussionThread.getFavorites(), discussionThread.getClosed(), discussionThread.getTop(), discussionThread.getCreatedAt(), discussionThread.getTag(), discussionThread.getUpdatedAt(), replyList, user.getName(), user.getAvatar());
+        DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
+        DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
+        DiscussionReplyList discussionReplyList = new DiscussionReplyList(discussionThread.getCourseId(),
+                discussionThread.getUserId(),
+                discussionThread.getTitle(),
+                discussionThread.getContent(),
+                discussionThread.getLikes(),
+                discussionThread.getFavorites(),
+                discussionThread.getClosed(),
+                discussionThread.getTop(),
+                discussionThread.getCreatedAt(),
+                discussionThread.getTag(),
+                discussionThread.getUpdatedAt(),
+                replyList,
+                user.getName(),
+                user.getAvatar(),
+                discussionLike != null,
+                discussionCollect != null);
 
         return ResponseEntity.ok(discussionReplyList);
     }
@@ -194,9 +235,9 @@ public class DiscussionController {
 
         private String updatedAt;
 
-        private Integer isLike;
+        private boolean liked;
 
-        private Integer isFavorite;
+        private boolean isFavorite;
 
     }
 
@@ -232,6 +273,10 @@ public class DiscussionController {
 
         private String avatar;
 
+        private boolean liked;
+
+        private boolean isFavorite;
+
     }
 
     @Data
@@ -257,6 +302,8 @@ public class DiscussionController {
         private String name;
 
         private String avatar;
+
+        private boolean liked;
 
     }
 

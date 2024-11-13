@@ -47,7 +47,8 @@ const posts = ref([]);
 // 获取课程的讨论帖子
 function getcourseList() {
   let courseId = localStorage.getItem("courseId"); // 获取课程ID
-  getcourse({ id: courseId }).then(res => {
+  const userId = localStorage.getItem("userId");
+  getcourse({ id: courseId, userId }).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
     console.log(res);
     posts.value = res.discussionThreads;

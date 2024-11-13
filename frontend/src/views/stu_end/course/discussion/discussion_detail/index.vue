@@ -29,7 +29,7 @@ import PostActions from "./components/post_actions.vue";
 import CommentInput from "./components/comment_input.vue";
 import CommentsList from "./components/comments_list.vue";
 import { useRoute, useRouter } from "vue-router";
-import { getReplies, getget_thread } from "@/api/discussion";
+import {getReplies, getget_thread, getdiscussionlike, getdelete_like} from "@/api/discussion";
 import { useUserStore } from "@/stores/user.js";
 
 // 获取路由参数中的帖子ID
@@ -71,6 +71,28 @@ const handleFavorite = () => {
 const likeComment = (comment) => {
   comment.liked = !comment.liked;
   comment.likes += comment.liked ? 1 : -1;
+
+  if (comment.liked) {
+    let obj = {
+      userId: localStorage.getItem("userId"),
+      threadId: 0,
+      replyId: comment.id
+    };
+    getdiscussionlike(obj).then(res => {
+      console.log(res);
+    }).catch(err => {
+      console.error("点赞失败:", err);
+    });
+  } else {
+    let obj = {
+      userId: localStorage.getItem("userId"),
+      id: comment.id,
+      isThread: 0
+    };
+    getdelete_like(obj).then(res => {
+      console.log(res);
+    })
+  }
 };
 
 // 回复评论
@@ -119,6 +141,7 @@ const addComment = async (content) => {
 function getget_threadList() {
   getget_thread({
     id: threadId,
+    userId
   }).then((res) => {
     post.value = res;
     // comments.value =
