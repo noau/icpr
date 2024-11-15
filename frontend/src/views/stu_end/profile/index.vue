@@ -154,10 +154,12 @@
           style="margin-bottom: 10px; cursor: pointer;"
           @click="toThread(item)"
         >
-          <div slot="header" style="display: flex; flex-direction: column">
+          <template v-slot:header>
+<div  style="display: flex; flex-direction: column">
             <span style="font-weight: bold">{{ item.title }}</span>
             <span>{{ item.createdAt }}</span>
           </div>
+</template>
           <el-icon @click.stop="deletTie" style="float: right">
             <delete />
           </el-icon>

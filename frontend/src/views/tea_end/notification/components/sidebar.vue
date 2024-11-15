@@ -26,10 +26,10 @@
 </template>
 
 <script>
-import {MessageBox, Management, Filter, Bell, ChatDotRound, DataBoard} from '@element-plus/icons-vue';
+import {MessageBox, Management, ChatDotRound, DataBoard} from '@element-plus/icons-vue';
 
 export default {
-  components: {DataBoard, ChatDotRound, Bell, Filter, MessageBox, Management},
+  components: {DataBoard, ChatDotRound, MessageBox, Management},
   methods: {
     handleSelect(index) {
       const menuMap = {

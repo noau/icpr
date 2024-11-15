@@ -105,7 +105,7 @@ public class AssignmentController {
         // 设置提醒任务
         scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
         scheduleReminder(latestEnd.minusDays(1), users, newAssignment, "最迟补交提醒", "最迟补交时间剩余1天，请尽快完成");
-        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始不要忘记");
+        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始,不要忘记");
         scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
 
         return ResponseEntity.ok("作业发布成功，已通知所有学生。");
@@ -113,18 +113,15 @@ public class AssignmentController {
 
     //设置提醒
     private void scheduleReminder(LocalDateTime reminderTime, List<User> users, Assignment assignment, String title, String content) {
-        LocalDateTime now = LocalDateTime.now();
-        long delay = ChronoUnit.MILLIS.between(now, reminderTime);
-
-        if (delay > 0) {
-            // 将 reminderTime 转换为 Instant
-            Instant scheduleTime = reminderTime.atZone(ZoneId.systemDefault()).toInstant();
-            taskScheduler.schedule(() -> sendReminderNotification(users, assignment, title, content), scheduleTime);
-        }
+        System.out.println("发送提醒通知: " + title + " 给学生");
+        // 将 reminderTime 转换为 Instant
+        Instant scheduleTime = reminderTime.atZone(ZoneId.systemDefault()).toInstant();
+        taskScheduler.schedule(() -> sendReminderNotification(users, assignment, title, content), scheduleTime);
     }
 
     // 发送提醒通知
     private void sendReminderNotification(List<User> users, Assignment assignment, String title, String content) {
+        System.out.println("发送提醒通知: " + title + " 给学生" + content);
         LocalDateTime now = LocalDateTime.now();
         String formattedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
