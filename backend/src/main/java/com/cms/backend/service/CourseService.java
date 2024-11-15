@@ -10,6 +10,7 @@ import com.cms.backend.pojo.User;
 import java.util.List;
 
 public interface CourseService extends IService<Course> {
+
     List<Course> getAllCourse(Integer id);
 
     List<User> getAllStudents(String id);

@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class AssignmentPeerReview {
+
     @TableId
     private Integer submissionId;
 
@@ -15,4 +16,5 @@ public class AssignmentPeerReview {
     private String feedback;
 
     private String reviewedAt;
+
 }

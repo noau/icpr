@@ -111,8 +111,9 @@ public class AssignmentController {
         return ResponseEntity.ok("作业发布成功，已通知所有学生。");
     }
 
-
-    //设置提醒
+    /**
+     * 设置提醒
+     */
     private void scheduleReminder(LocalDateTime reminderTime, List<User> users, Assignment assignment, String title, String content) {
         System.out.println("发送提醒通知: " + title + " 给学生");
         // 将 reminderTime 转换为 Instant
@@ -120,7 +121,9 @@ public class AssignmentController {
         taskScheduler.schedule(() -> sendReminderNotification(users, assignment, title, content), scheduleTime);
     }
 
-    // 发送提醒通知
+    /**
+     * 发送提醒通知
+     */
     private void sendReminderNotification(List<User> users, Assignment assignment, String title, String content) {
         System.out.println("发送提醒通知: " + title + " 给学生" + content);
         LocalDateTime now = LocalDateTime.now();
@@ -183,6 +186,7 @@ public class AssignmentController {
     /**
      * 公布作业答案 + 通知提醒
      *
+     * @param answer 答案
      * @return 公布作业答案结果
      */
     @PostMapping("/issue-answer")
@@ -336,6 +340,12 @@ public class AssignmentController {
         return ResponseEntity.ok(assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id)));
     }
 
+    /**
+     * 批改列表
+     *
+     * @param id 课程ID
+     * @return 获得批改作业列表
+     */
     @GetMapping("/review-list")
     public ResponseEntity<AssignmentReviewListDTO> getAssignmentsSubmissions(@RequestParam Integer id) {
 
@@ -372,7 +382,6 @@ public class AssignmentController {
 
         return ResponseEntity.ok(assignmentReviewListDTO);
     }
-
 
     /**
      * 作业的所有提交
@@ -634,4 +643,5 @@ public class AssignmentController {
         String gradedAt;
         private List<AttachmentListDTO> attachments;
     }
+
 }

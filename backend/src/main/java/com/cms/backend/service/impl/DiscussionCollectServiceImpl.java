@@ -8,4 +8,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DiscussionCollectServiceImpl extends ServiceImpl<DiscussionCollectMapper, DiscussionCollect> implements DiscussionCollectService {
+
 }

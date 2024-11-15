@@ -8,4 +8,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AttachmentFolderServiceImpl extends ServiceImpl<AttachmentFolderMapper, CourseController.AttachmentFolder> implements AttachmentFolderService {
+
 }

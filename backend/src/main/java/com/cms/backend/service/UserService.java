@@ -10,6 +10,7 @@ import com.cms.backend.pojo.User;
 import java.util.List;
 
 public interface UserService {
+
     User findById(Integer id);
 
     List<FollowDTO> getUserFollowers(Integer id);
