@@ -104,6 +104,7 @@ public class FileUploadController {
 
 @Getter
 final class UserUploadListener implements ReadListener<UserDTO> {
+
     private final UserService userService;
 
     UserUploadListener(UserService userService) {
@@ -199,11 +200,8 @@ final class UserTeacherUploadListener implements ReadListener<UserTeacherDTO> {
         );
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
         Date date = new Date();
-
         String time = sdf.format(date);
-
         userService.addFolder(user.getId(), "默认收藏夹", time, 1, 0);
     }
 

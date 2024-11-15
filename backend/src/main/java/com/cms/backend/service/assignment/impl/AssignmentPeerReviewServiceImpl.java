@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class AssignmentPeerReviewServiceImpl extends ServiceImpl<AssignmentPeerReviewMapper, AssignmentPeerReview> implements AssignmentPeerReviewService {
+
     private AssignmentPeerReviewMapper assignmentPeerReviewMapper;
 
     @Override
     public int getPeerReviewCount(Integer studentId, Integer assignmentId) {
         return assignmentPeerReviewMapper.getPeerReviewCount(studentId, assignmentId);
     }
+
 }

@@ -8,4 +8,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DiscussionThreadThreadServiceImpl extends ServiceImpl<DiscussionThreadMapper, DiscussionThread> implements DiscussionThreadService {
+
 }

@@ -24,4 +24,5 @@ public class AssignmentReviewServiceImpl extends ServiceImpl<AssignmentReviewMap
     public AssignmentReview findAllBySubmissionId(Integer assignmentId) {
         return assignmentReviewMapper.findAllBySubmissionId(assignmentId);
     }
+
 }

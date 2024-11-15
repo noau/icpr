@@ -8,4 +8,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AssignmentServiceImpl extends ServiceImpl<AssignmentMapper, Assignment> implements AssignmentService {
+
 }
