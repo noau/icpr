@@ -33,11 +33,11 @@ const fetchCourseIntroduction = async () => {
     // 调用API获取课程信息
     const response = await getCourseInfo(courseId, token);
     console.log(response);
-    
-    const courseData = response;
 
+    const courseData = response;
     // 直接显示课程的简介内容
     courseIntroduction.value = courseData.introduction || '暂无课程简介';
+
   } catch (error) {
     console.error("获取课程简介失败:", error);
     courseIntroduction.value = '加载课程简介失败';

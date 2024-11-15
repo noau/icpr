@@ -69,8 +69,8 @@
     comments.value.push({
       id: Date.now(),
       author: {
-        name: comments.name,
-        avatar: comments.avatar || 'https://via.placeholder.com/50',
+        name: comments.value.name,
+        avatar: comments.value.avatar || 'https://via.placeholder.com/50',
       },
       content: content,
       likes: 0,
