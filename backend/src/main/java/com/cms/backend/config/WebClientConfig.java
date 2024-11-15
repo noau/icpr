@@ -29,8 +29,15 @@ public class WebClientConfig {
         logger.info("WebClient bean created successfully");
         return webClient;
     }
+
+    /**
+     * 创建并配置一个 ThreadPoolTaskScheduler Bean
+     *
+     * @return 配置完成的 ThreadPoolTaskScheduler 实例
+     */
     @Bean
     public ThreadPoolTaskScheduler taskScheduler() {
         return new ThreadPoolTaskScheduler();
     }
+
 }

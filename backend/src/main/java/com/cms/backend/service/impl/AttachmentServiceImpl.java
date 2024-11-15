@@ -10,6 +10,7 @@ import java.util.List;
 
 @Service
 public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachment> implements AttachmentService {
+
     private final AttachmentMapper attachmentMapper;
 
     public AttachmentServiceImpl(AttachmentMapper attachmentMapper) {
@@ -20,4 +21,5 @@ public class AttachmentServiceImpl extends ServiceImpl<AttachmentMapper, Attachm
     public List<Attachment> findByAssignmentId(Integer assignmentId) {
         return attachmentMapper.findByAssignmentId(assignmentId);
     }
+
 }

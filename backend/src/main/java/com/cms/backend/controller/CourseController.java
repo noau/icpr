@@ -195,7 +195,6 @@ public class CourseController {
             getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
         }
 
-
         return ResponseEntity.ok(folderAttachmentListDTOS);
     }
 
