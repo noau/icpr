@@ -111,6 +111,7 @@ public class AssignmentController {
         return ResponseEntity.ok("作业发布成功，已通知所有学生。");
     }
 
+
     //设置提醒
     private void scheduleReminder(LocalDateTime reminderTime, List<User> users, Assignment assignment, String title, String content) {
         System.out.println("发送提醒通知: " + title + " 给学生");
