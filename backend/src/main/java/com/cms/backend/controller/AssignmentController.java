@@ -33,7 +33,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -82,14 +81,7 @@ public class AssignmentController {
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
 
         List<User> users = courseService.getAllStudents(assignment.courseId);
-        LocalDateTime now = LocalDateTime.now();
-        String formattedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.courseId);
-
-        for (User user : users) {
-            Notification notification = new Notification(user.getId(), "新作业来啦~", teachingDTO.getTeacherId(), "作业通知", assignment.id, assignment.courseId + "作业已发布，请尽快完成", 0, formattedNow, assignment.courseId, 0);
-            notificationService.save(notification);
-        }
+        sendNotification(users, newAssignment,"新作业来啦~",assignment.courseId + "作业已发布，请尽快完成");
 
         //设置截止日期
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -118,20 +110,20 @@ public class AssignmentController {
         System.out.println("发送提醒通知: " + title + " 给学生");
         // 将 reminderTime 转换为 Instant
         Instant scheduleTime = reminderTime.atZone(ZoneId.systemDefault()).toInstant();
-        taskScheduler.schedule(() -> sendReminderNotification(users, assignment, title, content), scheduleTime);
+        taskScheduler.schedule(() -> sendNotification(users, assignment, title, content), scheduleTime);
     }
 
     /**
      * 发送提醒通知
      */
-    private void sendReminderNotification(List<User> users, Assignment assignment, String title, String content) {
-        System.out.println("发送提醒通知: " + title + " 给学生" + content);
+    private void sendNotification(List<User> users, Assignment assignment, String title, String content) {
+        System.out.println("发送作业通知: " + title + " 给学生" + content);
         LocalDateTime now = LocalDateTime.now();
         String formattedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
 
         for (User user : users) {
-            Notification notification = new Notification(user.getId(), title, teachingDTO.getTeacherId(), "作业提醒", assignment.getId(), content, 0, formattedNow, assignment.getCourseId(), 0);
+            Notification notification = new Notification(user.getId(), title, teachingDTO.getTeacherId(), "作业通知", assignment.getId(), content, 0, formattedNow, assignment.getCourseId(), 0);
             notificationService.save(notification);
         }
     }
@@ -179,7 +171,6 @@ public class AssignmentController {
     @PostMapping("/peer-reviews")
     public ResponseEntity<Void> peerReviewAssignment(@RequestBody AssignmentPeerReview peerReview) {
         assignmentPeerReviewService.save(peerReview);
-        logger.info("Peer-reviewed assignment ID: {}", peerReview.getSubmissionId());
         return ResponseEntity.ok().build();
     }
 
@@ -196,15 +187,7 @@ public class AssignmentController {
         var assignment = assignmentService.getById(answer.assignmentId);
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        //获取当前时间
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedNow = now.format(formatter);
-        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
-        for (User user : users) {
-            Notification notification = new Notification(user.getId(), "作业公布答案", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "的答案已经公布", 0, formattedNow, assignment.getCourseId(), 0);
-            notificationService.save(notification);
-        }
+        sendNotification(users, assignment,"作业公布答案",assignment.getCourseId() + assignment.getTitle() + "的答案已经公布");
         return ResponseEntity.ok().build();
     }
 
@@ -221,16 +204,7 @@ public class AssignmentController {
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        //获取当前时间
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedNow = now.format(formatter);
-
-        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
-        for (User user : users) {
-            Notification notification = new Notification(user.getId(), "作业被教师更新", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "的内容已经被更新", 0, formattedNow, assignment.getCourseId(), 0);
-            notificationService.save(notification);
-        }
+        sendNotification(users, newAssignment,"作业被教师更新",assignment.getCourseId() + assignment.getTitle() + "的内容已经被更新");
         return ResponseEntity.ok().build();
     }
 
@@ -246,19 +220,9 @@ public class AssignmentController {
         var assignment = assignmentService.getById(id);
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        //获取当前时间
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedNow = now.format(formatter);
-
-        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
-        for (User user : users) {
-            Notification notification = new Notification(user.getId(), "作业被教师删除", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除", 0, formattedNow, assignment.getCourseId(), 0);
-            notificationService.save(notification);
-        }
-
+        sendNotification(users, assignment,"作业被教师删除",assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除");
+        //删除作业
         assignmentService.removeById(id);
-        logger.info("Deleted assignment ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 
