@@ -8,6 +8,9 @@ export const getAllTeachCourses = ({ id }) =>
 //布置作业
 export const getIssue = (data) => httpInstance.post("/assignments/issue", data);
 
+//学生端课程作业列表
+export const getcourseAssignmentsStudent = (data) =>
+  httpInstance.get("/assignments/course-assignments/student", { params: { ...data } });
 
 //学生提交作业
 export const getSubmissions = (data) =>

@@ -32,7 +32,7 @@
             <template #default="scope">
               <el-button round type="text" @click="handleSubmit(scope.row)">提交</el-button>
               <el-button round type="text" @click="peerReview(scope.row)" 
-                :disabled="!scope.row.requirePeerReview || +new Date() < scope.row.peerReviewStart || +new Date() > scope.row.peerReviewEnd">
+                :disabled="!scope.row.requirePeerReview || +new Date() < +new Date(scope.row.peerReviewStart) || +new Date() > +new Date(scope.row.peerReviewEnd)">
                 互评
               </el-button>
               <!-- 如果未提交作业，查看按钮置灰 -->
@@ -83,7 +83,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { getcourseAssignments, getSubmissions } from '@/api/assignments.js';
+import { getcourseAssignmentsStudent, getSubmissions } from '@/api/assignments.js';
 
 const router = useRouter();
 const tableData = ref([]);
@@ -122,13 +122,14 @@ async function getCourseAssignmentsList() {
       console.error('Course ID is missing!');
       return;
     }
-    const response = await getcourseAssignments({ id: courseId });
-
+    
+    const response = await getcourseAssignmentsStudent({ id: courseId, userId: +localStorage.getItem('userId')});
+    
     if (Array.isArray(response)) {
       tableData.value = response;
       searchResult.value = tableData.value;
     } else {
-      tableData.value = [];
+      tableData.value = []; 
       searchResult.value = [];
     }
   } catch (error) {
