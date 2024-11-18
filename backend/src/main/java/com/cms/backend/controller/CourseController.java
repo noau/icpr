@@ -4,9 +4,11 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.BackendApplication;
 import com.cms.backend.pojo.*;
+import com.cms.backend.pojo.Assignments.Assignment;
 import com.cms.backend.pojo.Assignments.AssignmentReview;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.service.*;
+import com.cms.backend.service.assignment.AssignmentService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,11 +34,14 @@ public class CourseController {
 
     private final AttachmentFolderService attachmentFolderService;
 
-    public CourseController(CourseService courseService, AttachmentService attachmentService, UserService userService, AttachmentFolderService attachmentFolderService) {
+    private final AssignmentService assignmentService;
+
+    public CourseController(CourseService courseService, AttachmentService attachmentService, UserService userService, AttachmentFolderService attachmentFolderService, AssignmentService assignmentService) {
         this.courseService = courseService;
         this.attachmentService = attachmentService;
         this.userService = userService;
         this.attachmentFolderService = attachmentFolderService;
+        this.assignmentService = assignmentService;
     }
 
     @GetMapping(value = "/all")
@@ -267,6 +272,7 @@ public class CourseController {
 
     @GetMapping(value = "/grade-list")
     public ResponseEntity<GradeList> getGradeList(@RequestParam Integer id) {
+        Assignment assignment = assignmentService.getById(id);
         List<Integer> assignmentSubmissionList = courseService.selectSubmission(id);
         List<AssignmentReview> assignmentReviewList = new ArrayList<>();
         for (var submissionId : assignmentSubmissionList) {
@@ -274,7 +280,7 @@ public class CourseController {
             assignmentReviewList.add(assignmentReview);
         }
 
-        GradeList gradeList = new GradeList(assignmentReviewList);
+        GradeList gradeList = new GradeList(assignment.getFullGrade(), assignmentReviewList);
 
         return ResponseEntity.ok(gradeList);
     }
@@ -435,6 +441,8 @@ public class CourseController {
     @Data
     @AllArgsConstructor
     public static class GradeList {
+
+        private float fullGrade;
 
         private List<AssignmentReview> gradeList;
 
