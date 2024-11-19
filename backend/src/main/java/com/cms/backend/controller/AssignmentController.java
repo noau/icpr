@@ -154,11 +154,19 @@ public class AssignmentController {
         var checkSubmission = assignmentSubmissionService.getOne(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
         if (checkSubmission == null) {
             assignmentSubmissionService.save(submission);
+            assignmentSubmissionDTO.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getSubmissionId, submission.getId())));
+            int submissionNumber = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.assignmentId)).size();
+            int allStudentNumber = courseService.getAllStudents(assignmentService.getOne(new LambdaQueryWrapper<Assignment>().eq(Assignment::getId, assignmentSubmissionDTO.getAssignmentId())).getCourseId()).size();
+            float rate = (float) submissionNumber / allStudentNumber;
+            if (rate < 0.3) {
+                userService.addMark(assignmentSubmissionDTO.studentId, 2);
+            } else if (rate < 0.7) {
+                userService.addMark(assignmentSubmissionDTO.studentId, 1);
+            }
         } else {
             assignmentSubmissionService.update(submission,  new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
         }
 
-        assignmentSubmissionDTO.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getSubmissionId, submission.getId())));
         return ResponseEntity.ok().build();
     }
 

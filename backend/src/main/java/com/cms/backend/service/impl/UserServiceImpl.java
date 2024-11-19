@@ -197,4 +197,9 @@ public class UserServiceImpl implements UserService {
         userMapper.deleteDiscussionCollect(threadId, userId);
     }
 
+    @Override
+    public void addMark(Integer id, int mark) {
+        userMapper.addMark(id, mark);
+    }
+
 }

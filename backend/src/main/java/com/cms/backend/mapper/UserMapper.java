@@ -225,4 +225,7 @@ public interface UserMapper {
     @Delete("delete from discussion_collect where thread_id = #{threadId} and user_id = #{userId}")
     void deleteDiscussionCollect(Integer threadId, Integer userId);
 
+    @Update("update user set mark = mark + #{mark} where id = #{id}")
+    void addMark(Integer id, int mark);
+
 }
