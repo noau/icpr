@@ -228,4 +228,7 @@ public interface UserMapper {
     @Update("update user set mark = mark + #{mark} where id = #{id}")
     void addMark(Integer id, int mark);
 
+    @Update("update user set mark = mark - #{mark} where id = #{id}")
+    void dropMark(Integer id, int mark);
+
 }

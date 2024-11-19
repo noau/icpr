@@ -83,4 +83,6 @@ public interface UserService {
 
     void addMark(Integer id, int mark);
 
+    void dropMark(Integer id, int mark);
+
 }

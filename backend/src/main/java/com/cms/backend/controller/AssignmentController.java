@@ -158,6 +158,13 @@ public class AssignmentController {
     public ResponseEntity<Void> reviewAssignment(@RequestBody AssignmentReview assignmentReview) {
         assignmentReviewService.saveOrUpdate(assignmentReview);
         logger.info("Reviewed assignment ID: {}", assignmentReview.getSubmissionId());
+        if (assignmentReview.getGrade() / assignmentService.getById(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getAssignmentId()).getFullGrade() > 0.9) {
+            userService.addMark(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getStudentId(), 2);
+        } else if (assignmentReview.getGrade() / assignmentService.getById(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getAssignmentId()).getFullGrade() > 0.8) {
+            userService.addMark(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getStudentId(), 1);
+        } else if (assignmentReview.getGrade() / assignmentService.getById(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getAssignmentId()).getFullGrade() < 0.6) {
+            userService.dropMark(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getStudentId(), 1);
+        }
 
         return ResponseEntity.ok().build();
     }
@@ -178,7 +185,7 @@ public class AssignmentController {
             int submissionNumber = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.assignmentId)).size();
             int allStudentNumber = courseService.getAllStudents(assignmentService.getOne(new LambdaQueryWrapper<Assignment>().eq(Assignment::getId, assignmentSubmissionDTO.getAssignmentId())).getCourseId()).size();
             float rate = (float) submissionNumber / allStudentNumber;
-            if (rate < 0.3) {
+            if (rate < 0.1) {
                 userService.addMark(assignmentSubmissionDTO.studentId, 2);
             } else if (rate < 0.7) {
                 userService.addMark(assignmentSubmissionDTO.studentId, 1);
