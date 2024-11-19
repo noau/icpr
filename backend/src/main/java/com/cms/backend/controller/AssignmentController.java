@@ -22,10 +22,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -36,9 +34,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
 
 
 @Validated
@@ -94,7 +93,7 @@ public class AssignmentController {
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
 
         List<User> users = courseService.getAllStudents(assignment.courseId);
-        sendNotification(users, newAssignment,"新作业来啦~",assignment.courseId + "作业已发布，请尽快完成");
+        sendNotification(users, newAssignment, "新作业来啦~", assignment.courseId + "作业已发布，请尽快完成");
 
         //设置截止日期
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -191,7 +190,7 @@ public class AssignmentController {
                 userService.addMark(assignmentSubmissionDTO.studentId, 1);
             }
         } else {
-            assignmentSubmissionService.update(submission,  new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
+            assignmentSubmissionService.update(submission, new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
         }
 
         return ResponseEntity.ok().build();
@@ -206,6 +205,10 @@ public class AssignmentController {
     @PostMapping("/peer-reviews")
     public ResponseEntity<Void> peerReviewAssignment(@RequestBody AssignmentPeerReview peerReview) {
         assignmentPeerReviewService.save(peerReview);
+        if (peerReview.getFeedback() != null && peerReview.getFeedback().length() > 100) {
+            userService.addMark(peerReview.getReviewerId(), 1);
+        }
+
         return ResponseEntity.ok().build();
     }
 
@@ -222,7 +225,7 @@ public class AssignmentController {
         var assignment = assignmentService.getById(answer.assignmentId);
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        sendNotification(users, assignment,"作业公布答案",assignment.getCourseId() + assignment.getTitle() + "的答案已经公布");
+        sendNotification(users, assignment, "作业公布答案", assignment.getCourseId() + assignment.getTitle() + "的答案已经公布");
         return ResponseEntity.ok().build();
     }
 
@@ -239,7 +242,7 @@ public class AssignmentController {
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        sendNotification(users, newAssignment,"作业被教师更新",assignment.getCourseId() + assignment.getTitle() + "的内容已经被更新");
+        sendNotification(users, newAssignment, "作业被教师更新", assignment.getCourseId() + assignment.getTitle() + "的内容已经被更新");
         return ResponseEntity.ok().build();
     }
 
@@ -255,7 +258,7 @@ public class AssignmentController {
         var assignment = assignmentService.getById(id);
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        sendNotification(users, assignment,"作业被教师删除",assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除");
+        sendNotification(users, assignment, "作业被教师删除", assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除");
         //删除作业
         assignmentService.removeById(id);
         return ResponseEntity.noContent().build();
@@ -392,14 +395,12 @@ public class AssignmentController {
      */
     @GetMapping("/peer-review-list")
     public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsPeerReviewList(@RequestParam Integer assignmentId, @RequestParam Integer userId, @RequestParam Integer count) {
-        var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentId));
-        var details = submissions.stream().filter(submission -> !Objects.equals(submission.getStudentId(), userId)).map(submission -> {
+        var details = assignmentSubmissionService.getPeerReviewSubmissions(assignmentId, userId).stream().filter(submission -> !Objects.equals(submission.getStudentId(), userId)).map(submission -> {
             var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId)).stream().map(Attachment::getId).toList();
             return new AssignmentSubmissionDetail(submission, attachments);
         }).collect(Collectors.toList());
-        Collections.shuffle(details);
         var review_count = Math.min(count, details.size());
-        return ResponseEntity.ok(details.subList(0, review_count));
+        return ResponseEntity.ok(splitAndRetrieve(details, review_count));
     }
 
 
@@ -450,6 +451,32 @@ public class AssignmentController {
         }
 
         return ResponseEntity.ok(assignmentStudentList);
+    }
+
+    public static <T> List<T> splitAndRetrieve(List<T> inputList, int blockCount) {
+        List<T> result = new ArrayList<>();
+        int totalSize = inputList.size();
+
+        // Calculate block size for each block, remainder are distributed among the first few blocks
+        int baseBlockSize = totalSize / blockCount;
+        int remainder = totalSize % blockCount;
+
+        int startIndex = 0;
+        for (int i = 0; i < blockCount; i++) {
+            // The size of this block will be the baseBlockSize plus 1 if there's still a remainder left
+            int currentBlockSize = baseBlockSize + (remainder > 0 ? 1 : 0);
+            remainder--;
+
+            // If the block has elements, add the first element to the result
+            if (currentBlockSize > 0 && startIndex < totalSize) {
+                result.add(inputList.get(startIndex));
+            }
+
+            // Move to the next block
+            startIndex += currentBlockSize;
+        }
+
+        return result;
     }
 
     @Data
