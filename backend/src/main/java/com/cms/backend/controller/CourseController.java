@@ -5,10 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.BackendApplication;
 import com.cms.backend.pojo.*;
 import com.cms.backend.pojo.Assignments.Assignment;
-import com.cms.backend.pojo.Assignments.AssignmentReview;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.service.*;
 import com.cms.backend.service.assignment.AssignmentService;
+import com.cms.backend.service.assignment.AssignmentSubmissionService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,12 +38,15 @@ public class CourseController {
 
     private final AssignmentService assignmentService;
 
-    public CourseController(CourseService courseService, AttachmentService attachmentService, UserService userService, AttachmentFolderService attachmentFolderService, AssignmentService assignmentService) {
+    private final AssignmentSubmissionService assignmentSubmissionService;
+
+    public CourseController(CourseService courseService, AttachmentService attachmentService, UserService userService, AttachmentFolderService attachmentFolderService, AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService) {
         this.courseService = courseService;
         this.attachmentService = attachmentService;
         this.userService = userService;
         this.attachmentFolderService = attachmentFolderService;
         this.assignmentService = assignmentService;
+        this.assignmentSubmissionService = assignmentSubmissionService;
     }
 
     @GetMapping(value = "/all")
@@ -274,13 +279,16 @@ public class CourseController {
     public ResponseEntity<GradeList> getGradeList(@RequestParam Integer id) {
         Assignment assignment = assignmentService.getById(id);
         List<Integer> assignmentSubmissionList = courseService.selectSubmission(id);
-        List<AssignmentReview> assignmentReviewList = new ArrayList<>();
+        List<Grade> assignmentReviewList = new ArrayList<>();
         for (var submissionId : assignmentSubmissionList) {
-            AssignmentReview assignmentReview = new AssignmentReview(submissionId, courseService.selectGrade(submissionId), "", "");
-            assignmentReviewList.add(assignmentReview);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime submittedAt = LocalDateTime.parse(assignmentSubmissionService.getById(submissionId).getSubmittedAt(), formatter);
+            LocalDateTime end = LocalDateTime.parse(assignment.getEnd(), formatter);
+            Grade grade = new Grade(submissionId, courseService.selectGrade(submissionId), (submittedAt.isBefore(end)) ? assignment.getFullGrade() : assignment.getDelayedGrade());
+            assignmentReviewList.add(grade);
         }
 
-        GradeList gradeList = new GradeList(assignment.getFullGrade(), assignmentReviewList);
+        GradeList gradeList = new GradeList(assignmentReviewList);
 
         return ResponseEntity.ok(gradeList);
     }
@@ -440,11 +448,21 @@ public class CourseController {
 
     @Data
     @AllArgsConstructor
+    public static class Grade {
+
+        private Integer submissionId;
+
+        private Float grade;
+
+        private Float fullGrade;
+
+    }
+
+    @Data
+    @AllArgsConstructor
     public static class GradeList {
 
-        private float fullGrade;
-
-        private List<AssignmentReview> gradeList;
+        private List<Grade> gradeList;
 
     }
 
