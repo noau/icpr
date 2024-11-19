@@ -23,8 +23,11 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +39,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+
 @Validated
 @RestController
 @RequestMapping("/assignments")
@@ -43,6 +48,7 @@ public class AssignmentController {
 
     private final AssignmentService assignmentService;
     private final AssignmentSubmissionService assignmentSubmissionService;
+    private final JavaMailSender mailSender;
     private final AttachmentService attachmentService;
     private final AssignmentPeerReviewService assignmentPeerReviewService;
     private final AssignmentReviewService assignmentReviewService;
@@ -53,9 +59,16 @@ public class AssignmentController {
 
     private final Logger logger = LoggerFactory.getLogger(AssignmentController.class);
 
-    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
+    @Value("${spring.mail.username}")
+    private String sender;
+
+    @Value("${spring.mail.nickname}")
+    private String nickname;
+
+    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, JavaMailSender mailSender, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
         this.assignmentService = assignmentService;
         this.assignmentSubmissionService = assignmentSubmissionService;
+        this.mailSender = mailSender;
         this.attachmentService = attachmentService;
         this.assignmentPeerReviewService = assignmentPeerReviewService;
         this.assignmentReviewService = assignmentReviewService;
@@ -125,6 +138,13 @@ public class AssignmentController {
         for (User user : users) {
             Notification notification = new Notification(user.getId(), title, teachingDTO.getTeacherId(), "作业通知", assignment.getId(), content, 0, formattedNow, assignment.getCourseId(), 0);
             notificationService.save(notification);
+            //同步转发到email
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(nickname + '<' + sender + '>');
+            message.setTo(user.getEmail());
+            message.setSubject(assignment.getCourseId() + "作业通知");
+            message.setText(content);
+            mailSender.send(message);
         }
     }
 
