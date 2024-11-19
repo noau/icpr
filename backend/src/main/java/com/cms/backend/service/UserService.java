@@ -81,4 +81,6 @@ public interface UserService {
 
     void deleteDiscussionCollect(Integer threadId, Integer userId);
 
+    void addMark(Integer id, int mark);
+
 }
