@@ -202,4 +202,9 @@ public class UserServiceImpl implements UserService {
         userMapper.addMark(id, mark);
     }
 
+    @Override
+    public void dropMark(Integer id, int mark) {
+        userMapper.dropMark(id, mark);
+    }
+
 }
