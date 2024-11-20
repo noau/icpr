@@ -5,6 +5,7 @@ import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
 import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
+import com.cms.backend.pojo.TeacherInfo;
 import com.cms.backend.pojo.User;
 import org.apache.ibatis.annotations.*;
 
@@ -230,5 +231,8 @@ public interface UserMapper {
 
     @Update("update user set mark = mark - #{mark} where id = #{id}")
     void dropMark(Integer id, int mark);
+
+    @Select("select * from teacher_info where teacher_id = #{teacherId}")
+    TeacherInfo getTeacherInfo(Integer teacherId);
 
 }
