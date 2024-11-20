@@ -77,16 +77,20 @@ public class UserController {
 
             return ResponseEntity.status(410).body(""); // 用户不存在
         } else {
-
             // 验证密码是否正确
             if (Objects.equals(password, user.getPassword())) {
-                Map<String, Object> claims = new HashMap<>();
-                claims.put("account", id);
-                logger.info("User logged in successfully: {}", id);
-                var token = JWTUtils.genToken(claims);
-                logger.warn("User token: {}", token);
+                if (userService.getTeacherInfo(id) == null) {
+                    Map<String, Object> claims = new HashMap<>();
+                    claims.put("account", id);
+                    logger.info("User logged in successfully: {}", id);
+                    var token = JWTUtils.genToken(claims);
+                    logger.warn("User token: {}", token);
 
-                return ResponseEntity.ok(token);
+                    return ResponseEntity.ok(token);
+                } else {
+
+                    return ResponseEntity.status(410).body(""); // 用户身份不是学生
+                }
             } else {
                 logger.warn("Login failed. Incorrect password for account: {}", id);
 
@@ -106,14 +110,18 @@ public class UserController {
 
             return ResponseEntity.status(410).body(""); // 用户不存在
         } else {
-
             // 验证密码是否正确
             if (Objects.equals(password, user.getPassword())) {
-                Map<String, Object> claims = new HashMap<>();
-                claims.put("account", id);
-                var token = JWTUtils.genToken(claims);
+                if (userService.getTeacherInfo(id) != null) {
+                    Map<String, Object> claims = new HashMap<>();
+                    claims.put("account", id);
+                    var token = JWTUtils.genToken(claims);
 
-                return ResponseEntity.ok(token);
+                    return ResponseEntity.ok(token);
+                } else {
+
+                    return ResponseEntity.status(410).body(""); // 用户身份不是老师
+                }
             } else {
 
                 return ResponseEntity.status(422).body(""); // 密码错误
