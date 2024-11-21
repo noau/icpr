@@ -22,10 +22,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,11 +33,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
-
 
 @Validated
 @RestController
@@ -47,7 +44,6 @@ public class AssignmentController {
 
     private final AssignmentService assignmentService;
     private final AssignmentSubmissionService assignmentSubmissionService;
-    private final JavaMailSender mailSender;
     private final AttachmentService attachmentService;
     private final AssignmentPeerReviewService assignmentPeerReviewService;
     private final AssignmentReviewService assignmentReviewService;
@@ -58,16 +54,9 @@ public class AssignmentController {
 
     private final Logger logger = LoggerFactory.getLogger(AssignmentController.class);
 
-    @Value("${spring.mail.username}")
-    private String sender;
-
-    @Value("${spring.mail.nickname}")
-    private String nickname;
-
-    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, JavaMailSender mailSender, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
+    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
         this.assignmentService = assignmentService;
         this.assignmentSubmissionService = assignmentSubmissionService;
-        this.mailSender = mailSender;
         this.attachmentService = attachmentService;
         this.assignmentPeerReviewService = assignmentPeerReviewService;
         this.assignmentReviewService = assignmentReviewService;
@@ -93,7 +82,14 @@ public class AssignmentController {
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
 
         List<User> users = courseService.getAllStudents(assignment.courseId);
-        sendNotification(users, newAssignment, "新作业来啦~", assignment.courseId + "作业已发布，请尽快完成");
+        LocalDateTime now = LocalDateTime.now();
+        String formattedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.courseId);
+
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "新作业来啦~", teachingDTO.getTeacherId(), "作业通知", assignment.id, assignment.courseId + "作业已发布，请尽快完成", 0, formattedNow, assignment.courseId, 0);
+            notificationService.save(notification);
+        }
 
         //设置截止日期
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -122,28 +118,21 @@ public class AssignmentController {
         System.out.println("发送提醒通知: " + title + " 给学生");
         // 将 reminderTime 转换为 Instant
         Instant scheduleTime = reminderTime.atZone(ZoneId.systemDefault()).toInstant();
-        taskScheduler.schedule(() -> sendNotification(users, assignment, title, content), scheduleTime);
+        taskScheduler.schedule(() -> sendReminderNotification(users, assignment, title, content), scheduleTime);
     }
 
     /**
      * 发送提醒通知
      */
-    private void sendNotification(List<User> users, Assignment assignment, String title, String content) {
-        System.out.println("发送作业通知: " + title + " 给学生" + content);
+    private void sendReminderNotification(List<User> users, Assignment assignment, String title, String content) {
+        System.out.println("发送提醒通知: " + title + " 给学生" + content);
         LocalDateTime now = LocalDateTime.now();
         String formattedNow = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
 
         for (User user : users) {
-            Notification notification = new Notification(user.getId(), title, teachingDTO.getTeacherId(), "作业通知", assignment.getId(), content, 0, formattedNow, assignment.getCourseId(), 0);
+            Notification notification = new Notification(user.getId(), title, teachingDTO.getTeacherId(), "作业提醒", assignment.getId(), content, 0, formattedNow, assignment.getCourseId(), 0);
             notificationService.save(notification);
-            //同步转发到email
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(nickname + '<' + sender + '>');
-            message.setTo(user.getEmail());
-            message.setSubject(assignment.getCourseId() + "作业通知");
-            message.setText(content);
-            mailSender.send(message);
         }
     }
 
@@ -157,13 +146,6 @@ public class AssignmentController {
     public ResponseEntity<Void> reviewAssignment(@RequestBody AssignmentReview assignmentReview) {
         assignmentReviewService.saveOrUpdate(assignmentReview);
         logger.info("Reviewed assignment ID: {}", assignmentReview.getSubmissionId());
-        if (assignmentReview.getGrade() / assignmentService.getById(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getAssignmentId()).getFullGrade() > 0.9) {
-            userService.addMark(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getStudentId(), 2);
-        } else if (assignmentReview.getGrade() / assignmentService.getById(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getAssignmentId()).getFullGrade() > 0.8) {
-            userService.addMark(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getStudentId(), 1);
-        } else if (assignmentReview.getGrade() / assignmentService.getById(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getAssignmentId()).getFullGrade() < 0.6) {
-            userService.dropMark(assignmentSubmissionService.getById(assignmentReview.getSubmissionId()).getStudentId(), 1);
-        }
 
         return ResponseEntity.ok().build();
     }
@@ -180,19 +162,11 @@ public class AssignmentController {
         var checkSubmission = assignmentSubmissionService.getOne(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
         if (checkSubmission == null) {
             assignmentSubmissionService.save(submission);
-            assignmentSubmissionDTO.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getSubmissionId, submission.getId())));
-            int submissionNumber = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.assignmentId)).size();
-            int allStudentNumber = courseService.getAllStudents(assignmentService.getOne(new LambdaQueryWrapper<Assignment>().eq(Assignment::getId, assignmentSubmissionDTO.getAssignmentId())).getCourseId()).size();
-            float rate = (float) submissionNumber / allStudentNumber;
-            if (rate < 0.1) {
-                userService.addMark(assignmentSubmissionDTO.studentId, 2);
-            } else if (rate < 0.7) {
-                userService.addMark(assignmentSubmissionDTO.studentId, 1);
-            }
         } else {
-            assignmentSubmissionService.update(submission, new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
+            assignmentSubmissionService.update(submission,  new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentSubmissionDTO.getAssignmentId()).eq(AssignmentSubmission::getStudentId, assignmentSubmissionDTO.getStudentId()));
         }
 
+        assignmentSubmissionDTO.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getSubmissionId, submission.getId())));
         return ResponseEntity.ok().build();
     }
 
@@ -205,10 +179,7 @@ public class AssignmentController {
     @PostMapping("/peer-reviews")
     public ResponseEntity<Void> peerReviewAssignment(@RequestBody AssignmentPeerReview peerReview) {
         assignmentPeerReviewService.save(peerReview);
-        if (peerReview.getFeedback() != null && peerReview.getFeedback().length() > 100) {
-            userService.addMark(peerReview.getReviewerId(), 1);
-        }
-
+        logger.info("Peer-reviewed assignment ID: {}", peerReview.getSubmissionId());
         return ResponseEntity.ok().build();
     }
 
@@ -225,7 +196,15 @@ public class AssignmentController {
         var assignment = assignmentService.getById(answer.assignmentId);
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        sendNotification(users, assignment, "作业公布答案", assignment.getCourseId() + assignment.getTitle() + "的答案已经公布");
+        //获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "作业公布答案", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "的答案已经公布", 0, formattedNow, assignment.getCourseId(), 0);
+            notificationService.save(notification);
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -242,7 +221,16 @@ public class AssignmentController {
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        sendNotification(users, newAssignment, "作业被教师更新", assignment.getCourseId() + assignment.getTitle() + "的内容已经被更新");
+        //获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "作业被教师更新", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "的内容已经被更新", 0, formattedNow, assignment.getCourseId(), 0);
+            notificationService.save(notification);
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -258,9 +246,19 @@ public class AssignmentController {
         var assignment = assignmentService.getById(id);
         //获得该课程所有学生
         List<User> users = courseService.getAllStudents(assignment.getCourseId());
-        sendNotification(users, assignment, "作业被教师删除", assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除");
-        //删除作业
+        //获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedNow = now.format(formatter);
+
+        TeachingDTO teachingDTO = courseService.getTeacherId(assignment.getCourseId());
+        for (User user : users) {
+            Notification notification = new Notification(user.getId(), "作业被教师删除", teachingDTO.getTeacherId(), "作业通知", assignment.getId(), assignment.getCourseId() + assignment.getTitle() + "已经被任课老师删除", 0, formattedNow, assignment.getCourseId(), 0);
+            notificationService.save(notification);
+        }
+
         assignmentService.removeById(id);
+        logger.info("Deleted assignment ID: {}", id);
         return ResponseEntity.noContent().build();
     }
 
@@ -395,17 +393,21 @@ public class AssignmentController {
      */
     @GetMapping("/peer-review-list")
     public ResponseEntity<List<AssignmentSubmissionDetail>> getAssignmentsPeerReviewList(@RequestParam Integer assignmentId, @RequestParam Integer userId, @RequestParam Integer count) {
-        var details = assignmentSubmissionService.getPeerReviewSubmissions(assignmentId, userId).stream().filter(submission -> !Objects.equals(submission.getStudentId(), userId)).map(submission -> {
+        var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignmentId));
+        var details = submissions.stream().filter(submission -> !Objects.equals(submission.getStudentId(), userId)).map(submission -> {
             var attachments = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getSubmissionId, submission.getId()).select(Attachment::getId)).stream().map(Attachment::getId).toList();
             return new AssignmentSubmissionDetail(submission, attachments);
         }).collect(Collectors.toList());
+        Collections.shuffle(details);
         var review_count = Math.min(count, details.size());
-        return ResponseEntity.ok(splitAndRetrieve(details, review_count));
+        return ResponseEntity.ok(details.subList(0, review_count));
     }
 
 
     @GetMapping("/course-assignments/student")
-    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(@RequestParam String id, Integer userId) {
+    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(@RequestBody AssignmentsStudentBody assignmentsStudentBody) {
+        String id = assignmentsStudentBody.id;
+        Integer userId = assignmentsStudentBody.userId;
         List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));
         List<AssignmentStudent> assignmentStudentList = new ArrayList<>();
         for (Assignment assignment : assignmentList) {
@@ -451,32 +453,6 @@ public class AssignmentController {
         }
 
         return ResponseEntity.ok(assignmentStudentList);
-    }
-
-    public static <T> List<T> splitAndRetrieve(List<T> inputList, int blockCount) {
-        List<T> result = new ArrayList<>();
-        int totalSize = inputList.size();
-
-        // Calculate block size for each block, remainder are distributed among the first few blocks
-        int baseBlockSize = totalSize / blockCount;
-        int remainder = totalSize % blockCount;
-
-        int startIndex = 0;
-        for (int i = 0; i < blockCount; i++) {
-            // The size of this block will be the baseBlockSize plus 1 if there's still a remainder left
-            int currentBlockSize = baseBlockSize + (remainder > 0 ? 1 : 0);
-            remainder--;
-
-            // If the block has elements, add the first element to the result
-            if (currentBlockSize > 0 && startIndex < totalSize) {
-                result.add(inputList.get(startIndex));
-            }
-
-            // Move to the next block
-            startIndex += currentBlockSize;
-        }
-
-        return result;
     }
 
     @Data

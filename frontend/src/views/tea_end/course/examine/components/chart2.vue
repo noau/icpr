@@ -7,7 +7,15 @@ import { onMounted, ref } from 'vue';
 import * as echarts from 'echarts';
  
 const echartsRef = ref(null);
- 
+
+ // 获取父组件传递的数据
+const props = defineProps({
+  list: {
+    type: Array,
+    default: () => [] // 默认是空数组
+  }
+});
+
 onMounted(() => {
   const chart = echarts.init(echartsRef.value);
   const option = {
@@ -24,12 +32,13 @@ onMounted(() => {
     series: [{
       name: '分数',
       type: 'bar',
-      data: [5, 20, 36, 10, 10, 20]
+      data: props.list
     }]
   };
  
   chart.setOption(option);
 });
+
 </script>
  
 <style>
