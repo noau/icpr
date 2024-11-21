@@ -36,8 +36,8 @@
                 互评
               </el-button>
               <!-- 如果未提交作业，查看按钮置灰 -->
-              <el-button round type="text" @click="viewSubmission(scope.row)" 
-                :disabled="!scope.row.submitted">查看</el-button>
+              <!-- <el-button round type="text" @click="viewSubmission(scope.row)" 
+                :disabled="!scope.row.submitted">查看</el-button> -->
             </template>
           </el-table-column>
 

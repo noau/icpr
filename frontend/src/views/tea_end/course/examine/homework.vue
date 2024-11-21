@@ -53,9 +53,9 @@
               <template #default="scope">
                 <el-button type="text" @click="publishHomework(scope.row)">公开作业</el-button>
                 <el-button type="text" @click="publishGrades(scope.row)">公布成绩</el-button>
-                <el-button type="text" @click="publishAnswers(scope.row)">公布答案</el-button>
+                <!-- <el-button type="text" @click="publishAnswers(scope.row)">公布答案</el-button> -->
                 <el-button type="text" @click="editHomework(scope.row)">修改</el-button>
-                <el-button type="text" @click="deleteHomework(scope.row)">删除</el-button>
+                <!-- <el-button type="text" @click="deleteHomework(scope.row)">删除</el-button> -->
               </template>
             </el-table-column>
           </el-table>
@@ -109,20 +109,20 @@ const publishHomework = async (row) => {
   let data = await getChange({...row,isPrivate:1,attachments:[]})
   console.log(data);
   
-  alert("发布成功！");
+  alert("作业公开成功");
 };
 
 const publishGrades = async (row) => {
-  console.log("公开作业:", row);
+  console.log("公布成绩:", row);
 
 let data = await getChange({...row,publishGrade:1,attachments:[]})
 console.log(data);
-  alert("公布成功！");
+  alert("成绩公布成功");
 };
 
 const publishAnswers = async (row) => {
   console.log("公布答案:", row);
-  alert("公布成功！");
+  alert("答案公布成功！");
 };
 
 const editHomework = (row) => {
