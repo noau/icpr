@@ -60,10 +60,24 @@ public class User {
      */
     private Integer threadNumber;
 
+    /**
+     * 邮箱
+     */
     private String email;
 
+    /**
+     * 电话号
+     */
     private String phoneNumber;
 
+    /**
+     * 身份证号
+     */
     private String idCardNumber;
+
+    /**
+     * 互评指数
+     */
+    private Integer mark;
 
 }

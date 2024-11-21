@@ -77,16 +77,20 @@ public class UserController {
 
             return ResponseEntity.status(410).body(""); // 用户不存在
         } else {
-
             // 验证密码是否正确
             if (Objects.equals(password, user.getPassword())) {
-                Map<String, Object> claims = new HashMap<>();
-                claims.put("account", id);
-                logger.info("User logged in successfully: {}", id);
-                var token = JWTUtils.genToken(claims);
-                logger.warn("User token: {}", token);
+                if (userService.getTeacherInfo(id) == null) {
+                    Map<String, Object> claims = new HashMap<>();
+                    claims.put("account", id);
+                    logger.info("User logged in successfully: {}", id);
+                    var token = JWTUtils.genToken(claims);
+                    logger.warn("User token: {}", token);
 
-                return ResponseEntity.ok(token);
+                    return ResponseEntity.ok(token);
+                } else {
+
+                    return ResponseEntity.status(410).body(""); // 用户身份不是学生
+                }
             } else {
                 logger.warn("Login failed. Incorrect password for account: {}", id);
 
@@ -106,14 +110,18 @@ public class UserController {
 
             return ResponseEntity.status(410).body(""); // 用户不存在
         } else {
-
             // 验证密码是否正确
             if (Objects.equals(password, user.getPassword())) {
-                Map<String, Object> claims = new HashMap<>();
-                claims.put("account", id);
-                var token = JWTUtils.genToken(claims);
+                if (userService.getTeacherInfo(id) != null) {
+                    Map<String, Object> claims = new HashMap<>();
+                    claims.put("account", id);
+                    var token = JWTUtils.genToken(claims);
 
-                return ResponseEntity.ok(token);
+                    return ResponseEntity.ok(token);
+                } else {
+
+                    return ResponseEntity.status(410).body(""); // 用户身份不是老师
+                }
             } else {
 
                 return ResponseEntity.status(422).body(""); // 密码错误
@@ -315,7 +323,7 @@ public class UserController {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formattedNow = now.format(formatter);
         User user = userService.findById(follow.getFollowingId());
-        Notification notification = new Notification(follow.getSubscriptionId(), "收到关注！", follow.getFollowingId(), "系统", 0, "你被" + user.getName() + "关注啦~", 0, formattedNow, "M310001B2计算机组成原理2024~2025上", 0);
+        Notification notification = new Notification(follow.getSubscriptionId(), "收到关注！", follow.getFollowingId(), "系统通知", 0, "你被" + user.getName() + "关注啦~", 0, formattedNow, "M310001B2计算机组成原理2024~2025上", 0);
         notificationService.save(notification);
 
         return ResponseEntity.ok("");
@@ -434,7 +442,7 @@ public class UserController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedNow = now.format(formatter);
             DiscussionThread discussionThread = discussionThreadService.getById(discussionLike.getThreadId());
-            Notification notification = new Notification(discussionThread.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区", discussionLike.getThreadId(), "你的帖子被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            Notification notification = new Notification(discussionThread.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区通知", discussionLike.getThreadId(), "你的帖子被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
             notificationService.save(notification);
         } else {
             userService.like(discussionLike.getUserId(), null, discussionLike.getCourseId(), discussionLike.getReplyId(), discussionLike.getCreatedAt());
@@ -443,7 +451,7 @@ public class UserController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedNow = now.format(formatter);
             DiscussionReply discussionReply = discussionReplyService.getById(discussionLike.getReplyId());
-            Notification notification = new Notification(discussionReply.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区", discussionLike.getReplyId(), "你的评论被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
+            Notification notification = new Notification(discussionReply.getUserId(), "收到点赞！", discussionLike.getUserId(), "讨论区通知", discussionLike.getReplyId(), "你的评论被赞啦~", 0, formattedNow, discussionLike.getCourseId(), 0);
             notificationService.save(notification);
         }
 

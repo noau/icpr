@@ -20,7 +20,6 @@ import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -406,7 +405,7 @@ public class AssignmentController {
 
 
     @GetMapping("/course-assignments/student")
-    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent( AssignmentsStudentBody assignmentsStudentBody) {
+    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(@RequestBody AssignmentsStudentBody assignmentsStudentBody) {
         String id = assignmentsStudentBody.id;
         Integer userId = assignmentsStudentBody.userId;
         List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));

@@ -5,6 +5,7 @@ import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
 import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
+import com.cms.backend.pojo.TeacherInfo;
 import com.cms.backend.pojo.User;
 import org.apache.ibatis.annotations.*;
 
@@ -224,5 +225,14 @@ public interface UserMapper {
     })
     @Delete("delete from discussion_collect where thread_id = #{threadId} and user_id = #{userId}")
     void deleteDiscussionCollect(Integer threadId, Integer userId);
+
+    @Update("update user set mark = mark + #{mark} where id = #{id}")
+    void addMark(Integer id, int mark);
+
+    @Update("update user set mark = mark - #{mark} where id = #{id}")
+    void dropMark(Integer id, int mark);
+
+    @Select("select * from teacher_info where teacher_id = #{teacherId}")
+    TeacherInfo getTeacherInfo(Integer teacherId);
 
 }

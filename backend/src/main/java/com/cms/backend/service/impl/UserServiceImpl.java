@@ -6,6 +6,7 @@ import com.cms.backend.pojo.DTO.FollowDTO;
 import com.cms.backend.pojo.DTO.SubscriptionDTO;
 import com.cms.backend.pojo.Favorite;
 import com.cms.backend.pojo.Folder;
+import com.cms.backend.pojo.TeacherInfo;
 import com.cms.backend.pojo.User;
 import com.cms.backend.service.UserService;
 import org.springframework.stereotype.Service;
@@ -195,6 +196,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteDiscussionCollect(Integer threadId, Integer userId) {
         userMapper.deleteDiscussionCollect(threadId, userId);
+    }
+
+    @Override
+    public void addMark(Integer id, int mark) {
+        userMapper.addMark(id, mark);
+    }
+
+    @Override
+    public void dropMark(Integer id, int mark) {
+        userMapper.dropMark(id, mark);
+    }
+
+    @Override
+    public TeacherInfo getTeacherInfo(Integer teacherId) {
+        return userMapper.getTeacherInfo(teacherId);
     }
 
 }

@@ -213,9 +213,9 @@ const toggleCompleted = async (notification) => {
 };
 
 // 删除通知
-const deleteNotification = async (notificationId) => {
+const deleteNotification = (notificationId) => {
   try {
-    await deleteSignalNotification(notificationId);
+    deleteSignalNotification(notificationId);
     notificationList.value = notificationList.value.filter(notification => notification.id !== notificationId);
     notificationsLength.value -= 1;
   } catch (error) {
