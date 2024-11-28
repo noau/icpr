@@ -458,7 +458,7 @@ public class UserController {
         return ResponseEntity.ok("");
     }
 
-    @DeleteMapping(value = "/discussion/delete-like")
+    @PostMapping(value = "/discussion/delete-like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> deleteLike(@RequestBody DiscussionLikeDTO discussionLikeDTO) {
         if (discussionLikeDTO.isThread == 1) {

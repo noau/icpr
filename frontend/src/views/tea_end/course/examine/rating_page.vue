@@ -245,11 +245,12 @@ const fullGrade = ref(10); // Default max grade
 const init = async () => {
   try {
     // Fetch fullGrade from getAssignmentsInfo API
-    const assignmentData = await getAssignmentsInfo({ id: route.query.id });
+    const assignmentData = await getAssignmentsInfo({ id: route.query.assignmentId });
     fullGrade.value = assignmentData.fullGrade || 10; // Set fullGrade to API value, default to 10 if undefined
 
     const data = await getReviewList({ id: route.query.submissionId });
-    tableData.value = data || [];
+    tableData.value = data.submissions || [];
+    
     if (tableData.value.length > 0) {
       currentStudentIndex.value = tableData.value.findIndex(item => item.id == route.query.id);
       updateSubmissionId();
@@ -262,11 +263,13 @@ const init = async () => {
 onMounted(init);
 
 // Load file URL function (unchanged)
-const loadFileUrl = async (attachmentId) => {
+const loadFileUrl = async ({id: attachmentId}) => {
   try {
     const response = await getAttachmentUrl(attachmentId);
+    
     if (response && response.url) {
       pdf.value = response.url;
+      
     } else {
       console.log('未获取到文件 URL');
     }

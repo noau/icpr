@@ -405,7 +405,7 @@ public class AssignmentController {
 
 
     @GetMapping("/course-assignments/student")
-    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(@RequestBody AssignmentsStudentBody assignmentsStudentBody) {
+    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(AssignmentsStudentBody assignmentsStudentBody) {
         String id = assignmentsStudentBody.id;
         Integer userId = assignmentsStudentBody.userId;
         List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));

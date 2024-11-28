@@ -53,7 +53,7 @@ instance.interceptors.response.use(
   (res) => {
     // TODO 3. 处理业务失败
     // TODO 4. 摘取核心响应数据
-    if (res.data.code === 0 || res.status === 200) {
+    if (res.data.code === 0 || res.status === 200 || res.status === 204) {
       return res.data
     }
     // 处理业务失败，给错误提示，抛出错误

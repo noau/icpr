@@ -2,15 +2,14 @@
   <div> <!-- 根元素开始 -->
     <el-row :gutter="20" class="header" style="margin-top: 10px; margin-left: 10px; margin-right: 20px;">
       <el-col :span="12">
-        <el-button round type="primary" @click="openUploadDialog" style="padding:10px;">上传文件</el-button>
         <el-button round type="primary" @click="openCreateDialog" style="padding:10px;">新建文件夹</el-button>
       </el-col>
       <el-col :span="12" style="text-align: right;">
-        <el-button circle type="primary" @click="batchDelete" style="padding:10px;">
+        <!-- <el-button circle type="primary" @click="batchDelete" style="padding:10px;">
           <el-icon>
             <Delete />
           </el-icon>
-        </el-button>
+        </el-button> -->
       </el-col>
     </el-row>
 
@@ -19,18 +18,18 @@
       <el-card style="margin-top: 2px;">
         <div class="forum-list" id="directory-data" style="max-height: 200px; margin-top: -10px; overflow-y: auto;">
           <el-table :data="directoryData" style="width: 100%;" class="resource-table" @selection-change="handleDirectorySelectionChange">
-            <el-table-column type="selection" width="55" />
-            <el-table-column prop="name" label="文件夹名称" width="300" align="center" header-align="center">
+            <!-- <el-table-column type="selection" width="55" /> -->
+            <el-table-column prop="name" label="文件夹名称" align="center" header-align="center">
               <template #default="scope">
                 <span>{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="发布状态" width="150" align="center" header-align="center">
+            <!-- <el-table-column label="发布状态" width="150" align="center" header-align="center">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.published"></el-checkbox>
               </template>
-            </el-table-column>
-            <el-table-column label="操作" width="300" align="center" header-align="center">
+            </el-table-column> -->
+            <el-table-column label="操作" align="center" header-align="center">
               <template #default="scope">
                 <el-button type="text" @click="openEditDialog(scope.row)">编辑</el-button>
                 <el-button type="text" @click="handleDeleteDirectory(scope.row)">删除</el-button>
@@ -51,8 +50,9 @@
             <el-option label="按文件名称排序" value="name" />
             <el-option label="按上传时间排序" value="uploadTime" />
           </el-select>
+        <el-button round type="primary" @click="openUploadDialog" style="padding:10px;">上传文件</el-button>
         </el-col>
-        <el-col :span="8">
+        <el-col :span="7">
           <el-input v-model="searchQuery" placeholder="输入资源名称进行搜索" class="search-input" />
         </el-col>
         <el-col :span="2">
@@ -63,28 +63,28 @@
           </el-button>
         </el-col>
       </el-row>
-
+      <!-- sortedFiles -->
       <!-- 文件卡片 -->
       <el-card style="margin-top: 2px;">
         <div class="forum-list" id="file-data" style="max-height: 300px; margin-top: -10px; overflow-y: auto;">
-          <el-table :data="sortedFiles" style="width: 100%;" class="resource-table" @selection-change="handleFileSelectionChange">
+          <el-table :data="paginatedData" style="width: 100%;" class="resource-table" @selection-change="handleFileSelectionChange">
             <el-table-column type="selection" width="55" />
             <el-table-column prop="name" label="文件名称" width="350" align="center" header-align="center">
               <template #default="scope">
                 <span>{{ scope.row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column label="发布状态" width="150" align="center" header-align="center">
+            <!-- <el-table-column label="发布状态" width="150" align="center" header-align="center">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.published"></el-checkbox>
               </template>
-            </el-table-column>
-            <el-table-column label="是否允许学生下载" width="150" align="center" header-align="center">
+            </el-table-column> -->
+            <el-table-column label="是否允许学生下载" align="center" header-align="center">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.allowDownload"></el-checkbox>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="200" align="center" header-align="center">
+            <el-table-column label="操作" align="center" header-align="center">
               <template #default="scope">
                 <el-button type="text" @click="handleDownload(scope.row)">下载</el-button>
                 <el-button type="text" @click="handleDeleteFile(scope.row)">删除</el-button>
@@ -181,41 +181,17 @@
 </template>
 
 <script setup>
-// import { ref, computed, onMounted, isShallow } from 'vue';
 import { ref, computed, onMounted } from 'vue';
 import { Search } from '@element-plus/icons-vue';
-import { ElMessage } from 'element-plus';
-import {deleteFile, createattachmentfolder, getexercise, resourceexercise } from '@/api/course'
-// import { Mounted } from '@icon-park/vue-next';
-// import { id } from '@kangc/v-md-editor';
+import {editAttachmentfolder, deleteForder, deleteFile, createattachmentfolder, getexercise, resourceexercise } from '@/api/course'
 const headers = {
   Authorization: localStorage.getItem('token')
 }
-// const handleShare = (file) => {
-//   if (navigator.share) {
-//     // 使用 Web Share API
-//     navigator.share({
-//       title: '分享文件',
-//       text: `我想分享文件: ${file.name}`,
-//       url: file.url,
-//     })
-//       .then(() => console.log('分享成功'))
-//       .catch(error => console.error('分享失败:', error));
-//   } else {
-//     // 兼容不支持 Web Share API 的浏览器
-//     const shareLink = document.createElement('textarea');
-//     shareLink.value = `我想分享文件: ${file.name}\n链接: ${file.url}`;
-//     document.body.appendChild(shareLink);
-//     shareLink.select();
-//     document.execCommand('copy');
-//     document.body.removeChild(shareLink);
-//     ElMessage.success('分享链接已复制到剪贴板');
-//   }
-// };
+
 
 const directoryData = ref([]);
 
-const pageSize = ref(8);
+const pageSize = ref(5);
 const currentPage = ref(1);
 const searchQuery = ref('');
 const filteredFiles = ref([]);
@@ -247,10 +223,10 @@ const newFile = ref({
 });
 
 // 过滤和分页数据
-// const paginatedData = computed(() => {
-//   const start = (currentPage.value - 1) * pageSize.value;
-//   return sortedFiles.value.slice(start, start + pageSize.value);
-// });
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return sortedFiles.value.slice(start, start + pageSize.value);
+});
 
 const allFiles = computed(() => {
   if (selectedDirectory.value === 'all' || !selectedDirectory.value) {
@@ -302,21 +278,11 @@ function openCreateDialog() {
 }
 
 function createDirectory() {
-  // if (newDirectory.value.name && newDirectory.value.description) {
-  //   directoryData.value.push({
-  //     name: newDirectory.value.name,
-  //     description: newDirectory.value.description,
-  //     published: false,
-  //     files: []
-  //   });
-  //   createDialogVisible.value = false;
-  //   newDirectory.value.name = '';
-  //   newDirectory.value.description = '';
-  // }
   createattachmentfolder({
     folderName: newDirectory.value.name,
-    courseId: localStorage.getItem('courseId')
-    type: "exercise"
+    courseId: localStorage.getItem('courseId'),
+    parentId: null,
+    type: 'exercise'
   }).then(res => {
     console.log(res);
     createDialogVisible.value = false;
@@ -352,7 +318,7 @@ function handleUploadSuccess(response, file, fileList) {
 
 // 上传文件逻辑
 async function uploadFile() {
-  // 封装请求参数， 请求上传接口
+  // 封装请求参数， 请求上传历年试卷接口
   uploadProps.value.id = localStorage.getItem('courseId');
   // 遍历附件列表，修改相关字段
   uploadProps.value.attachmentIdList.forEach(ele => {
@@ -360,7 +326,6 @@ async function uploadFile() {
     ele.attachmentFolderId = selectedDirectory.value ? selectedDirectory.value : null;
   });
 
-  // console.log(uploadProps.value);
   await resourceexercise(uploadProps.value).then(res => {
     uploadProps.value = {
     id: localStorage.getItem('courseId'),
@@ -370,47 +335,35 @@ async function uploadFile() {
     getexerciseList()
     updateFile()
     
-    // ElMessage.success('文件上传成功')
-    
   })
-
-
-  // if (newFile.value.name && newFile.value.url) {
-  //   const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
-  //   if (directory) {
-  //     directory.files.push({
-  //       name: newFile.value.name,
-  //       description: newFile.value.description,
-  //       allowDownload: newFile.value.allowDownload,
-  //       url: newFile.value.url,
-  //       published: false,
-  //       uploadTime: new Date().toISOString().split('T')[0] // 添加上传时间
-  //     });
-  //   }
-  //   uploadDialogVisible.value = false;
-  //   newFile.value.name = '';
-  //   newFile.value.description = '';
-  //   newFile.value.allowDownload = true;
-  //   newFile.value.url = '';
-  //   fileList.value = [];
-  //   handleSearch(); // 更新搜索结果
-  // } else {
-  //   this.$message.error('请填写完整信息并上传文件');
-  // }
 }
 
 function openEditDialog(directory) {
   currentDirectory.value = { ...directory };
   editDialogVisible.value = true;
+  console.log('bianji:'+editDialogVisible.value +"::"+currentDirectory.value);
+  
 }
 
-function updateDirectory() {
-  // const index = directoryData.value.findIndex(dir => dir.name === currentDirectory.value.name);
-  // if (index !== -1) {
-  //   directoryData.value[index] = { ...currentDirectory.value };
-  // }
-  // editDialogVisible.value = false;
+async function updateDirectory() {
+  //判断不能为空
+  if (!currentDirectory.value.name) {
+    alert('文件夹名称不能为空');
+    return;
+  }
+  // 发送请求更新文件夹信息
+  console.log('编辑文件夹:' +JSON.stringify(currentDirectory.value));
+  if (currentDirectory.value) {
+    const { id, name } = currentDirectory.value;
+    const response = await editAttachmentfolder({
+      id: id,
+      folderName: name
+    });
 
+    alert('编辑成功');
+    uploadFile()
+    editDialogVisible.value = false;
+  }
 }
 
 function openEditFileDialog(file) {
@@ -429,29 +382,37 @@ function updateFile() {
   editFileDialogVisible.value = false;
 }
 
-function handleDeleteDirectory(item) {
-  const index = directoryData.value.indexOf(item);
-  if (index !== -1) {
-    directoryData.value.splice(index, 1);
+
+/**
+ * 删除文件夹
+ * @param item 
+ */
+ async function handleDeleteDirectory(item) {
+  // 显示确认框，提示用户删除文件夹会删除所有文件
+  const userConfirmed = window.confirm('此操作将删除文件夹及其所有文件，确定删除吗？');
+  if (userConfirmed) {
+    // 发送请求删除文件夹
+    const response = await deleteForder(item.id)
+    console.log('删除文件夹:'+response);
+    alert('删除成功')
+    //刷新页面
+    if (item.id === selectedDirectory.value) {
+      selectedDirectory.value = '';
+    }
+    uploadFile()
   }
 }
 
-function handleDeleteFile(item) {
-  deleteFile(item.id).then(res => {
-    if (res.data.code === 200) {
-      ElMessage.success('删除成功')
-    } else {
-      ElMessage.error('删除失败')
-    }
+/**
+ * 删除文件
+ * @param item 
+ */
+ async function handleDeleteFile(item) {
+  await deleteFile(item.id).then(res => {
+    alert('删除成功')
   })
-  const directory = directoryData.value.find(dir => dir.name === selectedDirectory.value);
-  if (directory) {
-    const index = directory.files.indexOf(item);
-    if (index !== -1) {
-      directory.files.splice(index, 1);
-    }
-  }
-
+  getexerciseList()
+  updateFile()
 }
 
 function handleDirectorySelectionChange(val) {
@@ -496,6 +457,7 @@ function batchDelete() {
       console.log(res)
     })
     handleSearch()
+    // updateDirectory()
   }
 
 function togglePublish(item) {
@@ -509,6 +471,10 @@ const sortedFiles = computed(() => {
   } else if (sortOrder.value === 'uploadTime') {
     files.sort((a, b) => new Date(b.uploadTime) - new Date(a.uploadTime));
   }
+  files.map(ele => {
+    if(ele.allowDownload == 1) ele.allowDownload = true
+    if(ele.allowDownload == 1) ele.allowDownload = true
+  } )
   return files;
 });
 function getexerciselist() {

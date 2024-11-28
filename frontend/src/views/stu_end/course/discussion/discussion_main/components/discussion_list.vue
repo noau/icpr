@@ -69,13 +69,14 @@ const toggleLike = post => {
       threadId: post.id
     };
     getdiscussionlike(obj).then(res => {
-      console.log(res);
+      console.log('fdsf'+obj);
     }).catch(err => {
       console.error("点赞失败:", err);
     });
   } else {
     let obj = {
       id: post.id,
+      userId: localStorage.getItem("userId"),
       isThread: 1
     };
     getdelete_like(obj).then(res => {

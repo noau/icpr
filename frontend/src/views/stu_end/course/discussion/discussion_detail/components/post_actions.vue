@@ -39,6 +39,7 @@ const toggleLike = () => {
     userId: localStorage.getItem("userId"),
     threadId: post.id
   };
+  console.log('fdsf '+JSON.stringify(post.liked));
   if (post.liked) {
     getdiscussionlike(obj).then(res => {
       console.log(res);
@@ -46,6 +47,7 @@ const toggleLike = () => {
       console.error("点赞失败:", err);
     });
   }else{
+    console.log('fdsf '+JSON.stringify(obj));
     getdelete_like(obj).then(res => {
       console.log(res);
     })

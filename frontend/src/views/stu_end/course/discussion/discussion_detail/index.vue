@@ -97,12 +97,15 @@ const likeComment = (comment) => {
 
 // 回复评论
 const replyComment = async (comment, replyContent) => {
-  console.log(
-    comment,
-    "commentcommentcomment",
-    replyContent,
-    "replyContentreplyContent"
-  );
+  console.log('回复评论'+ JSON.stringify(comment));
+  console.log('回复评论'+ JSON.stringify(replyContent));
+  
+  // console.log(
+  //   comment,
+  //   "commentcommentcomment",
+  //   replyContent,
+  //   "replyContentreplyContent"
+  // );
 
   await getReplies({
     threadId,
@@ -110,7 +113,9 @@ const replyComment = async (comment, replyContent) => {
     userId: userId,
     content: replyContent,
   });
-  // isFlag.value = true;
+  console.log('回复完成'+ JSON.stringify(comment));
+  
+  // isFlag.value = false;
   getget_threadList();
 
   // comment.replies.push({
@@ -127,6 +132,8 @@ const replyComment = async (comment, replyContent) => {
 
 // 添加评论
 const addComment = async (content) => {
+  console.log('添加评论'+ content);
+
   isFlag.value = false;
 
   await getReplies({

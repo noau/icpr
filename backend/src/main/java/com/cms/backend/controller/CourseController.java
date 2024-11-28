@@ -304,6 +304,19 @@ public class CourseController {
         return ResponseEntity.ok(String.valueOf(id));
     }
 
+    /**
+     * 编辑文件夹
+     * @param dto
+     * @return
+     */
+    @PostMapping(value = "/edit-attachment-folder")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> editAttachmentFolder(@RequestBody EditAttachmentFolder dto) {
+        courseService.editAttachmentFolder(dto.id,dto.folderName);
+
+        return ResponseEntity.ok("修改成功");
+    }
+
     @DeleteMapping(value = "/delete-attachment-folder")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> deleteAttachmentFolder(@RequestParam Integer id) {
@@ -488,5 +501,13 @@ public class CourseController {
         private String type;
 
     }
+    @Data
+    @AllArgsConstructor
+    public static class EditAttachmentFolder {
 
+        private Integer id;
+
+        private String folderName;
+
+    }
 }

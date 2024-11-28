@@ -40,9 +40,9 @@
       <span style="margin-left: -68px; margin-right: 13px;">作业满分</span>
       <el-input-number v-model="homeworkForm.fullGrade" min="0" label="作业满分" placeholder="作业满分"
                        style="width: 150px; margin-right: 60px;"></el-input-number>
-      <span style="margin-right: 13px;">补交满分</span>
-      <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分"
-                       style="width: 150px; margin-right: 60px;"></el-input-number>
+      <!-- <span style="margin-right: 13px;">补交满分</span> -->
+      <!-- <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分"
+                       style="width: 150px; margin-right: 60px;"></el-input-number> -->
       <el-checkbox v-model="homeworkForm.multipleSubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
       <el-checkbox v-model="homeworkForm.publishGrade">公布作业成绩</el-checkbox>
     </el-form-item>
@@ -55,9 +55,9 @@
       <el-date-picker v-model="homeworkForm.end" type="datetime" placeholder="选择正常截止时间"></el-date-picker>
     </el-form-item>
 
-    <el-form-item label="补交截止时间" style="margin-left: 28px;">
+    <!-- <el-form-item label="补交截止时间" style="margin-left: 28px;">
       <el-date-picker v-model="homeworkForm.latestEnd" type="datetime" placeholder="选择补交截止时间"></el-date-picker>
-    </el-form-item>
+    </el-form-item> -->
 
     <el-form-item>
       <el-checkbox v-model="homeworkForm.requirePeerReview" style="margin-left: -67px;">互评任务</el-checkbox>
@@ -196,7 +196,18 @@ const loadAssignmentDetails = async () => {
 };
 
 const submitHomework = async () => {
-  console.log('Homework Form:', homeworkForm.value);
+  // console.log('Homework Form:', homeworkForm.value);
+  //互评的开始时间不能早于作业的截止时间
+  // console.log('sdfsdf'+homeworkForm.value.end.getTime());
+  if(!homeworkForm.value.end) {
+    alert('结束时间不能为空')
+    return
+  }
+  
+  if(homeworkForm.value.peerReviewStart && homeworkForm.value.peerReviewStart.getTime() <= homeworkForm.value.end.getTime()) {
+    alert('互评开始时间不能早于作业的截止时间')
+    return
+  }
   const data = {
     ...homeworkForm.value,
     start: formatDateForSQL(homeworkForm.value.start),

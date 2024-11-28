@@ -1,8 +1,12 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 2048MB
+      max-request-size: 2048MB
   application:
     name: icpr
   datasource:
-    url: jdbc:mysql://localhost:3306/icpr
+    url: jdbc:mysql://localhost:3307/icpr
     username: root
     password: 123456
   jpa:

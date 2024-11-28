@@ -36,4 +36,4 @@ export const getget_thread = ({id, userId}) =>
 
 // /user/discussion/delete-like
 export const getdelete_like = (data) =>
-    httpInstance.delete('/user/discussion/delete-like', {data});
+    httpInstance.post('/user/discussion/delete-like', data);

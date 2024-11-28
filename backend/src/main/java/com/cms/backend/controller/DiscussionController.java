@@ -136,21 +136,21 @@ public class DiscussionController {
                     discussionLikeReply != null);
             replyList.add(discussionReplyDTO);
             List<DiscussionReply> replyReplies = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getReplyId, discussionReply.getId()));
-            for (DiscussionReply discussionReplyReply : replyReplies) {
-                DiscussionLike discussionLikeReplyReply = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getReplyId, discussionReplyReply.getId()).eq(DiscussionLike::getUserId, userId));
-                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(),
-                        discussionReplyReply.getThreadId(),
-                        discussionReplyReply.getReplyId(),
-                        discussionReplyReply.getUserId(),
-                        discussionReplyReply.getContent(),
-                        discussionReplyReply.getLikes(),
-                        discussionReplyReply.getCreatedAt(),
-                        discussionReplyReply.getRepliedId(),
-                        userService.findById(discussionReplyReply.getUserId()).getName(),
-                        userService.findById(discussionReplyReply.getUserId()).getAvatar(),
-                        discussionLikeReplyReply != null);
-                replyList.add(discussionReplyDTODTO);
-            }
+//            for (DiscussionReply discussionReplyReply : replyReplies) {
+//                DiscussionLike discussionLikeReplyReply = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getReplyId, discussionReplyReply.getId()).eq(DiscussionLike::getUserId, userId));
+//                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(),
+//                        discussionReplyReply.getThreadId(),
+//                        discussionReplyReply.getReplyId(),
+//                        discussionReplyReply.getUserId(),
+//                        discussionReplyReply.getContent(),
+//                        discussionReplyReply.getLikes(),
+//                        discussionReplyReply.getCreatedAt(),
+//                        discussionReplyReply.getRepliedId(),
+//                        userService.findById(discussionReplyReply.getUserId()).getName(),
+//                        userService.findById(discussionReplyReply.getUserId()).getAvatar(),
+//                        discussionLikeReplyReply != null);
+//                replyList.add(discussionReplyDTODTO);
+//            }
         }
 
         DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
