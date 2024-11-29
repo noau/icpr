@@ -72,7 +72,7 @@ class NotificationControllerTest {
 
         // 验证返回值
         assertEquals(1, Objects.requireNonNull(response.getBody()).getNotifications().size());
-        assertEquals("李四", response.getBody().getNotifications().get(0).getUserName());
+        assertEquals("李四", response.getBody().getNotifications().getFirst().getUserName());
 
         // 验证服务层方法是否被调用
         verify(notificationService, times(1)).list((Wrapper<Notification>) any());
