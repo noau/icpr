@@ -80,4 +80,9 @@ public class User {
      */
     private Integer mark;
 
+    public User(int userId, String password) {
+        this.id = userId;
+        this.password = password;
+    }
+
 }
