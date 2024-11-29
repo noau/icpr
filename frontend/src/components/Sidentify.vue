@@ -124,13 +124,16 @@ const drawPic = () => {
   let ctx = canvas.getContext('2d')
   ctx.textBaseline = 'bottom'
 
+  // 确保识别码长度为 4 位
+  const code = props.identifyCode.substring(0, 4) // 截取前4位字符
+
   // 绘制背景
   ctx.fillStyle = randomColor(props.backgroundColorMin, props.backgroundColorMax)
   ctx.fillRect(0, 0, props.contentWidth, props.contentHeight)
 
   // 绘制文字
-  for (let i = 0; i < props.identifyCode.length; i++) {
-    drawText(ctx, props.identifyCode[i], i)
+  for (let i = 0; i < code.length; i++) {
+    drawText(ctx, code[i], i)
   }
   drawLine(ctx)
   drawDot(ctx)

@@ -10,9 +10,9 @@
       <div v-else>通知内容: {{ reminder.content }}</div>
     </div>
     <!-- 修改关闭按钮，放在右下角 -->
-    <el-button round class="close-button" @click="remove">
+    <!-- <el-button round class="close-button" @click="remove">
       <el-icon><Close /></el-icon>
-    </el-button>
+    </el-button> -->
   </el-card>
 </template>
 

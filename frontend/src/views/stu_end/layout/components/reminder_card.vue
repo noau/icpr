@@ -5,7 +5,7 @@
       <br>
       <br>
     </div>
-    <div v-if="reminders.length">
+    <div v-if="reminders.length" class="reminder-container">
       <reminder_item
         v-for="(reminder, index) in reminders"
         :key="index"
@@ -54,5 +54,13 @@ export default {
   text-align: center;
   font-size: 14px;
   margin-top: 20px;
+}
+
+.reminder-container {
+  max-height: 400px; /* 设置一个合适的最大高度，视情况而定 */
+  overflow-y: auto;  /* 超出高度时显示滚动条 */
+  padding-right: 10px; /* 预留空间给滚动条，防止内容被遮挡 */
+  border: 1px solid #ddd; /* 可选：为容器添加边框，帮助区分区域 */
+  border: none;
 }
 </style>

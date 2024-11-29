@@ -22,7 +22,7 @@
 
           <!-- 右侧 reminder_card，占 6/24 -->
           <el-col :span="6">
-<!--            <reminder_card :reminders="reminders" @remove="removeReminder" />-->
+           <reminder_card :reminders="reminders" @remove="removeReminder" />
           </el-col>
         </el-row>
       </el-main>
@@ -62,7 +62,51 @@ export default {
       courses: courses,
       searchQuery: '',
       reminders: [
-        { type: '作业', title: '作业标题', deadline: '2024-09-15' },
+        { type: '作业', title: 'M310001B2计算机组成原理2024~2025上', deadline: '2024-09-15' },
+        { type: '通知', title: '作业通知', content: 'M310001B2计算机组成原理2024~2025上作业已发布，请尽快完成' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
+        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
         { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
         // 更多提醒...
       ],

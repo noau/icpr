@@ -218,12 +218,16 @@ const submitHomework = async () => {
     attachments: homeworkForm.value.attachments.map(file => file.id)
   };
   data.requirePeerReview = data.requirePeerReview ? 1 : 0;
+  data.publishGrade = data.publishGrade ? 1 : 0;
+  data.multipleSubmission = data.multipleSubmission ? 1 : 0;
 
   try {
     if (isEditing.value) {
       await getChange(data);
       alert('作业修改成功');
     } else {
+      console.log('fabuzuoye: '+JSON.stringify(data));
+      
       await getIssue(data);
       alert('作业发布成功');
     }
