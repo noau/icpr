@@ -43,6 +43,8 @@ public class UserController {
 
     private final FolderService folderService;
 
+    private final FavoriteService favoriteService;
+
     private final NotificationService notificationService;
 
     private final DiscussionReplyService discussionReplyService;
@@ -53,7 +55,8 @@ public class UserController {
     @Value("${spring.mail.nickname}")
     private String nickname;
 
-    public UserController(UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
+    public UserController(FavoriteService favoriteService, UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
+        this.favoriteService = favoriteService;
         this.userService = userService;
         this.mailSender = mailSender;
         this.discussionThreadService = discussionThreadService;
@@ -251,13 +254,19 @@ public class UserController {
 
     @PostMapping(value = "/create-favorite")
     public ResponseEntity<String> createFavorite(@RequestBody Favorite favorites) {
+        // 收藏之前需要校验是否已经收藏了
+        Favorite favorite = favoriteService.getOne(new LambdaQueryWrapper<Favorite>().eq(Favorite::getUserId, favorites.getUserId())
+                .eq(Favorite::getThreadId, favorites.getThreadId()).eq(Favorite::getFolderId, favorites.getFolderId()));
+        if (favorite != null) {
+            return ResponseEntity.ok("帖子已被收藏");
+        }
         Integer userId = favorites.getUserId();
         Integer threadId = favorites.getThreadId();
         Integer folderId = favorites.getFolderId();
         String createdAt = favorites.getCreatedAt();
         userService.addFavorite(userId, threadId, folderId, createdAt);
         userService.addFavorites(threadId);
-        userService.addThreadCollect(userId, threadId, discussionThreadService.getById(threadId).getCourseId(), createdAt);
+//        userService.addThreadCollect(userId, threadId, discussionThreadService.getById(threadId).getCourseId(), createdAt);
 
         return ResponseEntity.ok("");
     }

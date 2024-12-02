@@ -31,13 +31,16 @@ public class DiscussionController {
 
     private final DiscussionCollectService discussionCollectService;
 
-    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService, NotificationService notificationService, DiscussionLikeService discussionLikeService, DiscussionCollectService discussionCollectService) {
+    private final FavoriteService favoriteService;
+
+    public DiscussionController(FavoriteService favoriteService, DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService, NotificationService notificationService, DiscussionLikeService discussionLikeService, DiscussionCollectService discussionCollectService) {
         this.discussionThreadService = discussionThreadService;
         this.discussionReplyService = discussionReplyService;
         this.userService = userService;
         this.notificationService = notificationService;
         this.discussionLikeService = discussionLikeService;
         this.discussionCollectService = discussionCollectService;
+        this.favoriteService = favoriteService;
     }
 
     @PostMapping(value = "/thread")
@@ -88,7 +91,9 @@ public class DiscussionController {
         List<DiscussionThreadDTO> discussionThreadDTOS = new ArrayList<>();
         for (DiscussionThread discussionThread : discussionThreads) {
             DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
-            DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
+            Favorite favorite = favoriteService.getOne(new LambdaQueryWrapper<Favorite>().eq(Favorite::getThreadId, discussionThread.getId()).eq(Favorite::getUserId, userId));
+
+//            DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
             DiscussionThreadDTO discussionThreadDTO = new DiscussionThreadDTO(discussionThread.getId(),
                     discussionThread.getCourseId(),
                     discussionThread.getUserId(),
@@ -102,7 +107,7 @@ public class DiscussionController {
                     discussionThread.getTag(),
                     discussionThread.getUpdatedAt(),
                     discussionLike != null,
-                    discussionCollect != null
+                    favorite != null
             );
 
             discussionThreadDTOS.add(discussionThreadDTO);
@@ -155,7 +160,9 @@ public class DiscussionController {
 
         DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
         DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
-        DiscussionReplyList discussionReplyList = new DiscussionReplyList(discussionThread.getCourseId(),
+        DiscussionReplyList discussionReplyList = new DiscussionReplyList(
+                discussionThread.getId(),
+                discussionThread.getCourseId(),
                 discussionThread.getUserId(),
                 discussionThread.getTitle(),
                 discussionThread.getContent(),
@@ -244,6 +251,8 @@ public class DiscussionController {
     @Data
     @AllArgsConstructor
     public static class DiscussionReplyList {
+
+        private Integer id;
 
         private String courseId;
 

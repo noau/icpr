@@ -28,10 +28,10 @@
       <el-checkbox v-model="localIsAnonymous">我要匿名</el-checkbox>
     </el-card>
 
-    <!-- 通知选项 -->
+    <!-- 置顶选项 -->
     <el-card class="sidebar-section">
-      <p>通知</p>
-      <el-checkbox v-model="localIsNotification">作为通知推送</el-checkbox>
+      <p>置顶</p>
+      <el-checkbox v-model="localIsNotification">置顶该帖</el-checkbox>
     </el-card>
   </div>
 </template>

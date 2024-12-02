@@ -8,9 +8,11 @@
         <Like :theme="post.liked ? 'filled' : 'outline'" size="15" fill="#333" @click.stop="toggleLike(post)"/>
         <span>{{ post.likes }}</span>
 
-        <el-icon :size="15" @click.stop="toggleFavorite(post)">
-          <CollectionTag :theme="post.favorited ? 'filled' : 'outline'"/>
-        </el-icon>
+        <!-- <el-icon :size="15" @click.stop="toggleFavorite(post)">
+              <CollectionTag :theme="post.favorite ? 'filled' : 'outline'" />
+        </el-icon> -->
+        
+        <Star :theme="post.favorite ? 'filled' : 'outline'" size="17" fill="#333" @click.stop="toggleFavorite(post)" />
         <span>{{ post.favorites }}</span>
         <el-icon :size="15">
           <ChatDotRound/>
@@ -30,9 +32,10 @@
 <script setup>
 import {ref} from 'vue';
 import {useRouter} from 'vue-router';
-import {Like} from '@icon-park/vue-next';
+import {Like, Star} from '@icon-park/vue-next';
 import {getcourse, getdiscussionlike, getdelete_like} from '@/api/discussion';
 import {userFolders, userCreate_favorite} from '@/api/user.js';
+// import { CollectionTag } from '@element-plus/icons-vue/dist/types';
 
 const router = useRouter();
 const drawer = ref(false);
@@ -46,7 +49,7 @@ function getcourseList() {
   const userId = localStorage.getItem("userId");
   getcourse({id: courseId, userId}).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
-    console.log(res.discussionThreads, '');
+    // console.log(res.discussionThreads, '');
     posts.value = res.discussionThreads;
   }).catch(err => {
     console.error("获取帖子数据失败:", err);
@@ -86,6 +89,7 @@ const toggleLike = post => {
 
 };
 
+
 // 获取收藏夹
 const collectList = ref();
 const getUserFolders = async () => {
@@ -98,8 +102,8 @@ const getUserFolders = async () => {
 const threadId = ref();
 const toggleFavorite = post => {
   threadId.value = post.id;
-  post.favorited = !post.favorited;
-  post.favorites += post.favorited ? 1 : -1;
+  // post.favorited = !post.favorited;
+  // post.favorites += post.favorited ? 1 : -1;
   getUserFolders();
   drawer.value = true;
 };
@@ -112,7 +116,12 @@ function collect(item) {
     threadId: threadId.value,
     folderId: item.id
   }).then(res => {
-    console.log(res);
+    // 关闭抽屉
+    drawer.value = false;
+    // 刷新帖子列表
+    getcourseList();
+    // 提示用户收藏成功
+    alert("收藏成功");
   }).catch(err => {
     console.error("收藏失败:", err);
   });

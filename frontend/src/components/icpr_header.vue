@@ -30,7 +30,6 @@ export default {
   methods: {
     goToNotifications() {
       const type = localStorage.getItem("userType");
-      console.log(type);
       if(type === 'student'){
         // 跳转到通知页面
         this.$router.push('/stu-end/notification');

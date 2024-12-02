@@ -203,7 +203,20 @@ const submitHomework = async () => {
     alert('结束时间不能为空')
     return
   }
-  
+  if(!homeworkForm.value.start) {
+    alert('开始时间不能为空')
+    return
+  }
+  if(!homeworkForm.value.title) {
+    alert('作业标题不能为空')
+    return
+  }
+  if(homeworkForm.value.requirePeerReview) {
+    if(!homeworkForm.value.peerReviewStart || !homeworkForm.value.peerReviewEnd) {
+      alert('互评开始和结束时间不能为空')
+      return
+    }
+  }
   if(homeworkForm.value.peerReviewStart && homeworkForm.value.peerReviewStart.getTime() <= homeworkForm.value.end.getTime()) {
     alert('互评开始时间不能早于作业的截止时间')
     return

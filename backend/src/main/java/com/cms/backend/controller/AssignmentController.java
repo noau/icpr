@@ -92,21 +92,21 @@ public class AssignmentController {
         }
 
         //设置截止日期
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String endString = assignment.getEnd();
-        String latestEndString = assignment.getLatestEnd();
-        String peerReviewStartString = assignment.getPeerReviewStart();
-        String peerReviewEndString = assignment.getPeerReviewEnd();
-        // 将字符串转为 LocalDateTime 类型
-        LocalDateTime end = LocalDateTime.parse(endString, formatter);
-        LocalDateTime latestEnd = LocalDateTime.parse(latestEndString, formatter);
-        LocalDateTime peerReviewStart = LocalDateTime.parse(peerReviewStartString, formatter);
-        LocalDateTime peerReviewEnd = LocalDateTime.parse(peerReviewEndString, formatter);
-        // 设置提醒任务
-        scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
-        scheduleReminder(latestEnd.minusDays(1), users, newAssignment, "最迟补交提醒", "最迟补交时间剩余1天，请尽快完成");
-        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始,不要忘记");
-        scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        String endString = assignment.getEnd();
+//        String latestEndString = assignment.getLatestEnd();
+//        String peerReviewStartString = assignment.getPeerReviewStart();
+//        String peerReviewEndString = assignment.getPeerReviewEnd();
+//        // 将字符串转为 LocalDateTime 类型
+//        LocalDateTime end = LocalDateTime.parse(endString, formatter);
+//        LocalDateTime latestEnd = LocalDateTime.parse(latestEndString, formatter);
+//        LocalDateTime peerReviewStart = LocalDateTime.parse(peerReviewStartString, formatter);
+//        LocalDateTime peerReviewEnd = LocalDateTime.parse(peerReviewEndString, formatter);
+//        // 设置提醒任务
+//        scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
+//        scheduleReminder(latestEnd.minusDays(1), users, newAssignment, "最迟补交提醒", "最迟补交时间剩余1天，请尽快完成");
+//        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始,不要忘记");
+//        scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
 
         return ResponseEntity.ok("作业发布成功，已通知所有学生。");
     }
@@ -453,6 +453,37 @@ public class AssignmentController {
         }
 
         return ResponseEntity.ok(assignmentStudentList);
+    }
+
+    /**
+     * 获取学生未完成的作业通知列表
+     *
+     * @param userId       学生id
+     * @return 获取学生未完成的作业通知列表
+     */
+    @GetMapping("/getStudentAssignmentNotify")
+    public ResponseEntity<List<Assignment>> getStudentAssignmentNotify(@RequestParam Integer userId) {
+
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        // 使用 LambdaQueryWrapper 来构建查询条件
+        LambdaQueryWrapper<Assignment> queryWrapper = new LambdaQueryWrapper<Assignment>()
+                .lt(Assignment::getStart, currentTime)  // start 时间小于当前时间
+                .gt(Assignment::getEnd, currentTime);   // end 时间大于当前时间
+
+        // 查询符合条件的所有 Assignment 记录
+        List<Assignment> vo = new ArrayList<>();
+        List<Assignment> assignments = assignmentService.list(queryWrapper);
+        for (Assignment item : assignments) {
+            List<AssignmentSubmission> list = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getStudentId, userId).eq(AssignmentSubmission::getAssignmentId, item.getId()));
+            if (list.isEmpty()) {
+                vo.add(item);
+            }
+
+        }
+        return ResponseEntity.ok(vo);
+
     }
 
     @Data

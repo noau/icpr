@@ -1,5 +1,6 @@
 package com.cms.backend.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +9,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class DiscussionThread {
 
-    @TableId
+    @TableId(type = IdType.AUTO)  // 设置 ID 自增
     private Integer id;
 
     private String courseId;

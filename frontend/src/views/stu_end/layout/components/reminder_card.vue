@@ -11,6 +11,7 @@
         :key="index"
         :reminder="reminder"
         @remove="removeReminder(index)"
+        @click="handleClick(reminder)"
       />
     </div>
     <div v-else class="no-reminder">暂无提醒</div>
@@ -33,6 +34,21 @@ export default {
   methods: {
     removeReminder(index) {
       this.$emit('remove', index);
+    },
+    /**
+     * 处理点击事件
+     * @param reminder 
+     */
+    handleClick(reminder) {
+      // 如果类型是作业，跳转到作业详情页
+      if (reminder.type === '作业') {
+        this.$router.push({
+          path: `/stu-end/course/examine/homework-details?id=${reminder.assignmentId}`,
+          query: {
+            assignmentId: reminder.assignmentId,
+          },
+        });
+      }
     },
   },
 };
