@@ -1,4 +1,4 @@
-s<template>
+<template>
   <el-header>
     <div class="title">重生的智慧课程平台</div>
     <div class="icons">
@@ -41,8 +41,16 @@ export default {
       
     },
     goToProfile() {
-      // 跳转到个人中心页面
-      this.$router.push('/profile');
+      const type = localStorage.getItem("userType");
+      if(type === 'student'){
+        // 跳转到个人中心页面
+      this.$router.push('/stu-end/profile');
+      }
+      if (type === 'teacher'){
+        // 跳转到个人中心页面
+        this.$router.push('/tea-end/profile');
+      }
+
     },
     // 修正 init 方法定义
     async init() {

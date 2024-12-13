@@ -79,11 +79,11 @@
                 <el-checkbox v-model="scope.row.published"></el-checkbox>
               </template>
             </el-table-column> -->
-            <el-table-column label="是否允许学生下载" align="center" header-align="center">
+            <!-- <el-table-column label="是否允许学生下载" align="center" header-align="center">
               <template #default="scope">
                 <el-checkbox v-model="scope.row.allowDownload"></el-checkbox>
               </template>
-            </el-table-column>
+            </el-table-column> -->
             <el-table-column label="操作" align="center" header-align="center">
               <template #default="scope">
                 <el-button type="text" @click="handleDownload(scope.row)">下载</el-button>
@@ -93,7 +93,7 @@
           </el-table>
         </div>
         <div class="pagination-container">
-          <el-pagination layout="prev, pager, next" :total="sortedFiles.length" :page-size="pageSize"
+          <el-pagination layout="prev, pager, next" :total="sortedFiles?.length || 0" :page-size="pageSize"
            :current-page="currentPage" @current-change="handleCurrentChange" />
         </div>
       </el-card>
@@ -140,12 +140,12 @@
           </el-upload>
           <span class="input-tip">允许上传的文件类型: pdf, doc, docx, jpg, jpeg, png, gif, bmp, zip, rar，文件不超过2G。</span>
         </el-form-item>
-        <el-form-item label="允许学生下载" :label-width="formLabelWidth">
+        <!-- <el-form-item label="允许学生下载" :label-width="formLabelWidth">
           <el-radio-group v-model="newFile.allowDownload">
             <el-radio :label="true">是</el-radio>
             <el-radio :label="false">否</el-radio>
-          </el-radio-group>
-        </el-form-item>
+          </el-radio-group> -->
+        <!-- </el-form-item> -->
       </el-form>
       <template v-slot:footer>
         <div class="dialog-footer">
@@ -164,12 +164,12 @@
         <el-form-item label="描述" :label-width="formLabelWidth">
           <el-input type="textarea" v-model="currentFile.description" maxlength="300"></el-input>
         </el-form-item>
-        <el-form-item label="允许学生下载" :label-width="formLabelWidth">
+        <!-- <el-form-item label="允许学生下载" :label-width="formLabelWidth">
           <el-radio-group v-model="currentFile.allowDownload">
             <el-radio :label="true">是</el-radio>
             <el-radio :label="false">否</el-radio>
           </el-radio-group>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template v-slot:footer>
         <div class="dialog-footer">
@@ -227,12 +227,12 @@ const newFile = ref({
 // 过滤和分页数据
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
-  return sortedFiles.value.slice(start, start + pageSize.value);
+  return sortedFiles.value?.slice(start, start + pageSize.value);
 });
 
 const allFiles = computed(() => {
   if (selectedDirectory.value === 'all' || !selectedDirectory.value) {
-    return directoryData.value.flatMap(dir => dir.files);
+    return directoryData.value.flatMap(dir => dir.files || []);
   }
   const directory = directoryData.value.find(dir => dir.id === selectedDirectory.value);
   return directory ? directory.files : [];
@@ -280,6 +280,11 @@ function openCreateDialog() {
 }
 
 function createDirectory() {
+  // 判断文件夹名称不为空
+  if (!newDirectory.value.name.trim()) {
+    alert('文件夹名称不能为空')
+    return
+  }
   createattachmentfolder({
     folderName: newDirectory.value.name,
     courseId: localStorage.getItem('courseId'),
@@ -349,7 +354,7 @@ function openEditDialog(directory) {
 
 async function updateDirectory() {
   //判断不能为空
-  if (!currentDirectory.value.name) {
+  if (!currentDirectory.value.name.trim()) {
     alert('文件夹名称不能为空');
     return;
   }
@@ -466,6 +471,7 @@ function togglePublish(item) {
 }
 
 const sortedFiles = computed(() => {
+  if (!filteredFiles.value)return
   let files = [...filteredFiles.value];
   if (sortOrder.value === 'name') {
     files.sort((a, b) => a.name.localeCompare(b.name));

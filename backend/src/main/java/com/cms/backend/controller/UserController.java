@@ -49,13 +49,16 @@ public class UserController {
 
     private final DiscussionReplyService discussionReplyService;
 
+    private final DiscussionLikeService discussionLikeService;
+
     @Value("${spring.mail.username}")
     private String sender;
 
     @Value("${spring.mail.nickname}")
     private String nickname;
 
-    public UserController(FavoriteService favoriteService, UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
+    public UserController(DiscussionLikeService discussionLikeService, FavoriteService favoriteService, UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
+        this.discussionLikeService = discussionLikeService;
         this.favoriteService = favoriteService;
         this.userService = userService;
         this.mailSender = mailSender;
@@ -155,6 +158,9 @@ public class UserController {
         List<DiscussionInfoDTO> threadList = new ArrayList<>();
         for (DiscussionThread discussionThread : threadListList) {
             User threadUser = userService.findById(discussionThread.getUserId());
+            DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, id));
+            Favorite favorite = favoriteService.getOne(new LambdaQueryWrapper<Favorite>().eq(Favorite::getThreadId, discussionThread.getId()).eq(Favorite::getUserId, id));
+
             DiscussionInfoDTO discussionInfoDTO = new DiscussionInfoDTO(
                     discussionThread.getId(),
                     discussionThread.getCourseId(),
@@ -162,7 +168,9 @@ public class UserController {
                     discussionThread.getTitle(),
                     discussionThread.getContent(),
                     discussionThread.getLikes(),
+                    discussionLike != null,
                     discussionThread.getFavorites(),
+                    favorite != null,
                     discussionThread.getClosed(),
                     discussionThread.getTop(),
                     discussionThread.getCreatedAt(),
@@ -292,11 +300,11 @@ public class UserController {
 
     @DeleteMapping(value = "/delete-favorite")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<String> deleteFavorite(@RequestBody DeleteFavoriteCollect deleteFavoriteCollect) {
-        Integer id = deleteFavoriteCollect.getId();
-        Favorite favorite = userService.getFavorite(id);
-        userService.deleteFavorite(id);
-        userService.deleteDiscussionCollect(favorite.getThreadId(), deleteFavoriteCollect.userId);
+    public ResponseEntity<String> deleteFavorite(DeleteFavoriteCollect deleteFavoriteCollect) {
+//        Integer id = deleteFavoriteCollect.getId();
+//        Favorite favorite = userService.getFavorite(deleteFavoriteCollect.getId());
+        userService.deleteFavorite(deleteFavoriteCollect.getId());
+//        userService.deleteDiscussionCollect(favorite.getThreadId(), deleteFavoriteCollect.userId);
 
         return ResponseEntity.noContent().build();
     }
@@ -325,7 +333,11 @@ public class UserController {
         String followingName = (userService.findById(followingId)).getName();
         Integer subscriptionId = follow.getSubscriptionId();
         String subscriptionName = (userService.findById(subscriptionId)).getName();
-        userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
+        try {
+            userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
+        } catch (Exception e) {
+            return ResponseEntity.ok("");
+        }
         userService.addFollower(followingId);
         userService.addSubscriber(subscriptionId);
         LocalDateTime now = LocalDateTime.now();
@@ -487,7 +499,7 @@ public class UserController {
 
         private Integer id;
 
-        private Integer userId;
+//        private Integer userId;
 
     }
 
@@ -553,7 +565,11 @@ public class UserController {
 
         private Integer likes;
 
+        private boolean liked;
+
         private Integer favorites;
+
+        private boolean favorite;
 
         private Integer closed;
 

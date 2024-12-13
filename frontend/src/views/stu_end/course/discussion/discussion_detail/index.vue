@@ -175,6 +175,7 @@ function getComments(array, list) {
       author: {
         name: item.name,
         avatar: item.avatar || "https://via.placeholder.com/50",
+        userId: item.userId,
       },
       content: item.content,
       replies: [],

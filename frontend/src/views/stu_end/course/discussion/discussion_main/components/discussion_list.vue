@@ -1,6 +1,6 @@
 <template>
   <div class="posts-list">
-    <el-card v-for="post in posts" :key="post.id" class="post-card" @click="goToPost(post)" >
+    <el-card v-for="post in filteredPosts" :key="post.id" class="post-card" @click="goToPost(post)" >
       <h3 class="post-title">{{ post.title }}</h3>
       <div class="vHtml" v-html="post.content"></div>
       <div class="post-actions">
@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {ref, defineProps, computed } from 'vue';
 import {useRouter} from 'vue-router';
 import {Like, Star} from '@icon-park/vue-next';
 import {getcourse, getdiscussionlike, getdelete_like} from '@/api/discussion';
@@ -39,9 +39,22 @@ import {userFolders, userCreate_favorite} from '@/api/user.js';
 
 const router = useRouter();
 const drawer = ref(false);
+// 使用 defineProps 来直接接收父组件传递的 search 属性
+const props = defineProps({
+  search: {
+    type: String,
+    required: true
+  }
+});
 
 // 从后端获取的帖子数据
 const posts = ref([]);
+
+// 计算属性: 根据 search 过滤 posts
+const filteredPosts = computed(() => {
+  const query = props.search
+  return posts.value.filter(post => post.title.includes(query))
+})
 
 // 获取课程的讨论帖子
 function getcourseList() {

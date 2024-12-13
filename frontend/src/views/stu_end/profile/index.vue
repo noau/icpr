@@ -54,6 +54,8 @@
                     <p>{{ userInfo?.threadNumber || 0 }}</p>
                   </div>
                 </div>
+                <!-- <el-button v-if="isSelf == 0" @click="subscription">关注</el-button> -->
+                <!-- <el-button v-else @click="pwdVisible = true">更换密码</el-button> -->
                 <el-button @click="pwdVisible = true">更换密码</el-button>
               </div>
             </div>
@@ -103,20 +105,19 @@
                   <div class="til2">{{ i?.userName }}</div>
                   <div class="flex">
                     <div class="fl_til3 flex flex-align-center">
-                      <span class=" flex flex-align-center"
-                        ><el-icon> <Star /> </el-icon> {{ i?.favorites }}</span
-                      >
+                      <span class=" flex flex-align-center">
+                        <Star :theme="i.favorite ? 'filled' : 'outline'" style="color: #333;margin-right: 1px; margin-bottom: -2px;" />
+                        {{ i?.favorites }}
+                      </span>
                       <span class=" flex flex-align-center">
                         <Like
-                        :theme="'filled'"
-                        size="15"
-                        fill="#333"
-                        style="margin-right: 0px; margin-bottom: -4px;"
-                      />
-                      {{ i.likes }}
+                          :theme="i.liked ? 'filled' : 'outline'"
+                          size="15"
+                          fill="#333"
+                          style="margin-right: 0px; margin-bottom: -4px;"
+                        />
+                        {{ i.likes }}
                       </span>
-
-
                       <span>最近更新：{{ i?.updatedAt }}</span>
                     </div>
                     <div></div>
@@ -144,6 +145,7 @@
       :dialogVisible="fileEditVisible"
       @cancel="fileEditVisible = false"
     />
+    <!-- 收藏的帖子抽屉 -->
     <el-drawer title="我是标题" v-model="drawer" :with-header="false">
       <div>
         <el-card
@@ -155,12 +157,12 @@
           @click="toThread(item)"
         >
           <template v-slot:header>
-<div  style="display: flex; flex-direction: column">
-            <span style="font-weight: bold">{{ item.title }}</span>
-            <span>{{ item.createdAt }}</span>
-          </div>
-</template>
-          <el-icon @click.stop="deletTie" style="float: right">
+            <div  style="display: flex; flex-direction: column">
+              <span style="font-weight: bold">{{ item.title }}</span>
+              <span>{{ item.createdAt }}</span>
+            </div>
+          </template>
+          <el-icon @click.stop="deletTie(item)" style="float: right">
             <delete />
           </el-icon>
         </el-card>
@@ -177,20 +179,22 @@ import care from "./components/care.vue";
 import uploadPhoto from "./components/uploadPhoto.vue";
 import addFile from "./components/addFile.vue";
 import addFileEdit from "./components/addFileEdit.vue";
-import { Like } from "@icon-park/vue-next";
+import { Like, Star } from "@icon-park/vue-next";
+import {useRoute, useRouter} from 'vue-router';
 
 import {
   userFolders,
   userUserInfo,
-  userCreate_favorite,
   userFavorites,
   userDelete_favorite,
   userDelete_folder,
+  makeSubscription
 } from "@/api/user.js";
-import { useUserStore } from "@/stores/user.js";
-import {useRouter} from 'vue-router';
+import { ElMessage } from 'element-plus'
 
+const route = useRoute();
 const router = useRouter();
+
 const pwdVisible = ref(false);
 const fansVisible = ref(false);
 const careVisible = ref(false);
@@ -200,13 +204,15 @@ const fileEditVisible = ref(false);
 const drawer = ref(false);
 const folder = ref();
 
-
 const openThread = (post) => {
   router.push(`/stu-end/course/discussion/post/${post.id}`);
 };
 
-//个人信息
+// 此主页的用户id
 const userId = localStorage.getItem("userId");
+// 是否是自己的id 1是自己的id 0不是自己的id
+// const isSelf = +route.query.isSelf || 1;
+
 const userInfo = ref();
 const getInfo = async () => {
   const res = await userUserInfo({ id: userId });
@@ -234,7 +240,7 @@ function editFile(item) {
 }
 
 const toThread = (item) => {
-  router.push(`/stu-end/course/discussion/post/${item.id}`);
+  router.push(`/stu-end/course/discussion/post/${item.threadId}`);
 }
 // 获取收藏夹
 const collectList = ref();
@@ -262,11 +268,22 @@ function getFList(item) {
   getuserFavorites(item.id);
 }
 
-function deletTie() {
-  userDelete_favorite({ id: 1 }).then((res) => {
-    console.log(res);
-  });
-  console.log("删除帖子");
+// 删除收藏的帖子
+async function deletTie(item) {
+  await userDelete_favorite({ id: item.id })
+  getuserFavorites(item.folderId);
+  ElMessage('删除成功')
+}
+
+// 关注他人
+async function subscription() {
+  //准备请求数据
+  const data = {
+    followingId: localStorage.getItem("userId"), //用户id
+    subscriptionId: userId, // 被关注的用户id
+  };
+  await makeSubscription(data);
+  ElMessage('关注成功')
 }
 </script>
 
@@ -286,7 +303,7 @@ function deletTie() {
   margin: 0 auto;
 
   .perInfoTop {
-    background: url("@/assets/img/personBg.png") center no-repeat;
+    background: url("@/assets/img/personBg.jpg") center no-repeat;
     height: 200px;
     color: #fff;
     padding: 120px 20px 0 20px;

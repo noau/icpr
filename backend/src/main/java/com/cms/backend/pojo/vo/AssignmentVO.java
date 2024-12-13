@@ -1,4 +1,4 @@
-package com.cms.backend.pojo.Assignments;
+package com.cms.backend.pojo.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Assignment {
+public class AssignmentVO {
 
     @TableId(type = IdType.AUTO)
     private Integer id;
@@ -47,9 +47,7 @@ public class Assignment {
 
     private String answer;
 
-    @TableField(exist = false)
     private Integer submitted; // 已提交数量
 
-    @TableField(exist = false)
     private Integer submitTotal; // 总提交数量
 }

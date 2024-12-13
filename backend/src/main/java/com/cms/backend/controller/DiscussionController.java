@@ -87,7 +87,7 @@ public class DiscussionController {
 
     @GetMapping(value = "/course")
     public ResponseEntity<DiscussionThreadList> getCourse(@RequestParam String id, Integer userId) {
-        List<DiscussionThread> discussionThreads = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getCourseId, id));
+        List<DiscussionThread> discussionThreads = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getCourseId, id).orderByDesc(DiscussionThread::getTop));
         List<DiscussionThreadDTO> discussionThreadDTOS = new ArrayList<>();
         for (DiscussionThread discussionThread : discussionThreads) {
             DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
@@ -162,6 +162,7 @@ public class DiscussionController {
         DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
         DiscussionReplyList discussionReplyList = new DiscussionReplyList(
                 discussionThread.getId(),
+                discussionThread.getIsAnonymous(),
                 discussionThread.getCourseId(),
                 discussionThread.getUserId(),
                 discussionThread.getTitle(),
@@ -192,8 +193,11 @@ public class DiscussionController {
     @DeleteMapping(value = "/thread-delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> threadDelete(@RequestParam Integer id) {
+//        userService.deleteThreadNumber(id);
+        discussionLikeService.remove(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId,id));
+        favoriteService.remove(new LambdaQueryWrapper<Favorite>().eq(Favorite::getThreadId,id));
+        discussionReplyService.remove(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId,id));
         discussionThreadService.removeById(id);
-        userService.deleteThreadNumber(id);
 
         return ResponseEntity.noContent().build();
     }
@@ -253,6 +257,8 @@ public class DiscussionController {
     public static class DiscussionReplyList {
 
         private Integer id;
+
+        private Integer isAnonymous;
 
         private String courseId;
 

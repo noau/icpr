@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
@@ -11,6 +12,8 @@ public class DiscussionThread {
 
     @TableId(type = IdType.AUTO)  // 设置 ID 自增
     private Integer id;
+
+    private Integer isAnonymous;
 
     private String courseId;
 

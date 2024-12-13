@@ -15,7 +15,7 @@
       </div>
     </div>
     <div class="icons">
-      <el-badge :value="2" class="item">
+      <el-badge :value="countNotifications" class="item">
         <el-icon class="common-icon" style="margin-right: -2px;"><Bell /></el-icon>
         <el-button type="text" @click="goToNotifications" class="text-button">通知</el-button>
       </el-badge>
@@ -27,6 +27,7 @@
 
 <script>
 import { Bell, ArrowLeft, User } from '@element-plus/icons-vue';
+import {notificationsGet} from '@/api/notification.js';
 
 export default {
   components: {
@@ -36,6 +37,8 @@ export default {
   },
   data() {
     return {
+      countNotifications: 0,  // 定义通知数量
+      userId: localStorage.getItem("userId"),
       breadcrumbItems: [], // 动态更新面包屑
     };
   },
@@ -45,6 +48,7 @@ export default {
     },
   },
   created() {
+    this.init()
     this.updateBreadcrumb(this.$route);
   },
   methods: {
@@ -55,7 +59,7 @@ export default {
       this.$router.push('/stu-end/notification'); // 跳转到通知页面
     },
     goToProfile() {
-      this.$router.push('/profile'); // 跳转到个人中心页面
+      this.$router.push('/stu_end/profile'); // 跳转到个人中心页面
     },
     updateBreadcrumb(route) {
       const matchedRoutes = route.matched.slice(1); // 删除第一级
@@ -64,6 +68,17 @@ export default {
         path: r.path,
       }));
     },
+    
+    async init() {
+      try {
+        // 假设 userId 已经有值，如果没有需要从某处获取
+        let res = await notificationsGet({ id: this.userId });
+        this.countNotifications = res.notifications.length;
+        
+      } catch (error) {
+        console.error("获取通知列表时出错:", error);
+      }
+    }
   },
 };
 </script>

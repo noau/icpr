@@ -66,8 +66,13 @@ const router = createRouter({
     },
       //个人界面
     {
-      path: '/profile',
+      path: '/stu-end/profile',
       component: () => import('@/views/stu_end/profile/index.vue')
+    }, 
+    //别人界面
+    {
+      path: '/stu-end/user-home',
+      component: () => import('@/views/stu_end/user_home/index.vue')
     }, 
     {
       path: '/stu-end/course', // 课程主页面，默认展示课程介绍
@@ -174,6 +179,16 @@ const router = createRouter({
       path: '/tea-end',
       component: () => import('@/views/tea_end/layout/index.vue'),
     },
+    //个人界面
+    {
+      path: '/tea-end/profile',
+      component: () => import('@/views/tea_end/profile/index.vue')
+    }, 
+    //别人界面
+    {
+      path: '/tea-end/user-home',
+      component: () => import('@/views/tea_end/user_home/index.vue')
+    }, 
 // 通知信箱
     {
       path: '/tea-end/notification',

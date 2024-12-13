@@ -1,17 +1,19 @@
 <template>
     <div class="post-header">
       <div class="author-info">
-        <el-avatar :src="post.avatar" />
-        <span class="author-name">{{ post.name }}</span>
+        <el-avatar :src="post.isAnonymous? anonymousAvatar: post.avatar" />
+        <span class="author-name">{{ post.isAnonymous? '某同学' : post.name }}</span>
       </div>
       <h1 class="post-title">{{ post.title }}</h1>
     </div>
   </template>
   
   <script setup>
+  import anonymousAvatar from '@/assets/img/anonymous.jpg';
   const props = defineProps({
     post: Object,
   });
+  // const anonymousAvatar = '@/assets/img/anonymous.jpg';
   </script>
   
   <style scoped>

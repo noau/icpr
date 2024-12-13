@@ -9,11 +9,10 @@ import com.cms.backend.pojo.Assignments.AssignmentSubmission;
 import com.cms.backend.pojo.Attachment;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.pojo.Notification;
+import com.cms.backend.pojo.StudentCourseSelection;
 import com.cms.backend.pojo.User;
-import com.cms.backend.service.AttachmentService;
-import com.cms.backend.service.CourseService;
-import com.cms.backend.service.NotificationService;
-import com.cms.backend.service.UserService;
+import com.cms.backend.pojo.vo.AssignmentVO;
+import com.cms.backend.service.*;
 import com.cms.backend.service.assignment.AssignmentPeerReviewService;
 import com.cms.backend.service.assignment.AssignmentReviewService;
 import com.cms.backend.service.assignment.AssignmentService;
@@ -23,6 +22,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 @Validated
 @RestController
 @RequestMapping("/assignments")
+@AllArgsConstructor
 public class AssignmentController {
 
     private final AssignmentService assignmentService;
@@ -51,20 +52,21 @@ public class AssignmentController {
     private final CourseService courseService;
     private final UserService userService;
     private final ThreadPoolTaskScheduler taskScheduler;
+    private final IStudentCourseSelectionService studentCourseSelectionService;
 
     private final Logger logger = LoggerFactory.getLogger(AssignmentController.class);
 
-    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
-        this.assignmentService = assignmentService;
-        this.assignmentSubmissionService = assignmentSubmissionService;
-        this.attachmentService = attachmentService;
-        this.assignmentPeerReviewService = assignmentPeerReviewService;
-        this.assignmentReviewService = assignmentReviewService;
-        this.notificationService = notificationService;
-        this.courseService = courseService;
-        this.userService = userService;
-        this.taskScheduler = taskScheduler; // 确保注入 taskScheduler
-    }
+//    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
+//        this.assignmentService = assignmentService;
+//        this.assignmentSubmissionService = assignmentSubmissionService;
+//        this.attachmentService = attachmentService;
+//        this.assignmentPeerReviewService = assignmentPeerReviewService;
+//        this.assignmentReviewService = assignmentReviewService;
+//        this.notificationService = notificationService;
+//        this.courseService = courseService;
+//        this.userService = userService;
+//        this.taskScheduler = taskScheduler; // 确保注入 taskScheduler
+//    }
 
     /**
      * 发布作业 + 作业通知
@@ -216,6 +218,9 @@ public class AssignmentController {
      */
     @PostMapping("/change")
     public ResponseEntity<Void> changeAssignment(@RequestBody AssignmentIssue assignment) {
+        if (!assignment.attachments.isEmpty()) {
+            attachmentService.remove(new LambdaQueryWrapper<Attachment>().eq(Attachment::getAssignmentId, assignment.id));
+        }
         var newAssignment = new Assignment(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
         assignmentService.updateById(newAssignment);
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
@@ -336,8 +341,21 @@ public class AssignmentController {
      * @return 获得批改作业列表
      */
     @GetMapping("/course-assignments")
-    public ResponseEntity<List<Assignment>> getCourseAssignments(@RequestParam String id) {
-        return ResponseEntity.ok(assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id)));
+    public ResponseEntity<List<AssignmentVO>> getCourseAssignments(@RequestParam String id) {
+        List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));
+        List<AssignmentVO> vos = new ArrayList<>();
+        for (Assignment assignment : assignmentList) {
+            AssignmentVO vo = new AssignmentVO();
+            BeanUtils.copyProperties(assignment, vo);
+
+            // 获取已提交数量和需提交总数量
+            long submitted = assignmentSubmissionService.count(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignment.getId()));
+            long submitTotal = studentCourseSelectionService.count(new LambdaQueryWrapper<StudentCourseSelection>().eq(StudentCourseSelection::getCourseId,id));
+            vo.setSubmitted((int) submitted);
+            vo.setSubmitTotal((int) submitTotal);
+            vos.add(vo);
+        }
+        return ResponseEntity.ok(vos);
     }
 
     /**
@@ -443,7 +461,7 @@ public class AssignmentController {
                     assignment.getPeerReviewEnd(),
                     assignment.getMinPeerReview(),
                     assignment.getAnswer(),
-                    grade == null ? 1 : 0,
+                    grade == null ? 0 : 1,
                     grade,
                     peerReviewCount >= assignment.getMinPeerReview(),
                     submitted

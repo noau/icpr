@@ -30,7 +30,7 @@
             </el-table-column>
 
             <el-table-column label="提交人数" width="150" align="center" header-align="center">
-              <template #default="scope">{{ scope.row.submitted }}/27</template>
+              <template #default="scope">{{ scope.row.submitted }}/{{ scope.row.submitTotal }}</template>
             </el-table-column>
 
             <el-table-column label="批阅作业" width="150" align="center" header-align="center">
@@ -51,9 +51,9 @@
 
             <el-table-column label="操作" width="250" align="center" header-align="center">
               <template #default="scope">
-                <el-button type="text" @click="publishHomework(scope.row)">公开作业</el-button>
-                <el-button type="text" @click="publishGrades(scope.row)">公布成绩</el-button>
-                <el-button type="text" @click="publishAnswers(scope.row)">公布答案</el-button>
+                <!-- <el-button type="text" @click="publishHomework(scope.row)">公开作业</el-button> -->
+                <!-- <el-button type="text" @click="publishGrades(scope.row)">公布成绩</el-button> -->
+                <!-- <el-button type="text" @click="publishAnswers(scope.row)">公布答案</el-button> -->
                 <el-button type="text" @click="editHomework(scope.row)">修改</el-button>
                 <el-button type="text" @click="deleteHomework(scope.row)">删除</el-button>
               </template>
@@ -153,29 +153,18 @@ const editHomework = (row) => {
 //   }
 // };
 const deleteHomework = async (row) => {
-  try {
-    await ElMessageBox.confirm(`确定要删除作业 "${row.title}" 吗？`, "删除确认", {
-      confirmButtonText: "删除",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    // 执行删除操作
-    const response = await getDelete({ id: row.id });
+  await ElMessageBox.confirm(`确定要删除作业 "${row.title}" 吗？`, "删除确认", {
+    confirmButtonText: "删除",
+    cancelButtonText: "取消",
+    type: "warning",
+  });
+  // 执行删除操作
+  await getDelete({ id: row.id });
     
-    // 检查删除请求的返回结果是否成功
-    if (response.status === 204) {
-      ElMessage.success("删除成功！");
-      // 刷新作业列表
-      await getcourseAssignment();
-    } else {
-      ElMessage.error("删除失败，请稍后重试。");
-    }
-  } catch (error) {
-    if (error !== "cancel") {
-      console.error("删除作业时出错:", error);
-      ElMessage.error("删除失败，请稍后重试。");
-    }
-  }
+  // 检查删除请求的返回结果是否成功
+  alert("删除成功！");
+  // 刷新作业列表
+  await getcourseAssignment();
 };
 
 const goToAssignHomework = () => {

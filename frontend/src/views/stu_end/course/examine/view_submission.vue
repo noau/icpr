@@ -6,14 +6,14 @@
       <el-row>
         <el-col :span="12">
           <el-form label-width="120px">
-            <el-form-item label="作业内容">
+            <!-- <el-form-item label="作业内容">
               <el-input
                   type="textarea"
                   :value="homework.content"
                   disabled
                   rows="10"
               ></el-input>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="附件">
               <ul class="uploaded-files">
                 <li v-for="file in homework.attachments" :key="file.id">

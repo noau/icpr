@@ -20,7 +20,6 @@
             :file-list="fileList"
             :accept="acceptedFileTypes"
             ref="uploadRef"
-            multiple
         >
           <template #trigger>
             <el-button round type="primary">添加附件</el-button>
@@ -43,15 +42,15 @@
       <!-- <span style="margin-right: 13px;">补交满分</span> -->
       <!-- <el-input-number v-model="homeworkForm.delayedGrade" :min="0" label="补交满分" placeholder="补交满分"
                        style="width: 150px; margin-right: 60px;"></el-input-number> -->
-      <el-checkbox v-model="homeworkForm.multipleSubmission" style="margin-right: 60px;">允许重复提交</el-checkbox>
-      <el-checkbox v-model="homeworkForm.publishGrade">公布作业成绩</el-checkbox>
+      <!-- <el-checkbox v-model="homeworkForm.multipleSubmission" style="margin-right: 60px;">允许重复提交</el-checkbox> -->
+      <!-- <el-checkbox v-model="homeworkForm.publishGrade">公布作业成绩</el-checkbox> -->
     </el-form-item>
 
     <el-form-item label="开始时间">
       <el-date-picker v-model="homeworkForm.start" type="datetime" placeholder="选择开始时间"></el-date-picker>
     </el-form-item>
 
-    <el-form-item label="正常截止时间" style="margin-left: 28px;">
+    <el-form-item label="截止时间" style="margin-left: 28px;">
       <el-date-picker v-model="homeworkForm.end" type="datetime" placeholder="选择正常截止时间"></el-date-picker>
     </el-form-item>
 
@@ -183,12 +182,15 @@ const loadAssignmentDetails = async () => {
         ...res, // 展开 API 返回的数据
         start: res.start ? moment(res.start).toDate() : '',
         end: res.end ? moment(res.end).toDate() : '',
-        latestEnd: res.latestEnd ? moment(res.latestEnd).toDate() : '',
         peerReviewStart: res.peerReviewStart ? moment(res.peerReviewStart).toDate() : '',
         peerReviewEnd: res.peerReviewEnd ? moment(res.peerReviewEnd).toDate() : '',
-        attachments: res.attachments === null ? [] : res.attachments
+        // attachments: res.attachments === null ? [] : res.attachments
+        attachments: []
+
       };
-      fileList.value = res.attachments || [];
+      console.log(homeworkForm.value);
+      
+      fileList.value = [];
     } catch (error) {
       console.error("加载作业详情失败:", error);
     }
@@ -199,6 +201,10 @@ const submitHomework = async () => {
   // console.log('Homework Form:', homeworkForm.value);
   //互评的开始时间不能早于作业的截止时间
   // console.log('sdfsdf'+homeworkForm.value.end.getTime());
+  if(!homeworkForm.value.title) {
+    alert('作业标题不能为空')
+    return
+  }
   if(!homeworkForm.value.end) {
     alert('结束时间不能为空')
     return
@@ -207,15 +213,19 @@ const submitHomework = async () => {
     alert('开始时间不能为空')
     return
   }
-  if(!homeworkForm.value.title) {
-    alert('作业标题不能为空')
-    return
-  }
   if(homeworkForm.value.requirePeerReview) {
     if(!homeworkForm.value.peerReviewStart || !homeworkForm.value.peerReviewEnd) {
       alert('互评开始和结束时间不能为空')
       return
     }
+  }
+  if(homeworkForm.value.end.getTime() <= homeworkForm.value.start.getTime()) {
+    alert('作业的提交截止时间不能早于提交的开始时间')
+    return
+  }
+  if(homeworkForm.value.requirePeerReview && (homeworkForm.value.peerReviewEnd.getTime() <= homeworkForm.value.peerReviewStart.getTime())) {
+    alert('互评截止时间不能早于互评开始时间')
+    return
   }
   if(homeworkForm.value.peerReviewStart && homeworkForm.value.peerReviewStart.getTime() <= homeworkForm.value.end.getTime()) {
     alert('互评开始时间不能早于作业的截止时间')
@@ -228,7 +238,7 @@ const submitHomework = async () => {
     latestEnd: formatDateForSQL(homeworkForm.value.latestEnd),
     peerReviewStart: formatDateForSQL(homeworkForm.value.peerReviewStart),
     peerReviewEnd: formatDateForSQL(homeworkForm.value.peerReviewEnd),
-    attachments: homeworkForm.value.attachments.map(file => file.id)
+    attachments: homeworkForm.value.attachments?.map(file => file.id) || []
   };
   data.requirePeerReview = data.requirePeerReview ? 1 : 0;
   data.publishGrade = data.publishGrade ? 1 : 0;
