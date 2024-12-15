@@ -6,7 +6,7 @@ spring:
   application:
     name: icpr
   datasource:
-    url: jdbc:mysql://localhost:3307/icpr
+    url: jdbc:mysql://localhost:3306/icpr
     username: root
     password: 123456
   jpa:
