@@ -25,4 +25,8 @@ public class AssignmentReviewServiceImpl extends ServiceImpl<AssignmentReviewMap
         return assignmentReviewMapper.findAllBySubmissionId(assignmentId);
     }
 
+    @Override
+    public Integer getPeerReviewByStudentId(Integer studentId, Integer assignmentId) {
+        return assignmentReviewMapper.getPeerReviewByStudentId(studentId, assignmentId);
+    }
 }

@@ -174,7 +174,7 @@ const goToAssignHomework = () => {
 const goToSubmissonCondition = (row) => {
   router.push({
     path: "/tea-end/course/examine/grade-homework",
-    query: { title: row.title, start: row.start, end: row.end, id: row.id },
+    query: { title: row.title, start: row.start, end: row.end, id: row.id, submitted: row.submitted, submitTotal: row.submitTotal },
   });
 };
 

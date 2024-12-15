@@ -10,4 +10,6 @@ public interface AssignmentReviewMapper extends BaseMapper<AssignmentReview> {
     Float findById(Integer id);
     @Select("SELECT * FROM assignment_review WHERE submission_id = #{id}")
     AssignmentReview findAllBySubmissionId(Integer assignmentId);
+    @Select("SELECT count(*) FROM assignment_submission s INNER JOIN assignment_peer_review pr ON pr.submission_id = s.id WHERE pr.reviewer_id = #{studentId} AND s.assignment_id = #{assignmentId}")
+    Integer getPeerReviewByStudentId(Integer studentId, Integer assignmentId);
 }

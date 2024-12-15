@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
+import {ref, onMounted, onBeforeMount} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import VMdEditor from '@kangc/v-md-editor';
 import '@kangc/v-md-editor/lib/style/base-editor.css';
@@ -107,7 +107,7 @@ const homeworkForm = ref({
   latestEnd: '',
   multipleSubmission: 0,
   publishGrade: 0,
-  requirePeerReview: 0,
+  requirePeerReview: false,
   peerReviewStart: '',
   peerReviewEnd: '',
   minPeerReview: 1,
@@ -180,6 +180,7 @@ const loadAssignmentDetails = async () => {
       homeworkForm.value = {
         ...homeworkForm.value,
         ...res, // 展开 API 返回的数据
+        requirePeerReview: res.requirePeerReview == 1,
         start: res.start ? moment(res.start).toDate() : '',
         end: res.end ? moment(res.end).toDate() : '',
         peerReviewStart: res.peerReviewStart ? moment(res.peerReviewStart).toDate() : '',
@@ -290,7 +291,7 @@ const resetForm = () => {
   }
 };
 
-onMounted(loadAssignmentDetails);
+onBeforeMount(loadAssignmentDetails);
 </script>
 
 

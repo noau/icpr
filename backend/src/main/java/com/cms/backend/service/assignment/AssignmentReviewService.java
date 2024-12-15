@@ -9,4 +9,5 @@ public interface AssignmentReviewService extends IService<AssignmentReview> {
 
     AssignmentReview findAllBySubmissionId(Integer assignmentId);
 
+    Integer getPeerReviewByStudentId(Integer studentId, Integer assignmentId);
 }

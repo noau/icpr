@@ -19,6 +19,7 @@ import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,8 +181,12 @@ public class AssignmentController {
      */
     @PostMapping("/peer-reviews")
     public ResponseEntity<Void> peerReviewAssignment(@RequestBody AssignmentPeerReview peerReview) {
-        assignmentPeerReviewService.save(peerReview);
-        logger.info("Peer-reviewed assignment ID: {}", peerReview.getSubmissionId());
+        try {
+            assignmentPeerReviewService.save(peerReview);
+            logger.info("Peer-reviewed assignment ID: {}", peerReview.getSubmissionId());
+        } catch (Exception e) {
+            logger.info("互评失败");
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -366,7 +371,8 @@ public class AssignmentController {
      */
     @GetMapping("/review-list")
     public ResponseEntity<AssignmentReviewListDTO> getAssignmentsSubmissions(@RequestParam Integer id) {
-
+        // 查询作业信息
+        Assignment assignment = assignmentService.getById(id);
         // 获取与指定作业ID匹配的提交记录
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
 
@@ -393,10 +399,18 @@ public class AssignmentController {
             AssignmentSubmissionDetailDTO detail = new AssignmentSubmissionDetailDTO(submission, attachmentList);
             detail.setName(student.getName()); // 设置 name 属性
             detail.setGrade(grade);
+            //如果需要互评就去查询统计是否完成互评
+            if (assignment.getRequirePeerReview() == 1) {
+                // 需要互评的数量
+                Integer minPeerReview = assignment.getMinPeerReview();
+                // 根据用户id和作业查询出互评的总数
+                Integer peerReviewCount = assignmentReviewService.getPeerReviewByStudentId(student.getId(), id);
+                detail.setPeerReviewFinished(peerReviewCount >= minPeerReview);
+            }
             return detail;
         }).collect(Collectors.toList());
 
-        AssignmentReviewListDTO assignmentReviewListDTO = new AssignmentReviewListDTO(details, submitted, shouldBeSubmitted, notSubmitted);
+        AssignmentReviewListDTO assignmentReviewListDTO = new AssignmentReviewListDTO(details, submitted, shouldBeSubmitted, notSubmitted, assignment.getRequirePeerReview() == 1);
 
         return ResponseEntity.ok(assignmentReviewListDTO);
     }
@@ -644,6 +658,8 @@ public class AssignmentController {
     }
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class AssignmentSubmissionDetailDTO {
         public AssignmentSubmissionDetailDTO(AssignmentSubmission submission, List<AttachmentListDTO> attachments) {
             this.id = submission.getId();
@@ -662,7 +678,7 @@ public class AssignmentController {
         private String content;
         private List<AttachmentListDTO> attachments;
         private Float grade;
-
+        private boolean peerReviewFinished; // 是否互评完成
     }
 
     @Data
@@ -672,6 +688,7 @@ public class AssignmentController {
         private Integer submitted;
         private Integer shouldBeSubmitted;
         private Integer notSubmitted;
+        private boolean requirePeerReview; // 是否需要互评
     }
 
     @Data
