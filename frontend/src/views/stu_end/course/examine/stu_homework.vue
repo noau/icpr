@@ -27,10 +27,25 @@
           <!-- 得分 -->
           <el-table-column prop="grade" label="得分" width="100" label-class-name="table-label-center"></el-table-column>
           <!-- 批改状态 -->
-          <el-table-column prop="isGrade" label="批改状态" width="100" label-class-name="table-label-center"></el-table-column>
+          <el-table-column prop="isGrade" label="批改状态" width="100" label-class-name="table-label-center">
+            <template #default="scope">
+              <!-- 判断 peerReviewFinished 的值 -->
+              <span v-if="scope.row.isGrade">已批改</span>
+              <span v-else>未批改</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="peerReviewFinished" label="互评状态" width="100" label-class-name="table-label-center">
+            <template #default="scope">
+              <!-- 判断 peerReviewFinished 的值 -->
+              <span v-if="scope.row.peerReviewFinished">已完成</span>
+              <span v-else>未完成</span>
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="200" label-class-name="table-label-center">
             <template #default="scope">
-              <el-button round type="text" @click="handleSubmit(scope.row)">提交</el-button>
+              <el-button round type="text" @click="handleSubmit(scope.row)"
+                :disabled="+new Date() < +new Date(scope.row.start) || +new Date() > +new Date(scope.row.end)">提交
+              </el-button>
               <el-button round type="text" @click="peerReview(scope.row)" 
                 :disabled="!scope.row.requirePeerReview || +new Date() < +new Date(scope.row.peerReviewStart) || +new Date() > +new Date(scope.row.peerReviewEnd)">
                 互评
@@ -52,11 +67,12 @@
     <!-- 提交作业的弹窗 -->
     <el-dialog title="文件内容" v-model="dialogVisible" width="500px">
       <el-form ref="submitForm" :model="formData">
-        <el-form-item label="作业内容">
+        <!-- <el-form-item label="作业内容">
           <el-input type="textarea" v-model="formData.content" placeholder="请输入3000字以内的作业内容！" rows="5"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="上传文件">
           <el-upload class="upload-demo" action="http://localhost:8080/attachment/upload"
+            :limit="1" :on-exceed="exceedFile"
             :on-success="handleUploadSuccess" :headers="headers" :on-preview="handlePreview" :on-remove="handleRemove"
             :file-list="fileList" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.gif,.bmp,.zip,.rar">
             <template v-slot:trigger>
@@ -144,12 +160,13 @@ function handleSubmit(row) {
 }
 
 function viewSubmission(row) {
-  console.log('Navigating to submission view for assignment:', row.id);
+  console.log('点击查看:', row);
   router.push({
     path: '/stu-end/course/examine/view-submission',
     query: {
       assignmentId: row.id,
-      studentId: localStorage.getItem('userId')
+      studentId: localStorage.getItem('userId'),
+      title: row.title
     }
   });
 }
@@ -186,6 +203,7 @@ function handlePreview(file) {
 
 function handleRemove(file) {
   console.log('Removing file:', file);
+  formData.value.attachments = []
 }
 
 function handleCurrentChange(page) {
@@ -212,6 +230,12 @@ function formatDateToMysql(date) {
 }
 
 async function submitAssignment() {
+
+  // 判断是否有文件上传
+  if (formData.value.attachments.length <= 0) {
+        alert('请先上传文件！'); // 提示用户上传文件
+        return;
+      }
   try {
     const obj = {
       assignmentId: assignmentId.value,
@@ -229,6 +253,12 @@ async function submitAssignment() {
   } catch (error) {
     console.error('Error submitting assignment:', error);
   }
+}
+
+function exceedFile(){
+  alert(
+    '只能上传一个文件'
+  );
 }
 
 </script>

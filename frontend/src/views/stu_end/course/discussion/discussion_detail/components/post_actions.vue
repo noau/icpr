@@ -29,29 +29,36 @@ const props = defineProps({
 });
 // 切换点赞
 const toggleLike = () => {
-  console.log(props.post);
-  const post=props.post;
-  post.liked = !post.liked;
-  post.likes += post.liked ? 1 : -1;
-  // console.log(post);
+  const post = props.post;
+  // post.liked = !post.liked;
+  
 
-  let obj = {
+  let likeObj = {
     userId: localStorage.getItem("userId"),
     threadId: post.id
   };
-  if (post.liked) {
-    getdiscussionlike(obj).then(res => {
+  let noLikeObj = {
+    userId: localStorage.getItem("userId"),
+    id: post.id,
+    isThread: 1
+  };
+  
+  if (!post.liked) {
+    getdiscussionlike(likeObj).then(res => {
       console.log(res);
     }).catch(err => {
       console.error("点赞失败:", err);
     });
   }else{
-    getdelete_like(obj).then(res => {
+    getdelete_like(noLikeObj).then(res => {
       console.log(res);
     })
   }
+  post.likes += post.liked ? -1 : +1;
+  post.liked = !post.liked;
 
 };
+
 const threadId = ref();
 const toggleFavorite = () => {
   const post=props.post;

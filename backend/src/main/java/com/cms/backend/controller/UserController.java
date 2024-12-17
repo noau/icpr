@@ -43,9 +43,13 @@ public class UserController {
 
     private final FolderService folderService;
 
+    private final FavoriteService favoriteService;
+
     private final NotificationService notificationService;
 
     private final DiscussionReplyService discussionReplyService;
+
+    private final DiscussionLikeService discussionLikeService;
 
     @Value("${spring.mail.username}")
     private String sender;
@@ -53,7 +57,9 @@ public class UserController {
     @Value("${spring.mail.nickname}")
     private String nickname;
 
-    public UserController(UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
+    public UserController(DiscussionLikeService discussionLikeService, FavoriteService favoriteService, UserService userService, JavaMailSender mailSender, DiscussionThreadService discussionThreadService, FolderService folderService, NotificationService notificationService, DiscussionReplyService discussionReplyService) {
+        this.discussionLikeService = discussionLikeService;
+        this.favoriteService = favoriteService;
         this.userService = userService;
         this.mailSender = mailSender;
         this.discussionThreadService = discussionThreadService;
@@ -152,6 +158,9 @@ public class UserController {
         List<DiscussionInfoDTO> threadList = new ArrayList<>();
         for (DiscussionThread discussionThread : threadListList) {
             User threadUser = userService.findById(discussionThread.getUserId());
+            DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, id));
+            Favorite favorite = favoriteService.getOne(new LambdaQueryWrapper<Favorite>().eq(Favorite::getThreadId, discussionThread.getId()).eq(Favorite::getUserId, id));
+
             DiscussionInfoDTO discussionInfoDTO = new DiscussionInfoDTO(
                     discussionThread.getId(),
                     discussionThread.getCourseId(),
@@ -159,7 +168,9 @@ public class UserController {
                     discussionThread.getTitle(),
                     discussionThread.getContent(),
                     discussionThread.getLikes(),
+                    discussionLike != null,
                     discussionThread.getFavorites(),
+                    favorite != null,
                     discussionThread.getClosed(),
                     discussionThread.getTop(),
                     discussionThread.getCreatedAt(),
@@ -251,13 +262,19 @@ public class UserController {
 
     @PostMapping(value = "/create-favorite")
     public ResponseEntity<String> createFavorite(@RequestBody Favorite favorites) {
+        // 收藏之前需要校验是否已经收藏了
+        Favorite favorite = favoriteService.getOne(new LambdaQueryWrapper<Favorite>().eq(Favorite::getUserId, favorites.getUserId())
+                .eq(Favorite::getThreadId, favorites.getThreadId()).eq(Favorite::getFolderId, favorites.getFolderId()));
+        if (favorite != null) {
+            return ResponseEntity.ok("帖子已被收藏");
+        }
         Integer userId = favorites.getUserId();
         Integer threadId = favorites.getThreadId();
         Integer folderId = favorites.getFolderId();
         String createdAt = favorites.getCreatedAt();
         userService.addFavorite(userId, threadId, folderId, createdAt);
         userService.addFavorites(threadId);
-        userService.addThreadCollect(userId, threadId, discussionThreadService.getById(threadId).getCourseId(), createdAt);
+//        userService.addThreadCollect(userId, threadId, discussionThreadService.getById(threadId).getCourseId(), createdAt);
 
         return ResponseEntity.ok("");
     }
@@ -283,11 +300,11 @@ public class UserController {
 
     @DeleteMapping(value = "/delete-favorite")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<String> deleteFavorite(@RequestBody DeleteFavoriteCollect deleteFavoriteCollect) {
-        Integer id = deleteFavoriteCollect.getId();
-        Favorite favorite = userService.getFavorite(id);
-        userService.deleteFavorite(id);
-        userService.deleteDiscussionCollect(favorite.getThreadId(), deleteFavoriteCollect.userId);
+    public ResponseEntity<String> deleteFavorite(DeleteFavoriteCollect deleteFavoriteCollect) {
+//        Integer id = deleteFavoriteCollect.getId();
+//        Favorite favorite = userService.getFavorite(deleteFavoriteCollect.getId());
+        userService.deleteFavorite(deleteFavoriteCollect.getId());
+//        userService.deleteDiscussionCollect(favorite.getThreadId(), deleteFavoriteCollect.userId);
 
         return ResponseEntity.noContent().build();
     }
@@ -316,7 +333,11 @@ public class UserController {
         String followingName = (userService.findById(followingId)).getName();
         Integer subscriptionId = follow.getSubscriptionId();
         String subscriptionName = (userService.findById(subscriptionId)).getName();
-        userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
+        try {
+            userService.makeSubscription(followingId, subscriptionId, followingName, subscriptionName);
+        } catch (Exception e) {
+            return ResponseEntity.ok("");
+        }
         userService.addFollower(followingId);
         userService.addSubscriber(subscriptionId);
         LocalDateTime now = LocalDateTime.now();
@@ -458,7 +479,7 @@ public class UserController {
         return ResponseEntity.ok("");
     }
 
-    @DeleteMapping(value = "/discussion/delete-like")
+    @PostMapping(value = "/discussion/delete-like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> deleteLike(@RequestBody DiscussionLikeDTO discussionLikeDTO) {
         if (discussionLikeDTO.isThread == 1) {
@@ -478,7 +499,7 @@ public class UserController {
 
         private Integer id;
 
-        private Integer userId;
+//        private Integer userId;
 
     }
 
@@ -544,7 +565,11 @@ public class UserController {
 
         private Integer likes;
 
+        private boolean liked;
+
         private Integer favorites;
+
+        private boolean favorite;
 
         private Integer closed;
 

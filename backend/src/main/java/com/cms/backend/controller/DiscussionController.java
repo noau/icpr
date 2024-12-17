@@ -31,13 +31,16 @@ public class DiscussionController {
 
     private final DiscussionCollectService discussionCollectService;
 
-    public DiscussionController(DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService, NotificationService notificationService, DiscussionLikeService discussionLikeService, DiscussionCollectService discussionCollectService) {
+    private final FavoriteService favoriteService;
+
+    public DiscussionController(FavoriteService favoriteService, DiscussionThreadService discussionThreadService, DiscussionReplyService discussionReplyService, UserService userService, NotificationService notificationService, DiscussionLikeService discussionLikeService, DiscussionCollectService discussionCollectService) {
         this.discussionThreadService = discussionThreadService;
         this.discussionReplyService = discussionReplyService;
         this.userService = userService;
         this.notificationService = notificationService;
         this.discussionLikeService = discussionLikeService;
         this.discussionCollectService = discussionCollectService;
+        this.favoriteService = favoriteService;
     }
 
     @PostMapping(value = "/thread")
@@ -84,11 +87,13 @@ public class DiscussionController {
 
     @GetMapping(value = "/course")
     public ResponseEntity<DiscussionThreadList> getCourse(@RequestParam String id, Integer userId) {
-        List<DiscussionThread> discussionThreads = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getCourseId, id));
+        List<DiscussionThread> discussionThreads = discussionThreadService.list(new LambdaQueryWrapper<DiscussionThread>().eq(DiscussionThread::getCourseId, id).orderByDesc(DiscussionThread::getTop));
         List<DiscussionThreadDTO> discussionThreadDTOS = new ArrayList<>();
         for (DiscussionThread discussionThread : discussionThreads) {
             DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
-            DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
+            Favorite favorite = favoriteService.getOne(new LambdaQueryWrapper<Favorite>().eq(Favorite::getThreadId, discussionThread.getId()).eq(Favorite::getUserId, userId));
+
+//            DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
             DiscussionThreadDTO discussionThreadDTO = new DiscussionThreadDTO(discussionThread.getId(),
                     discussionThread.getCourseId(),
                     discussionThread.getUserId(),
@@ -102,7 +107,7 @@ public class DiscussionController {
                     discussionThread.getTag(),
                     discussionThread.getUpdatedAt(),
                     discussionLike != null,
-                    discussionCollect != null
+                    favorite != null
             );
 
             discussionThreadDTOS.add(discussionThreadDTO);
@@ -136,26 +141,29 @@ public class DiscussionController {
                     discussionLikeReply != null);
             replyList.add(discussionReplyDTO);
             List<DiscussionReply> replyReplies = discussionReplyService.list(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getReplyId, discussionReply.getId()));
-            for (DiscussionReply discussionReplyReply : replyReplies) {
-                DiscussionLike discussionLikeReplyReply = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getReplyId, discussionReplyReply.getId()).eq(DiscussionLike::getUserId, userId));
-                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(),
-                        discussionReplyReply.getThreadId(),
-                        discussionReplyReply.getReplyId(),
-                        discussionReplyReply.getUserId(),
-                        discussionReplyReply.getContent(),
-                        discussionReplyReply.getLikes(),
-                        discussionReplyReply.getCreatedAt(),
-                        discussionReplyReply.getRepliedId(),
-                        userService.findById(discussionReplyReply.getUserId()).getName(),
-                        userService.findById(discussionReplyReply.getUserId()).getAvatar(),
-                        discussionLikeReplyReply != null);
-                replyList.add(discussionReplyDTODTO);
-            }
+//            for (DiscussionReply discussionReplyReply : replyReplies) {
+//                DiscussionLike discussionLikeReplyReply = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getReplyId, discussionReplyReply.getId()).eq(DiscussionLike::getUserId, userId));
+//                DiscussionReplyDTO discussionReplyDTODTO = new DiscussionReplyDTO(discussionReplyReply.getId(),
+//                        discussionReplyReply.getThreadId(),
+//                        discussionReplyReply.getReplyId(),
+//                        discussionReplyReply.getUserId(),
+//                        discussionReplyReply.getContent(),
+//                        discussionReplyReply.getLikes(),
+//                        discussionReplyReply.getCreatedAt(),
+//                        discussionReplyReply.getRepliedId(),
+//                        userService.findById(discussionReplyReply.getUserId()).getName(),
+//                        userService.findById(discussionReplyReply.getUserId()).getAvatar(),
+//                        discussionLikeReplyReply != null);
+//                replyList.add(discussionReplyDTODTO);
+//            }
         }
 
         DiscussionLike discussionLike = discussionLikeService.getOne(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId, discussionThread.getId()).eq(DiscussionLike::getUserId, userId));
         DiscussionCollect discussionCollect = discussionCollectService.getOne(new LambdaQueryWrapper<DiscussionCollect>().eq(DiscussionCollect::getThreadId, discussionThread.getId()).eq(DiscussionCollect::getUserId, userId));
-        DiscussionReplyList discussionReplyList = new DiscussionReplyList(discussionThread.getCourseId(),
+        DiscussionReplyList discussionReplyList = new DiscussionReplyList(
+                discussionThread.getId(),
+                discussionThread.getIsAnonymous(),
+                discussionThread.getCourseId(),
                 discussionThread.getUserId(),
                 discussionThread.getTitle(),
                 discussionThread.getContent(),
@@ -185,8 +193,11 @@ public class DiscussionController {
     @DeleteMapping(value = "/thread-delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<String> threadDelete(@RequestParam Integer id) {
+//        userService.deleteThreadNumber(id);
+        discussionLikeService.remove(new LambdaQueryWrapper<DiscussionLike>().eq(DiscussionLike::getThreadId,id));
+        favoriteService.remove(new LambdaQueryWrapper<Favorite>().eq(Favorite::getThreadId,id));
+        discussionReplyService.remove(new LambdaQueryWrapper<DiscussionReply>().eq(DiscussionReply::getThreadId,id));
         discussionThreadService.removeById(id);
-        userService.deleteThreadNumber(id);
 
         return ResponseEntity.noContent().build();
     }
@@ -244,6 +255,10 @@ public class DiscussionController {
     @Data
     @AllArgsConstructor
     public static class DiscussionReplyList {
+
+        private Integer id;
+
+        private Integer isAnonymous;
 
         private String courseId;
 

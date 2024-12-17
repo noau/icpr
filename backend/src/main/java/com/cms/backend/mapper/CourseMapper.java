@@ -118,6 +118,9 @@ public interface CourseMapper extends BaseMapper<Course> {
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     void createAttachmentFolder(CourseController.AttachmentFolder attachmentFolder);
 
+    @Delete("delete from attachment where attachment_folder_id = #{id}")
+    void deleteRelationAllFile(Integer id);
+
     @Delete("delete from attachment_folder where id = #{id}")
     void deleteAttachmentFolder(Integer id);
 
@@ -132,4 +135,7 @@ public interface CourseMapper extends BaseMapper<Course> {
     })
     @Select("select * from course where id in (select teaching.course_id from teaching where teaching.teacher_id = #{id})")
     List<Course> getAllCourseTeacher(Integer id);
+
+    @Update("UPDATE attachment_folder SET folder_name = #{folderName} WHERE id = #{id}")
+    void editAttachmentFolder(Integer id, String folderName);
 }

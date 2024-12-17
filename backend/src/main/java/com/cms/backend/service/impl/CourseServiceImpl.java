@@ -98,6 +98,8 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
 
     @Override
     public void deleteAttachmentFolder(Integer id) {
+        // 删除所有和文件夹关联的文件
+        courseMapper.deleteRelationAllFile(id);
         courseMapper.deleteAttachmentFolder(id);
     }
 
@@ -111,4 +113,8 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         return courseMapper.getAllCourseTeacher(id);
     }
 
+    @Override
+    public void editAttachmentFolder(Integer id, String folderName) {
+        courseMapper.editAttachmentFolder(id,folderName);
+    }
 }

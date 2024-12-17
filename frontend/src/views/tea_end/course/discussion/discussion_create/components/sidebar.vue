@@ -28,10 +28,10 @@
       <el-checkbox v-model="localIsAnonymous">我要匿名</el-checkbox>
     </el-card>
 
-    <!-- 通知选项 -->
+    <!-- 置顶选项 -->
     <el-card class="sidebar-section">
-      <p>通知</p>
-      <el-checkbox v-model="localIsNotification">作为通知推送</el-checkbox>
+      <p>置顶</p>
+      <el-checkbox v-model="localTop">置顶该帖</el-checkbox>
     </el-card>
   </div>
 </template>
@@ -44,7 +44,7 @@ const props = defineProps({
   tags: String,
   visibility: String,
   isAnonymous: Boolean,
-  isNotification: Boolean, // 新增通知选项的 prop
+  top: Boolean, // 新增置顶选项的 prop
 });
 
 const emits = defineEmits([
@@ -52,7 +52,7 @@ const emits = defineEmits([
   'update:tags',
   'update:visibility',
   'update:isAnonymous',
-  'update:isNotification', // 新增通知选项的 emit
+  'update:top', // 新增置顶
 ]);
 
 // 为每个 prop 创建对应的计算属性
@@ -76,12 +76,13 @@ const localIsAnonymous = computed({
   set: (value) => emits('update:isAnonymous', value),
 });
 
-// 新增通知选项的计算属性
-const localIsNotification = computed({
-  get: () => props.isNotification,
-  set: (value) => emits('update:isNotification', value),
+// 新增置顶选项的计算属性
+const localTop = computed({
+  get: () => props.Top,
+  set: (value) => emits('update:Top', value),
 });
 </script>
+
 
 <style scoped>
 .sidebar {
@@ -89,20 +90,20 @@ const localIsNotification = computed({
   flex-direction: column;
   gap: 20px;
 }
-
 .sidebar-section {
   padding: 10px;
 }
-
 .sidebar-section p {
   margin-top: 0;       /* 移除上外边距 */
   margin-bottom: 10px; /* 可根据需要调整下外边距 */
 }
-
 /* 针对不同的输入组件，增加上外边距 */
 .sidebar-section .el-input,
 .sidebar-section .el-radio-group,
 .sidebar-section .el-checkbox {
   margin-top: 5px; /* 根据需要调整 */
 }
+
+
 </style>
+  

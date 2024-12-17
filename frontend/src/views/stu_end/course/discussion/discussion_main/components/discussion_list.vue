@@ -1,6 +1,6 @@
 <template>
   <div class="posts-list">
-    <el-card v-for="post in posts" :key="post.id" class="post-card" @click="goToPost(post)" >
+    <el-card v-for="post in filteredPosts" :key="post.id" class="post-card" @click="goToPost(post)" >
       <h3 class="post-title">{{ post.title }}</h3>
       <div class="vHtml" v-html="post.content"></div>
       <div class="post-actions">
@@ -8,9 +8,11 @@
         <Like :theme="post.liked ? 'filled' : 'outline'" size="15" fill="#333" @click.stop="toggleLike(post)"/>
         <span>{{ post.likes }}</span>
 
-        <el-icon :size="15" @click.stop="toggleFavorite(post)">
-          <CollectionTag :theme="post.favorited ? 'filled' : 'outline'"/>
-        </el-icon>
+        <!-- <el-icon :size="15" @click.stop="toggleFavorite(post)">
+              <CollectionTag :theme="post.favorite ? 'filled' : 'outline'" />
+        </el-icon> -->
+        
+        <Star :theme="post.favorite ? 'filled' : 'outline'" size="17" fill="#333" @click.stop="toggleFavorite(post)" />
         <span>{{ post.favorites }}</span>
         <el-icon :size="15">
           <ChatDotRound/>
@@ -28,17 +30,31 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {ref, defineProps, computed } from 'vue';
 import {useRouter} from 'vue-router';
-import {Like} from '@icon-park/vue-next';
+import {Like, Star} from '@icon-park/vue-next';
 import {getcourse, getdiscussionlike, getdelete_like} from '@/api/discussion';
 import {userFolders, userCreate_favorite} from '@/api/user.js';
+// import { CollectionTag } from '@element-plus/icons-vue/dist/types';
 
 const router = useRouter();
 const drawer = ref(false);
+// 使用 defineProps 来直接接收父组件传递的 search 属性
+const props = defineProps({
+  search: {
+    type: String,
+    required: true
+  }
+});
 
 // 从后端获取的帖子数据
 const posts = ref([]);
+
+// 计算属性: 根据 search 过滤 posts
+const filteredPosts = computed(() => {
+  const query = props.search
+  return posts.value.filter(post => post.title.includes(query))
+})
 
 // 获取课程的讨论帖子
 function getcourseList() {
@@ -46,7 +62,7 @@ function getcourseList() {
   const userId = localStorage.getItem("userId");
   getcourse({id: courseId, userId}).then(res => {
     // posts.value = res.data.posts; // 将后端返回的数据绑定到posts
-    console.log(res.discussionThreads, '');
+    // console.log(res.discussionThreads, '');
     posts.value = res.discussionThreads;
   }).catch(err => {
     console.error("获取帖子数据失败:", err);
@@ -69,13 +85,14 @@ const toggleLike = post => {
       threadId: post.id
     };
     getdiscussionlike(obj).then(res => {
-      console.log(res);
+      console.log('fdsf'+obj);
     }).catch(err => {
       console.error("点赞失败:", err);
     });
   } else {
     let obj = {
       id: post.id,
+      userId: localStorage.getItem("userId"),
       isThread: 1
     };
     getdelete_like(obj).then(res => {
@@ -84,6 +101,7 @@ const toggleLike = post => {
   }
 
 };
+
 
 // 获取收藏夹
 const collectList = ref();
@@ -97,8 +115,8 @@ const getUserFolders = async () => {
 const threadId = ref();
 const toggleFavorite = post => {
   threadId.value = post.id;
-  post.favorited = !post.favorited;
-  post.favorites += post.favorited ? 1 : -1;
+  // post.favorited = !post.favorited;
+  // post.favorites += post.favorited ? 1 : -1;
   getUserFolders();
   drawer.value = true;
 };
@@ -111,7 +129,12 @@ function collect(item) {
     threadId: threadId.value,
     folderId: item.id
   }).then(res => {
-    console.log(res);
+    // 关闭抽屉
+    drawer.value = false;
+    // 刷新帖子列表
+    getcourseList();
+    // 提示用户收藏成功
+    alert("收藏成功");
   }).catch(err => {
     console.error("收藏失败:", err);
   });

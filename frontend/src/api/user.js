@@ -96,8 +96,8 @@ export const getdDiscussionlike = ({ id }) =>
   httpInstance.post('/user/make-subscription', { id });
 
 // Delete a favorite post
-export const userDelete_favorite = ({ id }) =>
-  httpInstance.delete('/user/delete-favorite', { id });
+export const userDelete_favorite = (data) =>
+  httpInstance.delete('/user/delete-favorite', {params: {...data}});
 
 // Delete a folder
 export const userDelete_folder = (data) =>
@@ -110,3 +110,7 @@ export const userDelete_folder = (data) =>
 // Change a folder's information
 export const userChange_folder = ({ id, name, isPrivate }) =>
   httpInstance.post('/user/change-folder', { id, name, isPrivate });
+
+// 关注他人
+export const makeSubscription = (data) =>
+  httpInstance.post('/user/make-subscription', data);

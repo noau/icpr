@@ -9,20 +9,21 @@ import com.cms.backend.pojo.Assignments.AssignmentSubmission;
 import com.cms.backend.pojo.Attachment;
 import com.cms.backend.pojo.DTO.TeachingDTO;
 import com.cms.backend.pojo.Notification;
+import com.cms.backend.pojo.StudentCourseSelection;
 import com.cms.backend.pojo.User;
-import com.cms.backend.service.AttachmentService;
-import com.cms.backend.service.CourseService;
-import com.cms.backend.service.NotificationService;
-import com.cms.backend.service.UserService;
+import com.cms.backend.pojo.vo.AssignmentVO;
+import com.cms.backend.service.*;
 import com.cms.backend.service.assignment.AssignmentPeerReviewService;
 import com.cms.backend.service.assignment.AssignmentReviewService;
 import com.cms.backend.service.assignment.AssignmentService;
 import com.cms.backend.service.assignment.AssignmentSubmissionService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 @Validated
 @RestController
 @RequestMapping("/assignments")
+@AllArgsConstructor
 public class AssignmentController {
 
     private final AssignmentService assignmentService;
@@ -51,20 +53,21 @@ public class AssignmentController {
     private final CourseService courseService;
     private final UserService userService;
     private final ThreadPoolTaskScheduler taskScheduler;
+    private final IStudentCourseSelectionService studentCourseSelectionService;
 
     private final Logger logger = LoggerFactory.getLogger(AssignmentController.class);
 
-    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
-        this.assignmentService = assignmentService;
-        this.assignmentSubmissionService = assignmentSubmissionService;
-        this.attachmentService = attachmentService;
-        this.assignmentPeerReviewService = assignmentPeerReviewService;
-        this.assignmentReviewService = assignmentReviewService;
-        this.notificationService = notificationService;
-        this.courseService = courseService;
-        this.userService = userService;
-        this.taskScheduler = taskScheduler; // 确保注入 taskScheduler
-    }
+//    public AssignmentController(AssignmentService assignmentService, AssignmentSubmissionService assignmentSubmissionService, AttachmentService attachmentService, AssignmentPeerReviewService assignmentPeerReviewService, AssignmentReviewService assignmentReviewService, NotificationService notificationService, CourseService courseService, UserService userService, ThreadPoolTaskScheduler taskScheduler) {
+//        this.assignmentService = assignmentService;
+//        this.assignmentSubmissionService = assignmentSubmissionService;
+//        this.attachmentService = attachmentService;
+//        this.assignmentPeerReviewService = assignmentPeerReviewService;
+//        this.assignmentReviewService = assignmentReviewService;
+//        this.notificationService = notificationService;
+//        this.courseService = courseService;
+//        this.userService = userService;
+//        this.taskScheduler = taskScheduler; // 确保注入 taskScheduler
+//    }
 
     /**
      * 发布作业 + 作业通知
@@ -92,21 +95,21 @@ public class AssignmentController {
         }
 
         //设置截止日期
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String endString = assignment.getEnd();
-        String latestEndString = assignment.getLatestEnd();
-        String peerReviewStartString = assignment.getPeerReviewStart();
-        String peerReviewEndString = assignment.getPeerReviewEnd();
-        // 将字符串转为 LocalDateTime 类型
-        LocalDateTime end = LocalDateTime.parse(endString, formatter);
-        LocalDateTime latestEnd = LocalDateTime.parse(latestEndString, formatter);
-        LocalDateTime peerReviewStart = LocalDateTime.parse(peerReviewStartString, formatter);
-        LocalDateTime peerReviewEnd = LocalDateTime.parse(peerReviewEndString, formatter);
-        // 设置提醒任务
-        scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
-        scheduleReminder(latestEnd.minusDays(1), users, newAssignment, "最迟补交提醒", "最迟补交时间剩余1天，请尽快完成");
-        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始,不要忘记");
-        scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        String endString = assignment.getEnd();
+//        String latestEndString = assignment.getLatestEnd();
+//        String peerReviewStartString = assignment.getPeerReviewStart();
+//        String peerReviewEndString = assignment.getPeerReviewEnd();
+//        // 将字符串转为 LocalDateTime 类型
+//        LocalDateTime end = LocalDateTime.parse(endString, formatter);
+//        LocalDateTime latestEnd = LocalDateTime.parse(latestEndString, formatter);
+//        LocalDateTime peerReviewStart = LocalDateTime.parse(peerReviewStartString, formatter);
+//        LocalDateTime peerReviewEnd = LocalDateTime.parse(peerReviewEndString, formatter);
+//        // 设置提醒任务
+//        scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
+//        scheduleReminder(latestEnd.minusDays(1), users, newAssignment, "最迟补交提醒", "最迟补交时间剩余1天，请尽快完成");
+//        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始,不要忘记");
+//        scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
 
         return ResponseEntity.ok("作业发布成功，已通知所有学生。");
     }
@@ -178,8 +181,12 @@ public class AssignmentController {
      */
     @PostMapping("/peer-reviews")
     public ResponseEntity<Void> peerReviewAssignment(@RequestBody AssignmentPeerReview peerReview) {
-        assignmentPeerReviewService.save(peerReview);
-        logger.info("Peer-reviewed assignment ID: {}", peerReview.getSubmissionId());
+        try {
+            assignmentPeerReviewService.save(peerReview);
+            logger.info("Peer-reviewed assignment ID: {}", peerReview.getSubmissionId());
+        } catch (Exception e) {
+            logger.info("互评失败");
+        }
         return ResponseEntity.ok().build();
     }
 
@@ -216,6 +223,9 @@ public class AssignmentController {
      */
     @PostMapping("/change")
     public ResponseEntity<Void> changeAssignment(@RequestBody AssignmentIssue assignment) {
+        if (!assignment.attachments.isEmpty()) {
+            attachmentService.remove(new LambdaQueryWrapper<Attachment>().eq(Attachment::getAssignmentId, assignment.id));
+        }
         var newAssignment = new Assignment(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
         assignmentService.updateById(newAssignment);
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
@@ -336,8 +346,21 @@ public class AssignmentController {
      * @return 获得批改作业列表
      */
     @GetMapping("/course-assignments")
-    public ResponseEntity<List<Assignment>> getCourseAssignments(@RequestParam String id) {
-        return ResponseEntity.ok(assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id)));
+    public ResponseEntity<List<AssignmentVO>> getCourseAssignments(@RequestParam String id) {
+        List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));
+        List<AssignmentVO> vos = new ArrayList<>();
+        for (Assignment assignment : assignmentList) {
+            AssignmentVO vo = new AssignmentVO();
+            BeanUtils.copyProperties(assignment, vo);
+
+            // 获取已提交数量和需提交总数量
+            long submitted = assignmentSubmissionService.count(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, assignment.getId()));
+            long submitTotal = studentCourseSelectionService.count(new LambdaQueryWrapper<StudentCourseSelection>().eq(StudentCourseSelection::getCourseId,id));
+            vo.setSubmitted((int) submitted);
+            vo.setSubmitTotal((int) submitTotal);
+            vos.add(vo);
+        }
+        return ResponseEntity.ok(vos);
     }
 
     /**
@@ -348,7 +371,8 @@ public class AssignmentController {
      */
     @GetMapping("/review-list")
     public ResponseEntity<AssignmentReviewListDTO> getAssignmentsSubmissions(@RequestParam Integer id) {
-
+        // 查询作业信息
+        Assignment assignment = assignmentService.getById(id);
         // 获取与指定作业ID匹配的提交记录
         var submissions = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getAssignmentId, id));
 
@@ -375,10 +399,18 @@ public class AssignmentController {
             AssignmentSubmissionDetailDTO detail = new AssignmentSubmissionDetailDTO(submission, attachmentList);
             detail.setName(student.getName()); // 设置 name 属性
             detail.setGrade(grade);
+            //如果需要互评就去查询统计是否完成互评
+            if (assignment.getRequirePeerReview() == 1) {
+                // 需要互评的数量
+                Integer minPeerReview = assignment.getMinPeerReview();
+                // 根据用户id和作业查询出互评的总数
+                Integer peerReviewCount = assignmentReviewService.getPeerReviewByStudentId(student.getId(), id);
+                detail.setPeerReviewFinished(peerReviewCount >= minPeerReview);
+            }
             return detail;
         }).collect(Collectors.toList());
 
-        AssignmentReviewListDTO assignmentReviewListDTO = new AssignmentReviewListDTO(details, submitted, shouldBeSubmitted, notSubmitted);
+        AssignmentReviewListDTO assignmentReviewListDTO = new AssignmentReviewListDTO(details, submitted, shouldBeSubmitted, notSubmitted, assignment.getRequirePeerReview() == 1);
 
         return ResponseEntity.ok(assignmentReviewListDTO);
     }
@@ -405,7 +437,7 @@ public class AssignmentController {
 
 
     @GetMapping("/course-assignments/student")
-    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(@RequestBody AssignmentsStudentBody assignmentsStudentBody) {
+    public ResponseEntity<List<AssignmentStudent>> getCourseAssignmentsStudent(AssignmentsStudentBody assignmentsStudentBody) {
         String id = assignmentsStudentBody.id;
         Integer userId = assignmentsStudentBody.userId;
         List<Assignment> assignmentList = assignmentService.list(new LambdaQueryWrapper<Assignment>().eq(Assignment::getCourseId, id));
@@ -443,7 +475,7 @@ public class AssignmentController {
                     assignment.getPeerReviewEnd(),
                     assignment.getMinPeerReview(),
                     assignment.getAnswer(),
-                    grade == null ? 1 : 0,
+                    grade == null ? 0 : 1,
                     grade,
                     peerReviewCount >= assignment.getMinPeerReview(),
                     submitted
@@ -453,6 +485,37 @@ public class AssignmentController {
         }
 
         return ResponseEntity.ok(assignmentStudentList);
+    }
+
+    /**
+     * 获取学生未完成的作业通知列表
+     *
+     * @param userId       学生id
+     * @return 获取学生未完成的作业通知列表
+     */
+    @GetMapping("/getStudentAssignmentNotify")
+    public ResponseEntity<List<Assignment>> getStudentAssignmentNotify(@RequestParam Integer userId) {
+
+        // 获取当前时间
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        // 使用 LambdaQueryWrapper 来构建查询条件
+        LambdaQueryWrapper<Assignment> queryWrapper = new LambdaQueryWrapper<Assignment>()
+                .lt(Assignment::getStart, currentTime)  // start 时间小于当前时间
+                .gt(Assignment::getEnd, currentTime);   // end 时间大于当前时间
+
+        // 查询符合条件的所有 Assignment 记录
+        List<Assignment> vo = new ArrayList<>();
+        List<Assignment> assignments = assignmentService.list(queryWrapper);
+        for (Assignment item : assignments) {
+            List<AssignmentSubmission> list = assignmentSubmissionService.list(new LambdaQueryWrapper<AssignmentSubmission>().eq(AssignmentSubmission::getStudentId, userId).eq(AssignmentSubmission::getAssignmentId, item.getId()));
+            if (list.isEmpty()) {
+                vo.add(item);
+            }
+
+        }
+        return ResponseEntity.ok(vo);
+
     }
 
     @Data
@@ -595,6 +658,8 @@ public class AssignmentController {
     }
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class AssignmentSubmissionDetailDTO {
         public AssignmentSubmissionDetailDTO(AssignmentSubmission submission, List<AttachmentListDTO> attachments) {
             this.id = submission.getId();
@@ -613,7 +678,7 @@ public class AssignmentController {
         private String content;
         private List<AttachmentListDTO> attachments;
         private Float grade;
-
+        private boolean peerReviewFinished; // 是否互评完成
     }
 
     @Data
@@ -623,6 +688,7 @@ public class AssignmentController {
         private Integer submitted;
         private Integer shouldBeSubmitted;
         private Integer notSubmitted;
+        private boolean requirePeerReview; // 是否需要互评
     }
 
     @Data

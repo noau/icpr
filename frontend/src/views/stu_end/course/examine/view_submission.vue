@@ -6,14 +6,14 @@
       <el-row>
         <el-col :span="12">
           <el-form label-width="120px">
-            <el-form-item label="作业内容">
+            <!-- <el-form-item label="作业内容">
               <el-input
                   type="textarea"
                   :value="homework.content"
                   disabled
                   rows="10"
               ></el-input>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="附件">
               <ul class="uploaded-files">
                 <li v-for="file in homework.attachments" :key="file.id">
@@ -32,9 +32,9 @@
             <el-form-item label="批改状态：">
               <span>{{ homework.reviewStatus }}</span>
             </el-form-item>
-            <el-form-item label="老师评语：">
+            <!-- <el-form-item label="老师评语：">
               <span>{{ homework.feedback }}</span>
-            </el-form-item>
+            </el-form-item> -->
           </el-form>
         </el-col>
       </el-row>
@@ -84,7 +84,7 @@ onMounted(async () => {
     console.log(attachments)
 
     homework.value = {
-      title: `Assignment ${assignmentId}`,
+      title: route.query.title,
       grade: grade || '未评分',
       reviewStatus: gradedAt ? '已批改' : '未批改',
       content,

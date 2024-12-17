@@ -62,19 +62,35 @@ export const getTeacherInfo = (id, token) =>{
    });
  }
 // /attachment/delete
-
-export const deleteFile = (id, token) =>
+/**
+ * 删除文件
+ * @param {*} id 
+ * @returns 
+ */
+export const deleteFile = (id) =>
   httpInstance.delete('attachment/delete', {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: token,
-    },
+    // headers: {
+    //   'Content-Type': 'application/json',
+    //   Authorization: token,
+    // },
     data: {
       id: id,
     },
   });
 
 // 
+
+/**
+ * 删除文件夹
+ * @param {} id   文件夹id
+ */
+export const deleteForder = (id) => {
+  httpInstance.delete('/courses/delete-attachment-folder', {
+    params: {
+      id
+    },
+  });
+}
 
 export const getppt = (id, token) =>
     httpInstance.get('/courses/get-ppt', {
@@ -99,16 +115,16 @@ export const getppt = (id, token) =>
 //     },
 //   });
 
-  export const getexam = (id, token) =>
-    httpInstance.get('/courses/get-exam', {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token,
-      },
-      params: {
-        id: id,
-      },
-    });
+export const getexam = (id, token) =>
+  httpInstance.get('/courses/get-exam', {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token,
+    },
+    params: {
+      id: id,
+    },
+  });
 export const getexercise = (id, token) =>
   httpInstance.get('/courses/get-exercise', {
     headers: {
@@ -233,3 +249,11 @@ export const uploadteacher = (file, token) =>
               Authorization: token,
             },
           });
+
+/**
+ * 编辑文件夹
+ * @param {} data 
+ */
+export const editAttachmentfolder = (data) =>{
+  httpInstance.post('/courses/edit-attachment-folder', data);
+}

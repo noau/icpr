@@ -78,3 +78,7 @@ export const submitReview = ({ submissionId, grade, feedback, gradedAt }) =>
     feedback,
     gradedAt,
   });
+
+// 获取学生未完成的作业通知列表
+export const getStudentAssignmentNotify = (userId) => 
+  httpInstance.get("/assignments/getStudentAssignmentNotify", { params: { userId } });

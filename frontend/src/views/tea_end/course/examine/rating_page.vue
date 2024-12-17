@@ -58,7 +58,7 @@
                     <el-input-number v-model="gradingForm.grade" :min="0" :max="10"></el-input-number>
                   </el-form-item> -->
                   <el-form-item label="成绩" required>
-                    <el-input-number v-model="gradingForm.grade" :min="0" :max="fullGrade"></el-input-number>
+                    <el-input-number v-model="gradingForm.grade" :min="0" :max="gradingForm.maxGrade"></el-input-number>
                   </el-form-item>
                   <el-form-item label="评语" label-position="top">
                     <v-md-editor v-model="gradingForm.comment" height="200px"></v-md-editor>
@@ -231,6 +231,7 @@ VMdEditor.use(githubTheme);
 
 const tableData = ref([]);
 const gradingForm = ref({
+  maxGrade: 0,
   submissionId: null, 
   grade: 0,
   comment: '',
@@ -245,11 +246,13 @@ const fullGrade = ref(10); // Default max grade
 const init = async () => {
   try {
     // Fetch fullGrade from getAssignmentsInfo API
-    const assignmentData = await getAssignmentsInfo({ id: route.query.id });
-    fullGrade.value = assignmentData.fullGrade || 10; // Set fullGrade to API value, default to 10 if undefined
-
+    const assignmentData = await getAssignmentsInfo({ id: route.query.assignmentId });
+    // fullGrade.value = assignmentData.fullGrade || 10; // Set fullGrade to API value, default to 10 if undefined
+    gradingForm.value.grade = assignmentData.grade
+    gradingForm.value.maxGrade = assignmentData.grade
     const data = await getReviewList({ id: route.query.submissionId });
-    tableData.value = data || [];
+    tableData.value = data.submissions || [];
+    
     if (tableData.value.length > 0) {
       currentStudentIndex.value = tableData.value.findIndex(item => item.id == route.query.id);
       updateSubmissionId();
@@ -262,11 +265,13 @@ const init = async () => {
 onMounted(init);
 
 // Load file URL function (unchanged)
-const loadFileUrl = async (attachmentId) => {
+const loadFileUrl = async ({id: attachmentId}) => {
   try {
     const response = await getAttachmentUrl(attachmentId);
+    
     if (response && response.url) {
       pdf.value = response.url;
+      
     } else {
       console.log('未获取到文件 URL');
     }
@@ -291,7 +296,8 @@ const submitGrading = async () => {
   try {
     const response = await submitReview(gradingForm.value);
     alert('评分提交成功');
-    nextStudent();
+    // nextStudent();
+    nextStudent()
   } catch (error) {
     alert('评分提交失败，请重试');
   }
@@ -303,6 +309,8 @@ const previousStudent = () => {
     currentStudentIndex.value--;
     updateSubmissionId();
     if(tableData.value[currentStudentIndex.value].attachments.length > 0) loadFileUrl(tableData.value[currentStudentIndex.value].attachments[0]);
+  }else {
+    alert('当前已经是第一个了')
   }
 };
 
@@ -311,8 +319,11 @@ const nextStudent = () => {
     currentStudentIndex.value++;
     updateSubmissionId();
     if(tableData.value[currentStudentIndex.value].attachments.length > 0) loadFileUrl(tableData.value[currentStudentIndex.value].attachments[0]);
+  }else {
+    alert('当前已经是最后一个了')
   }
 };
+
 
 // Rendered and error handlers (unchanged)
 const renderedHandler = () => {

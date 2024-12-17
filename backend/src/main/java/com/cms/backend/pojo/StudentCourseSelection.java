@@ -1,17 +1,34 @@
 package com.cms.backend.pojo;
 
-import com.github.jeffreyning.mybatisplus.anno.MppMultiId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import java.io.Serializable;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
+/**
+ * <p>
+ * 
+ * </p>
+ *
+ * @author author
+ * @since 2024-12-12
+ */
 @Data
-public class StudentCourseSelection {
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+@TableName("student_course_selection")
+public class StudentCourseSelection implements Serializable {
 
-    @MppMultiId
+    private static final long serialVersionUID = 1L;
+
     private Integer studentId;
 
-    @MppMultiId
     private String courseId;
 
     private Float grade;
+
 
 }

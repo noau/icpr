@@ -55,22 +55,33 @@ import { getppt } from '@/api/course';
 import axios from 'axios';
 
 const tableData = ref([]);
+const allFiles = ref([]);
 const folderOptions = ref([]);
 const selectedFolder = ref('');
 const searchQuery = ref('');
-const pageSize = ref(8);
+const pageSize = ref(5);
 const currentPage = ref(1);
 
+// 过滤和分页数据
 const filteredData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
-  return tableData.value.slice(start, start + pageSize.value);
+  return allFiles.value.slice(start, start + pageSize.value);
 });
 
+// 搜索
 function handleSearch() {
   currentPage.value = 1;
-  tableData.value = tableData.value.filter(item =>
-    item.name.includes(searchQuery.value)
-  );
+  if (!searchQuery.value) {
+    allFiles.value = tableData.value;
+  } else {
+    allFiles.value = tableData.value.filter(file =>
+      file.name.includes(searchQuery.value)
+    );
+  }
+}
+
+function handleCurrentChange(page) {
+  currentPage.value = page;
 }
 /**
  * 预览资源
@@ -145,8 +156,10 @@ async function getpptlist(flag) {
     const folder = folderOptions.value.find(ele => ele.id == selectedFolder.value)
     if(folder.files.length > 0){
      tableData.value = folder.files
+     allFiles.value = folder.files
     }else{
       tableData.value = []
+      allFiles.value = []
     }
   }else{
     const id = localStorage.getItem('courseId');
@@ -154,6 +167,7 @@ async function getpptlist(flag) {
         console.log(res)
         folderOptions.value = res
         tableData.value = res[0].files
+        allFiles.value = res[0].files
         selectedFolder.value = res[0].id
     })
   }

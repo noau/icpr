@@ -36,4 +36,8 @@ export const getget_thread = ({id, userId}) =>
 
 // /user/discussion/delete-like
 export const getdelete_like = (data) =>
-    httpInstance.delete('/user/discussion/delete-like', {data});
+    httpInstance.post('/user/discussion/delete-like', data);
+
+// 删除帖子
+export const getdelete_thread = (id) =>
+    httpInstance.delete('/discussion/thread-delete', {params: {id}});

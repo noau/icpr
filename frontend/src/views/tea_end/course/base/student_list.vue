@@ -1,7 +1,7 @@
 <template>
   <div class="student-list">
     <el-row :gutter="20" class="header" style="margin-top: -0px; margin-bottom: 5px; margin-left: 10px;">
-      <el-col :span="8">
+      <!-- <el-col :span="8">
         <el-form :inline="true" :model="form">
           <el-form-item label="">
             <el-input v-model="form.query" placeholder="请输入姓名或学号" style="width: 250px"></el-input>
@@ -10,7 +10,7 @@
       </el-col>
       <el-col :span="4">
         <el-button round type="primary" style="margin-left: -140px; padding: 10px;" @click="search">搜索</el-button>
-      </el-col>
+      </el-col> -->
       <el-col :span="4">
         <el-button round type="primary" style="margin-left: 460px;" @click="exportStudentList">导出学生名单</el-button>
       </el-col>

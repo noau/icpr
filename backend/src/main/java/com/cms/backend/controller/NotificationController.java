@@ -3,6 +3,7 @@ package com.cms.backend.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.cms.backend.pojo.Notification;
+import com.cms.backend.pojo.User;
 import com.cms.backend.service.NotificationService;
 import com.cms.backend.service.UserService;
 import lombok.AllArgsConstructor;
@@ -36,8 +37,9 @@ public class NotificationController {
 
     @GetMapping(value = "/get")
     public ResponseEntity<NotificationList> getNotification(@RequestParam Integer id) {
+        // 将作业通知过滤掉
         List<NotificationDTO> notifications = new ArrayList<>();
-        List<Notification> notificationList = notificationService.list(new LambdaQueryWrapper<Notification>().eq(Notification::getUserId, id));
+        List<Notification> notificationList = notificationService.list(new LambdaQueryWrapper<Notification>().eq(Notification::getUserId, id).ne(Notification::getType,"作业通知"));
         for (Notification notification : notificationList) {
             NotificationDTO notificationDTO = new NotificationDTO(
                     notification.getId(),

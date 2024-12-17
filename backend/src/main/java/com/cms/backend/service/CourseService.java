@@ -47,5 +47,6 @@ public interface CourseService extends IService<Course> {
 
     List<Course> getAllCourseTeacher(Integer id);
 
+    void editAttachmentFolder(Integer id, String folderName);
 }
 

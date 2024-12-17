@@ -1,6 +1,7 @@
 package com.cms.backend.controller;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cms.backend.BackendApplication;
 import com.cms.backend.pojo.*;
@@ -12,6 +13,8 @@ import com.cms.backend.service.assignment.AssignmentSubmissionService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -80,7 +83,7 @@ public class CourseController {
 
         // 将 User 对象转换为 Student 对象
         List<Student> studentList = students.stream()
-                .map(user -> new Student(user.getId(), user.getName()))
+                .map(user -> new Student(user.getId(), user.getName(), user.getAcademy(), user.getEmail(), user.getPhoneNumber()))
                 .collect(Collectors.toList());
 
         // 定义文件的保存路径
@@ -185,78 +188,89 @@ public class CourseController {
 
     @GetMapping(value = "/get-exam")
     public ResponseEntity<List<FolderAttachmentListDTO>> getExam(@RequestParam String id) {
-        List<AttachmentFolder> folders = attachmentFolderService.list(new LambdaQueryWrapper<AttachmentFolder>().eq(AttachmentFolder::getCourseId, id).eq(AttachmentFolder::getType, "exam"));
-        List<FolderAttachmentListDTO> folderAttachmentListDTOS = new ArrayList<>();
-
-        for (AttachmentFolder folder : folders) {
-            FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
-            folderAttachmentListDTO.setId(folder.getId());
-            folderAttachmentListDTO.setName(folder.getFolderName());
-
-            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id).eq(Attachment::getAttachmentFolderId, folderAttachmentListDTO.getId()));
-            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
-        }
-
-        FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
-        folderAttachmentListDTO.setId(null);
-        folderAttachmentListDTO.setName(null);
-        List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExamId, id).isNull(Attachment::getAttachmentFolderId));
-        if (!attachmentList.isEmpty()) {
-            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
-        }
-
+        List<FolderAttachmentListDTO> folderAttachmentListDTOS = getFolderAttachmentListDTOS(id,"exam");
         return ResponseEntity.ok(folderAttachmentListDTOS);
     }
 
     @GetMapping(value = "/get-ppt")
     public ResponseEntity<List<FolderAttachmentListDTO>> getPpt(@RequestParam String id) {
-        List<AttachmentFolder> folders = attachmentFolderService.list(new LambdaQueryWrapper<AttachmentFolder>().eq(AttachmentFolder::getCourseId, id).eq(AttachmentFolder::getType, "ppt"));
-        List<FolderAttachmentListDTO> folderAttachmentListDTOS = new ArrayList<>();
-
-        for (AttachmentFolder folder : folders) {
-            FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
-            folderAttachmentListDTO.setId(folder.getId());
-            folderAttachmentListDTO.setName(folder.getFolderName());
-
-            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getPptId, id).eq(Attachment::getAttachmentFolderId, folderAttachmentListDTO.getId()));
-            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
-        }
-
-        FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
-        folderAttachmentListDTO.setId(null);
-        folderAttachmentListDTO.setName(null);
-        List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getPptId, id).isNull(Attachment::getAttachmentFolderId));
-        if (!attachmentList.isEmpty()) {
-            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
-        }
-
+        List<FolderAttachmentListDTO> folderAttachmentListDTOS = getFolderAttachmentListDTOS(id,"ppt");
         return ResponseEntity.ok(folderAttachmentListDTOS);
     }
 
     @GetMapping(value = "/get-exercise")
     public ResponseEntity<List<FolderAttachmentListDTO>> getExercise(@RequestParam String id) {
-        List<AttachmentFolder> folders = attachmentFolderService.list(new LambdaQueryWrapper<AttachmentFolder>().eq(AttachmentFolder::getCourseId, id).eq(AttachmentFolder::getType, "exercise"));
+        List<FolderAttachmentListDTO> folderAttachmentListDTOS = getFolderAttachmentListDTOS(id,"exercise");
+        return ResponseEntity.ok(folderAttachmentListDTOS);
+    }
+
+    /**
+     * 获取指定课程和类型下的文件夹及其包含的文件列表。
+     *
+     * @param id   课程ID或相关标识，用于查询文件夹和文件
+     * @param type 文件夹类型，用于查询指定类型的文件夹
+     * @return 返回一个包含文件夹及文件信息的列表
+     */
+    private List<FolderAttachmentListDTO> getFolderAttachmentListDTOS(String id, String type) {
+        // 根据课程ID和文件夹类型查询所有符合条件的文件夹
+        List<AttachmentFolder> folders = attachmentFolderService.list(new LambdaQueryWrapper<AttachmentFolder>()
+                .eq(AttachmentFolder::getCourseId, id) // 通过课程ID过滤文件夹
+                .eq(AttachmentFolder::getType, type)   // 通过文件夹类型过滤文件夹
+        );
+
+        // 存储文件夹和文件信息的DTO列表
         List<FolderAttachmentListDTO> folderAttachmentListDTOS = new ArrayList<>();
 
+        // 遍历每个文件夹
         for (AttachmentFolder folder : folders) {
+            // 创建一个FolderAttachmentListDTO对象，保存文件夹的相关信息
             FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
+
+            // 用于存储文件夹内的所有文件DTO列表
+            List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
+
+            // 设置文件夹的ID和名称
             folderAttachmentListDTO.setId(folder.getId());
             folderAttachmentListDTO.setName(folder.getFolderName());
 
-            List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExerciseId, id).eq(Attachment::getAttachmentFolderId, folderAttachmentListDTO.getId()));
-            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
+            // 根据文件夹ID和课程ID查询该文件夹下的所有文件
+            LambdaQueryWrapper<Attachment> wrapper = new LambdaQueryWrapper<Attachment>().eq(Attachment::getAttachmentFolderId, folderAttachmentListDTO.getId());
+            if (type.equals("ppt")) {
+                wrapper.eq(Attachment::getPptId,id);
+            } else if (type.equals("exam")) {
+                wrapper.eq(Attachment::getExamId,id);
+            } else{
+                wrapper.eq(Attachment::getExerciseId,id);
+            }
+            List<Attachment> attachmentList = attachmentService.list(wrapper);
+
+            // 如果文件夹内有文件
+            if (!attachmentList.isEmpty()) {
+                // 遍历文件夹中的每个文件
+                for (Attachment attachment : attachmentList) {
+                    // 创建文件DTO对象，将文件属性复制到DTO
+                    AttachmentDTO attachmentDTO = new AttachmentDTO();
+                    BeanUtils.copyProperties(attachment, attachmentDTO); // 属性复制
+
+                    // 设置文件的父文件夹ID和文件夹名称
+                    attachmentDTO.setParentId(folderAttachmentListDTO.getId());
+                    attachmentDTO.setFolderName(folder.getFolderName());
+
+                    // 将文件DTO添加到文件列表中
+                    attachmentDTOList.add(attachmentDTO);
+                }
+                // 设置文件夹内的文件列表
+                folderAttachmentListDTO.setFiles(attachmentDTOList);
+            }
+
+            // 将文件夹和文件信息DTO添加到最终的结果列表中
+            folderAttachmentListDTOS.add(folderAttachmentListDTO);
         }
 
-        FolderAttachmentListDTO folderAttachmentListDTO = new FolderAttachmentListDTO();
-        folderAttachmentListDTO.setId(null);
-        folderAttachmentListDTO.setName(null);
-        List<Attachment> attachmentList = attachmentService.list(new LambdaQueryWrapper<Attachment>().eq(Attachment::getExerciseId, id).isNull(Attachment::getAttachmentFolderId));
-        if (!attachmentList.isEmpty()) {
-            getResource(folderAttachmentListDTOS, folderAttachmentListDTO, attachmentList);
-        }
-
-        return ResponseEntity.ok(folderAttachmentListDTOS);
+        // 返回包含所有文件夹及其文件信息的列表
+        return folderAttachmentListDTOS;
     }
+
 
     private void getResource(List<FolderAttachmentListDTO> folderAttachmentListDTOS, FolderAttachmentListDTO folderAttachmentListDTO, List<Attachment> attachmentList) {
         List<AttachmentDTO> attachmentDTOList = new ArrayList<>();
@@ -302,6 +316,19 @@ public class CourseController {
         courseService.createAttachmentFolder(attachmentFolder);
         Integer id = attachmentFolder.getId();
         return ResponseEntity.ok(String.valueOf(id));
+    }
+
+    /**
+     * 编辑文件夹
+     * @param dto
+     * @return
+     */
+    @PostMapping(value = "/edit-attachment-folder")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<String> editAttachmentFolder(@RequestBody EditAttachmentFolder dto) {
+        courseService.editAttachmentFolder(dto.id,dto.folderName);
+
+        return ResponseEntity.ok("修改成功");
     }
 
     @DeleteMapping(value = "/delete-attachment-folder")
@@ -355,8 +382,20 @@ public class CourseController {
     @Data
     @AllArgsConstructor
     public static class Student {
+        @ExcelProperty("学号")
         private Integer id;
+
+        @ExcelProperty("姓名")
         private String name;
+
+        @ExcelProperty("学院")
+        private String academy;
+
+        @ExcelProperty("电子邮件")
+        private String email;
+
+        @ExcelProperty("手机号")
+        private String phoneNumber;
     }
 
     @Data
@@ -369,6 +408,7 @@ public class CourseController {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class AttachmentDTO {
 
         private Integer id;
@@ -408,6 +448,7 @@ public class CourseController {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class AttachmentListDTO {
 
         private List<AttachmentDTO> attachmentIdList;
@@ -488,5 +529,13 @@ public class CourseController {
         private String type;
 
     }
+    @Data
+    @AllArgsConstructor
+    public static class EditAttachmentFolder {
 
+        private Integer id;
+
+        private String folderName;
+
+    }
 }

@@ -9,21 +9,21 @@
         <el-col :span="12" class="right-section">
           <el-row :gutter="20" class="grade-homework">
             <el-col :span="8">
-              <el-card shadow="hover" class="status-box" @click="filterSubmitted('all')">
+              <el-card shadow="hover" class="status-box">
                 <div>应提交</div>
-                <div class="status-number" style="color: #07395f;">{{ tableData.length }}</div>
+                <div class="status-number" style="color: #07395f;">{{ submitTotal }}</div>
               </el-card>
             </el-col>
             <el-col :span="8">
-              <el-card shadow="hover" class="status-box" @click="filterSubmitted('submitted')">
+              <el-card shadow="hover" class="status-box">
                 <div>已提交</div>
-                <div class="status-number" style="color: darkgreen;">{{ submittedCount }}</div>
+                <div class="status-number" style="color: darkgreen;">{{ submitted }}</div>
               </el-card>
             </el-col>
             <el-col :span="8">
-              <el-card shadow="hover" class="status-box" @click="filterSubmitted('notSubmitted')">
+              <el-card shadow="hover" class="status-box">
                 <div>未提交</div>
-                <div class="status-number" style="color: #780202da;">{{ notSubmittedCount }}</div>
+                <div class="status-number" style="color: #780202da;">{{ submitTotal - submitted }}</div>
               </el-card>
             </el-col>
           </el-row>
@@ -41,6 +41,12 @@
           <!-- <el-table-column prop="submitTime" label="提交时间" align="center" header-align="center" /> -->
           <!-- <el-table-column prop="finalScore" label="成绩" width="130" align="center" header-align="center" /> -->
           <el-table-column prop="submittedAt" label="提交时间" align="center" header-align="center" />
+            <!-- 直接判断是否需要显示“是否完成互评”列 -->
+          <el-table-column v-if="requirePeerReview" label="是否完成互评" width="130" align="center" header-align="center">
+            <template #default="scope">
+              {{ scope.row.peerReviewFinished ? '已完成' : '未完成' }}
+            </template>
+          </el-table-column>
           <el-table-column prop="grade" label="成绩" width="130" align="center" header-align="center" />
           <el-table-column label="操作" width="180" align="center" header-align="center">
             <template #default="scope">
@@ -66,9 +72,14 @@ import { getReviewList } from '@/api/assignments.js';
 const router = useRouter();
 const route = useRoute();
 
+const requirePeerReview = ref(false) // 是否需要互评
+
 const homeworkTitle = ref(route.query.title || '作业标题');
 const startTime = ref(route.query.start || '');
 const endTime = ref(route.query.end || '');
+const submittedData = ref({})
+const submitted = ref(route.query.submitted || 0);
+const submitTotal = ref(route.query.submitTotal || 0);
 
 const goBack = () => {
   router.back();
@@ -82,7 +93,12 @@ const filterType = ref('all');
 const init = async () => {
   try {
     const res = await getReviewList({ id: route.query.id });
-    tableData.value = res || [];
+    
+    tableData.value = res.submissions || [];
+    console.log(res);
+    
+    submittedData.value = res || {}
+    requirePeerReview.value = res.requirePeerReview
   } catch (error) {
     console.error("获取批改作业列表失败:", error);
   }
@@ -90,8 +106,8 @@ const init = async () => {
 
 onMounted(init);
 
-const submittedCount = computed(() => tableData.value.filter(item => item.submitted).length);
-const notSubmittedCount = computed(() => tableData.value.length - submittedCount.value);
+// const submittedCount = computed(() => tableData.value.filter(item => item.submitted).length);
+// const notSubmittedCount = computed(() => tableData.value.length - submittedCount.value);
 
 const filteredData = computed(() => {
   if (filterType.value === 'submitted') {
@@ -113,10 +129,10 @@ const handlePageChange = (page) => {
   currentPage.value = page;
 };
 
-const filterSubmitted = (type) => {
-  filterType.value = type;
-  currentPage.value = 1;
-};
+// const filterSubmitted = (type) => {
+//   filterType.value = type;
+//   currentPage.value = 1;
+// };
 
 // 打开批阅页面
 const openReviewPage = (row) => {
@@ -126,7 +142,7 @@ const openReviewPage = (row) => {
     path: '/tea-end/course/examine/rating-page',
     query: {
       id: row.id, // 提交的作业ID
-      assignmentId:row.id,
+      assignmentId:row.assignmentId,
       submissionId:route.query.id,
       title: homeworkTitle.value,
       startTime: startTime.value,

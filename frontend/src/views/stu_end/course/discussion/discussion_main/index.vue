@@ -4,7 +4,7 @@
       <div class="toolbar">
         <div class="search-container">
           <!-- 搜索框 -->
-          <SearchBar />
+          <SearchBar @search="handleSearch" />
         </div>
   
         <div class="create-post-container">
@@ -14,15 +14,20 @@
       </div>
       
       <!-- 帖子列表 -->
-      <PostList />
+      <PostList :search="search" />
     </div>
   </template>
   
   <script setup>
+  import { ref } from 'vue'
   // 引入子组件
   import SearchBar from './components/search_bar.vue';
   import PostList from './components/discussion_list.vue';
   import create_post from './components/create_post.vue';
+  const search = ref('')
+  function handleSearch(query) {
+  search.value = query;  // 接收子组件传递的参数
+}
   </script>
   
   <style scoped>

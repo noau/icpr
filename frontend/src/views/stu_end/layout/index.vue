@@ -22,7 +22,7 @@
 
           <!-- 右侧 reminder_card，占 6/24 -->
           <el-col :span="6">
-<!--            <reminder_card :reminders="reminders" @remove="removeReminder" />-->
+           <reminder_card :reminders="reminders" @remove="removeReminder" />
           </el-col>
         </el-row>
       </el-main>
@@ -37,18 +37,17 @@ import course_list from './components/course_list.vue';
 import reminder_card from './components/reminder_card.vue'
 import { userCourses } from "@/api/course.js";
 import { useUserStore } from "@/stores/user.js";
+import { getStudentAssignmentNotify } from '@/api/assignments';
 
 const user = useUserStore();
 if (user.id) {
   localStorage.setItem("id", user.id);
 
 }
-console.log(user.id);
 
 let id = localStorage.getItem("id");
 
 const courses = (await userCourses(id, user.token)).courses;
-console.log(courses);
 
 export default {
   components: {
@@ -62,9 +61,7 @@ export default {
       courses: courses,
       searchQuery: '',
       reminders: [
-        { type: '作业', title: '作业标题', deadline: '2024-09-15' },
-        { type: '通知', title: '通知标题', content: '通知内容通知内容通知内容通知内容通知内容' },
-        // 更多提醒...
+        // { assignmentId: 0, type: '作业', title: '暂无', deadline: '暂无' },
       ],
     };
   },
@@ -85,6 +82,28 @@ export default {
     removeReminder(index) {
       this.reminders.splice(index, 1);
     },
+
+    /**
+     * 获取学生未完成的作业通知列表
+     */
+    async getStudentAssignmentNotify() {
+      // 在这里编写获取学生作业通知的逻辑
+      const userId = localStorage.getItem("id")
+      const res = await getStudentAssignmentNotify(userId)
+      if (res.length > 0) {
+        this.reminders = res.map((item) => {
+          return{
+            type: '作业',
+            title: item.title,
+            deadline: item.end,
+            assignmentId: item.id
+          }
+        })
+      }
+    },
+  },
+  mounted () {
+    this.getStudentAssignmentNotify();
   },
 };
 </script>

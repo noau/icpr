@@ -1,6 +1,6 @@
 <template>
   <div class="comment-item">
-    <el-avatar :src="comment.author.avatar" />
+    <el-avatar :src="comment.author.avatar" @click="queryUserInfo(comment.author.userId)" />
     <div class="comment-content">
       <div class="comment-author">{{ comment?.author?.name }}</div>
       <div class="comment-text">{{ comment.content }}</div>
@@ -35,6 +35,10 @@
 import { ref } from 'vue';
 import { Like } from '@icon-park/vue-next';
 import CommentItem from './comment_item.vue';
+import { userUserInfo } from '@/api/user';
+import {useRoute, useRouter} from 'vue-router';
+const route = useRoute();
+const router = useRouter();
 
 const props = defineProps({
   comment: {
@@ -47,6 +51,7 @@ const emits = defineEmits(['likeComment', 'replyComment']);
 
 const showReplyInput = ref(false);
 const replyContent = ref('');
+const isSelf = ref(true); // 是否是自己的评论
 
 const toggleLike = () => {
   emits('likeComment', props.comment);
@@ -64,6 +69,33 @@ const likeComment = (comment) => {
 
 const replyComment = (comment, content) => {
   emits('replyComment', comment, content);
+};
+// 跳转用户信息页面
+const queryUserInfo = async(id) => {
+  if (!id) {
+    return;
+  }
+  // await getUserInfo(id);
+  if (id == localStorage.getItem('userId')) {
+    // 路由到自己的个人信息页面
+    router.push('/stu-end/profile');
+    return
+  }
+  // 路由到他人的个人信息页面
+  router.push({
+    path: '/stu-end/user-home',
+    query: {
+      id: id
+    },
+  });
+  
+};
+
+// 查询用户信息 
+const getUserInfo = async(id) => {
+
+  const userInfo = await userUserInfo({ id })
+  return userInfo;  
 };
 </script>
 
