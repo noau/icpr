@@ -95,7 +95,7 @@ class AssignmentControllerTest {
         assignmentIssue.setFullGrade(100F);
         assignmentIssue.setDelayedGrade(90F);
         // 初始化 全局的 Assignment 对象
-        assignment = new Assignment(0, assignmentIssue.getCourseId(), assignmentIssue.getTitle(), assignmentIssue.getDescription(), assignmentIssue.getStart(),assignmentIssue.getEnd(), assignmentIssue.getIsPrivate(), assignmentIssue.getFullGrade(), assignmentIssue.getDelayedGrade(), assignmentIssue.getLatestEnd(), assignmentIssue.getMultipleSubmission(), assignmentIssue.getPublishGrade(), assignmentIssue.getRequirePeerReview(), assignmentIssue.getPeerReviewStart(), assignmentIssue.getPeerReviewEnd(), assignmentIssue.getMinPeerReview(), assignmentIssue.getAnswer());
+        assignment = new Assignment(0, assignmentIssue.getCourseId(), assignmentIssue.getTitle(), assignmentIssue.getDescription(), assignmentIssue.getStart(),assignmentIssue.getEnd(), assignmentIssue.getIsPrivate(), assignmentIssue.getFullGrade(), assignmentIssue.getDelayedGrade(), assignmentIssue.getMultipleSubmission(), assignmentIssue.getPublishGrade(), assignmentIssue.getRequirePeerReview(), assignmentIssue.getPeerReviewStart(), assignmentIssue.getPeerReviewEnd(), assignmentIssue.getMinPeerReview(), assignmentIssue.getAnswer());
 
         when(assignmentService.getById(0)).thenReturn(assignment);
         when(assignmentService.update(any())).thenReturn(true);
