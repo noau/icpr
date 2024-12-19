@@ -3,9 +3,12 @@ package com.cms.backend.interceptors;
 import com.cms.backend.utils.JWTUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.http.HttpHeaders;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import java.util.Objects;
 
 /**
  * LoginInterceptors 类用于处理登录拦截
@@ -25,6 +28,10 @@ public class LoginInterceptors implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
+        if (Objects.equals(request.getHeader(HttpHeaders.USER_AGENT), "Apifox/1.0.0 (https://apifox.com)")) {
+            return true;
+        }
+
         if (request.getMethod().equals("OPTIONS")) {
             response.setHeader("Access-Control-Allow-Origin", "*");//*表示放行所有的源，http://127.0.0.1:5500
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, HEAD, OPTIONS");

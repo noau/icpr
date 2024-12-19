@@ -84,7 +84,7 @@ public class UserController {
             return ResponseEntity.status(410).body(""); // 用户不存在
         } else {
             // 验证密码是否正确
-            if (Objects.equals(password, user.getPassword())) {
+            if (password.equals(user.getPassword())) {
                 if (userService.getTeacherInfo(id) == null) {
                     Map<String, Object> claims = new HashMap<>();
                     claims.put("account", id);
