@@ -129,7 +129,6 @@ public class UserController {
                     return ResponseEntity.status(410).body(""); // 用户身份不是老师
                 }
             } else {
-
                 return ResponseEntity.status(422).body(""); // 密码错误
             }
         }

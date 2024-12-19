@@ -145,6 +145,7 @@ const init = async () => {
     let res = await notificationsGet({id: userId});
     notificationList.value = res.notifications;
     notificationsLength.value = res.notifications.length;
+    console.log(res.notifications)
   } catch (error) {
     console.error("获取通知列表时出错:", error);
   }

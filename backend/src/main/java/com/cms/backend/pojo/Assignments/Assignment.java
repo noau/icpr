@@ -31,8 +31,6 @@ public class Assignment {
 
     private Float delayedGrade;
 
-    private String latestEnd;
-
     private Integer multipleSubmission;
 
     private Integer publishGrade;
