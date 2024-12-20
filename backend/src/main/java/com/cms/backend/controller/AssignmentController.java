@@ -77,7 +77,7 @@ public class AssignmentController {
      */
     @PostMapping("/issue")
     public ResponseEntity<String> issueAssignment(@RequestBody AssignmentIssue assignment) {
-        var newAssignment = new Assignment(0, assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
+        var newAssignment = new Assignment(0, assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
 
         assignmentService.save(newAssignment);
 
@@ -95,22 +95,25 @@ public class AssignmentController {
         }
 
         //设置截止日期
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//        String endString = assignment.getEnd();
-//        String latestEndString = assignment.getLatestEnd();
-//        String peerReviewStartString = assignment.getPeerReviewStart();
-//        String peerReviewEndString = assignment.getPeerReviewEnd();
-//        // 将字符串转为 LocalDateTime 类型
-//        LocalDateTime end = LocalDateTime.parse(endString, formatter);
-//        LocalDateTime latestEnd = LocalDateTime.parse(latestEndString, formatter);
-//        LocalDateTime peerReviewStart = LocalDateTime.parse(peerReviewStartString, formatter);
-//        LocalDateTime peerReviewEnd = LocalDateTime.parse(peerReviewEndString, formatter);
-//        // 设置提醒任务
-//        scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
-//        scheduleReminder(latestEnd.minusDays(1), users, newAssignment, "最迟补交提醒", "最迟补交时间剩余1天，请尽快完成");
-//        scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始,不要忘记");
-//        scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String endString = assignment.getEnd();
+        String peerReviewStartString = assignment.getPeerReviewStart();
+        String peerReviewEndString = assignment.getPeerReviewEnd();
+        if(peerReviewStartString == null || peerReviewEndString == null){
+            // 将字符串转为 LocalDateTime 类型
+            LocalDateTime end = LocalDateTime.parse(endString, formatter);
+            // 设置提醒任务
+            scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
+        }else{
+            // 将字符串转为 LocalDateTime 类型
+            LocalDateTime end = LocalDateTime.parse(endString, formatter);
+            LocalDateTime peerReviewStart = LocalDateTime.parse(peerReviewStartString, formatter);
+            LocalDateTime peerReviewEnd = LocalDateTime.parse(peerReviewEndString, formatter);
+            // 设置提醒任务
+            scheduleReminder(end.minusDays(1), users, newAssignment, "作业截止提醒", "作业截止时间剩余1天，请尽快提交");
+            scheduleReminder(peerReviewStart.minusDays(1), users, newAssignment, "互评即将开始", "互评即将开始,不要忘记");
+            scheduleReminder(peerReviewEnd.minusDays(1), users, newAssignment, "互评截止提醒", "互评截止时间剩余1天，请尽快完成互评");
+        }
         return ResponseEntity.ok("作业发布成功，已通知所有学生。");
     }
 
@@ -226,7 +229,7 @@ public class AssignmentController {
         if (!assignment.attachments.isEmpty()) {
             attachmentService.remove(new LambdaQueryWrapper<Attachment>().eq(Attachment::getAssignmentId, assignment.id));
         }
-        var newAssignment = new Assignment(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getLatestEnd(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
+        var newAssignment = new Assignment(assignment.getId(), assignment.getCourseId(), assignment.getTitle(), assignment.getDescription(), assignment.getStart(), assignment.getEnd(), assignment.getIsPrivate(), assignment.getFullGrade(), assignment.getDelayedGrade(), assignment.getMultipleSubmission(), assignment.getPublishGrade(), assignment.getRequirePeerReview(), assignment.getPeerReviewStart(), assignment.getPeerReviewEnd(), assignment.getMinPeerReview(), assignment.getAnswer());
         assignmentService.updateById(newAssignment);
         assignment.getAttachments().forEach(attachment -> attachmentService.update(new LambdaUpdateWrapper<Attachment>().eq(Attachment::getId, attachment).set(Attachment::getAssignmentId, newAssignment.getId())));
         //获得该课程所有学生
@@ -320,7 +323,6 @@ public class AssignmentController {
         descriptionDTO.setIsPrivate(assignment.getIsPrivate());
         descriptionDTO.setGrade(assignment.getFullGrade().intValue());
         descriptionDTO.setDelayedGrade(assignment.getDelayedGrade().intValue());
-        descriptionDTO.setLatestEnd(assignment.getLatestEnd());
         descriptionDTO.setMultipleSubmission(assignment.getMultipleSubmission());
         descriptionDTO.setPublishGrade(assignment.getPublishGrade());
         descriptionDTO.setRequirePeerReview(assignment.getRequirePeerReview());
@@ -467,7 +469,6 @@ public class AssignmentController {
                     assignment.getIsPrivate(),
                     assignment.getFullGrade(),
                     assignment.getDelayedGrade(),
-                    assignment.getLatestEnd(),
                     assignment.getMultipleSubmission(),
                     assignment.getPublishGrade(),
                     assignment.getRequirePeerReview(),
@@ -549,8 +550,6 @@ public class AssignmentController {
         private Float fullGrade;
 
         private Float delayedGrade;
-
-        private String latestEnd;
 
         private Integer multipleSubmission;
 

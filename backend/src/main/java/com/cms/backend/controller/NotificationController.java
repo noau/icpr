@@ -39,7 +39,7 @@ public class NotificationController {
     public ResponseEntity<NotificationList> getNotification(@RequestParam Integer id) {
         // 将作业通知过滤掉
         List<NotificationDTO> notifications = new ArrayList<>();
-        List<Notification> notificationList = notificationService.list(new LambdaQueryWrapper<Notification>().eq(Notification::getUserId, id).ne(Notification::getType,"作业通知"));
+        List<Notification> notificationList = notificationService.list(new LambdaQueryWrapper<Notification>().eq(Notification::getUserId, id));
         for (Notification notification : notificationList) {
             NotificationDTO notificationDTO = new NotificationDTO(
                     notification.getId(),
