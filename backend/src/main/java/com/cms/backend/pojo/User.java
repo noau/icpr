@@ -1,12 +1,16 @@
 package com.cms.backend.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * User 实体类，表示用户的数据模型
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
     /**
